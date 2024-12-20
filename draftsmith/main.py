@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 import sys
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
     QLabel,
     QMenuBar,
     QToolBar,
-    QAction,
 )
 from PySide6.QtCore import Qt  # Import Qt from PySide6.QtCore
 from typing import Optional
 import typer
 import signal
+
+
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
@@ -20,10 +22,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Draftsmith")
         self.setGeometry(100, 100, 800, 600)
-        
+
         self.create_menu_bar()
         self.create_tool_bar()
-        
+
         label = QLabel(f"API URL: {api_url}", self)
         label.setAlignment(Qt.AlignCenter)
         self.setCentralWidget(label)
