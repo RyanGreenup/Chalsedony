@@ -4,6 +4,9 @@ from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
     QLabel,
+    QMenuBar,
+    QToolBar,
+    QAction,
 )
 from PySide6.QtCore import Qt  # Import Qt from PySide6.QtCore
 from typing import Optional
@@ -18,9 +21,34 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Draftsmith")
         self.setGeometry(100, 100, 800, 600)
         
+        self.create_menu_bar()
+        self.create_tool_bar()
+        
         label = QLabel(f"API URL: {api_url}", self)
         label.setAlignment(Qt.AlignCenter)
         self.setCentralWidget(label)
+
+    def create_menu_bar(self):
+        menu_bar = QMenuBar(self)
+        self.setMenuBar(menu_bar)
+
+        # File Menu
+        file_menu = menu_bar.addMenu("File")
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.close)
+        file_menu.addAction(exit_action)
+
+        # Edit Menu
+        edit_menu = menu_bar.addMenu("Edit")
+        # Add more actions to the Edit menu if needed
+
+    def create_tool_bar(self):
+        tool_bar = QToolBar("Main Toolbar", self)
+        self.addToolBar(tool_bar)
+
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.close)
+        tool_bar.addAction(exit_action)
 
 @app.command()
 def main(db_path: str = "duckdb_browser.db", table_name: Optional[str] = None) -> None:
