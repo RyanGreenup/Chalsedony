@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QLabel,
 )
+from PySide6.QtCore import Qt  # Import Qt from PySide6.QtCore
 from typing import Optional
 import typer
 import signal
