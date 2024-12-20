@@ -7,12 +7,12 @@ from PySide6.QtWidgets import (
     QLabel,
     QMenuBar,
     QToolBar,
+    QStatusBar,
 )
 from PySide6.QtCore import Qt  # Import Qt from PySide6.QtCore
 from typing import Optional
 import typer
 import signal
-
 
 
 app = typer.Typer(pretty_exceptions_enable=False)
@@ -25,6 +25,7 @@ class MainWindow(QMainWindow):
 
         self.create_menu_bar()
         self.create_tool_bar()
+        self.create_status_bar()
 
         label = QLabel(f"API URL: {api_url}", self)
         label.setAlignment(Qt.AlignCenter)
@@ -51,6 +52,11 @@ class MainWindow(QMainWindow):
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.close)
         tool_bar.addAction(exit_action)
+
+    def create_status_bar(self):
+        status_bar = QStatusBar()
+        self.setStatusBar(status_bar)
+        status_bar.showMessage("Ready")
 
 @app.command()
 def main(db_path: str = "duckdb_browser.db", table_name: Optional[str] = None) -> None:
