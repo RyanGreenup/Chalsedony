@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "draftsmith"
+version = "0.1.0"
+description = "A GUI for the Draftsmith Notetaking tool"
+authors = ["ryan <exogenesis@protonmail.com>"]
+license = "GPL"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.14"
+pyside6 = "^6.8.1"
+typer = "^0.15.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+duckdb-browser = "main:app"
+
+packages = [{include = "*", from="draftsmith"}]
