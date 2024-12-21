@@ -123,30 +123,43 @@ class BaseWindowWithMenus(QMainWindow):
 def create_dark_palette() -> QPalette:
     palette = QPalette()
     
-    # Set window and widget background colors
-    palette.setColor(QPalette.Window, QColor(53, 53, 53))
-    palette.setColor(QPalette.WindowText, Qt.white)
-    palette.setColor(QPalette.Base, QColor(35, 35, 35))
-    palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+    # Base colors
+    base_dark = QColor(35, 35, 35)
+    widget_dark = QColor(53, 53, 53)
+    highlight = QColor(42, 130, 218)
+    disabled_gray = QColor(127, 127, 127)
+
+    # Window and base
+    palette.setColor(QPalette.ColorRole.Window, widget_dark)
+    palette.setColor(QPalette.ColorRole.WindowText, Qt.GlobalColor.white)
+    palette.setColor(QPalette.ColorRole.Base, base_dark)
+    palette.setColor(QPalette.ColorRole.AlternateBase, widget_dark)
+
+    # Text and buttons
+    palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.white)
+    palette.setColor(QPalette.ColorRole.Button, widget_dark)
+    palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.white)
     
-    # Set text colors
-    palette.setColor(QPalette.Text, Qt.white)
-    palette.setColor(QPalette.Button, QColor(53, 53, 53))
-    palette.setColor(QPalette.ButtonText, Qt.white)
+    # Selection and highlights
+    palette.setColor(QPalette.ColorRole.Highlight, highlight)
+    palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.black)
     
-    # Set highlight colors
-    palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-    palette.setColor(QPalette.HighlightedText, Qt.black)
+    # Menu specific (replaces QSS)
+    palette.setColor(QPalette.ColorRole.Light, widget_dark)  # For menu borders
+    palette.setColor(QPalette.ColorRole.Mid, widget_dark)    # For menu separators
+    palette.setColor(QPalette.ColorRole.Dark, base_dark)     # For pressed states
     
-    # Set disabled colors
-    palette.setColor(QPalette.Disabled, QPalette.WindowText, QColor(127, 127, 127))
-    palette.setColor(QPalette.Disabled, QPalette.Text, QColor(127, 127, 127))
-    palette.setColor(QPalette.Disabled, QPalette.ButtonText, QColor(127, 127, 127))
-    
-    # Set tooltip colors
-    palette.setColor(QPalette.ToolTipBase, Qt.white)
-    palette.setColor(QPalette.ToolTipText, Qt.black)
-    
+    # Tooltips
+    palette.setColor(QPalette.ColorRole.ToolTipBase, highlight)
+    palette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.white)
+
+    # Disabled state
+    palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, disabled_gray)
+    palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, disabled_gray)
+    palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, disabled_gray)
+    palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Highlight, QColor(80, 80, 80))
+    palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.HighlightedText, disabled_gray)
+
     return palette
 
 
@@ -164,36 +177,7 @@ class MainWindow(BaseWindowWithMenus):
 @app.command()
 def main(db_path: str = "duckdb_browser.db", table_name: Optional[str] = None) -> None:
     app = QApplication(sys.argv)
-    
-    # Apply dark palette to the application
     app.setPalette(create_dark_palette())
-    
-    # Add custom stylesheet
-    app.setStyleSheet("""
-        QToolTip { 
-            color: #ffffff; 
-            background-color: #2a82da; 
-            border: 1px solid white; 
-        }
-        QMenuBar {
-            background-color: #353535;
-            color: white;
-        }
-        QMenuBar::item:selected {
-            background-color: #2a82da;
-        }
-        QMenu {
-            background-color: #353535;
-            color: white;
-        }
-        QMenu::item:selected {
-            background-color: #2a82da;
-        }
-        QStatusBar {
-            background-color: #353535;
-            color: white;
-        }
-    """)
     
     window = MainWindow(api_url="http://example.com/api")
     signal.signal(signal.SIGINT, signal.SIG_DFL)
