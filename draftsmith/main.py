@@ -144,7 +144,7 @@ class MainWindow(QMainWindow):
                     current_size <= 0
                 ):  # If point size is invalid, start from a reasonable size
                     current_size = 10
-                new_size = max(6, int(current_size * 1.1))  # Ensure we don't go below 6pt
+                new_size = max(6, round(current_size * 1.1))  # Ensure we don't go below 6pt
                 current_font.setPointSize(new_size)
                 app.setFont(current_font)
 
@@ -155,7 +155,7 @@ class MainWindow(QMainWindow):
                 current_font = app.font()
                 current_size = current_font.pointSize()
                 if current_size > 0:  # Only adjust if using point size
-                    new_size = max(6, int(current_size * 0.9))  # Don't go below 6pt
+                    new_size = max(6, round(current_size * 0.9))  # Don't go below 6pt
                     current_font.setPointSize(new_size)
                     app.setFont(current_font)
 
