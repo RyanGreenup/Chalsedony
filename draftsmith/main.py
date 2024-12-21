@@ -36,23 +36,15 @@ class MenuConfig(BaseModel):
     menus: List[MenuStructure]
 
 
-class MainWindow(QMainWindow):
-    menu_actions: Dict[str, QAction]  # Renamed from 'actions' to 'menu_actions'
+class BaseWindowWithMenus(QMainWindow):
+    menu_actions: Dict[str, QAction]
 
-    def __init__(self, api_url: str):
+    def __init__(self):
         super().__init__()
-        self.menu_actions = {}  # Initialize with new name
-        self.setWindowTitle("Draftsmith")
-        self.setGeometry(100, 100, 800, 600)
-
-        # Create menu bar first so actions are available
+        self.menu_actions = {}
         self.create_menu_bar()
-        self.create_tool_bar()
+        self.create_tool_bar() 
         self.create_status_bar()
-
-        label = QLabel(f"API URL: {api_url}", self)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setCentralWidget(label)
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
@@ -102,7 +94,6 @@ class MainWindow(QMainWindow):
                 if action_item.shortcut:
                     action.setShortcut(action_item.shortcut)
 
-                # Use match statement for handler assignment
                 match action_item.handler:
                     case "close":
                         action.triggered.connect(self.close)
@@ -119,8 +110,7 @@ class MainWindow(QMainWindow):
         tool_bar = QToolBar("Main Toolbar", self)
         self.addToolBar(tool_bar)
 
-        # Reuse actions from menu using stable ID
-        exit_action = self.menu_actions.get("exit")  # Use ID instead of display text
+        exit_action = self.menu_actions.get("exit")
         if exit_action is not None:
             tool_bar.addAction(exit_action)
 
@@ -128,6 +118,17 @@ class MainWindow(QMainWindow):
         status_bar = QStatusBar()
         self.setStatusBar(status_bar)
         status_bar.showMessage("Ready")
+
+
+class MainWindow(BaseWindowWithMenus):
+    def __init__(self, api_url: str):
+        super().__init__()
+        self.setWindowTitle("Draftsmith")
+        self.setGeometry(100, 100, 800, 600)
+
+        label = QLabel(f"API URL: {api_url}", self)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setCentralWidget(label)
 
 
 @app.command()
