@@ -20,8 +20,9 @@ app = typer.Typer(pretty_exceptions_enable=False)
 
 
 class MenuAction(BaseModel):
-    name: str
-    handler: str = "close"  # default handler
+    id: str  # Unique identifier for the action
+    text: str  # Display text (can include &)
+    handler: str = "close"
     shortcut: str = ""
 
 
@@ -57,13 +58,17 @@ class MainWindow(QMainWindow):
         return MenuConfig(
             menus=[
                 MenuStructure(
-                    name="File",
+                    name="&File",
                     actions=[
-                        MenuAction(name="Exit", handler="close"),
+                        MenuAction(
+                            id="exit",  # Stable identifier
+                            text="E&xit",  # Display text with accelerator
+                            handler="close"
+                        ),
                     ],
                 ),
                 MenuStructure(
-                    name="Edit",
+                    name="&Edit",
                     actions=[
                         # Add more actions as needed
                     ],
@@ -79,24 +84,28 @@ class MainWindow(QMainWindow):
         self.actions = {}  # Store actions for reuse
 
         for menu_struct in menu_config.menus:
-            menu = menu_bar.addMenu(menu_struct.name)
+            menu = menu_bar.addMenu(menu_struct.name)  # Qt handles & automatically
             for action_item in menu_struct.actions:
-                action = QAction(action_item.name, self)
+                # Create action with display text
+                action = QAction(action_item.text, self)
                 if action_item.shortcut:
                     action.setShortcut(action_item.shortcut)
+                
                 # Get the handler method by name using getattr
                 handler = getattr(self, action_item.handler, None)
                 if handler:
                     action.triggered.connect(handler)
+                
+                # Store using stable ID
                 menu.addAction(action)
-                self.actions[action_item.name] = action
+                self.actions[action_item.id] = action
 
     def create_tool_bar(self) -> None:
         tool_bar = QToolBar("Main Toolbar", self)
         self.addToolBar(tool_bar)
 
-        # Reuse actions from menu with proper type checking
-        exit_action = self.actions.get("Exit")
+        # Reuse actions from menu using stable ID
+        exit_action = self.actions.get("exit")  # Use ID instead of display text
         if exit_action is not None:
             tool_bar.addAction(exit_action)
 
