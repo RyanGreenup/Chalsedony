@@ -194,6 +194,14 @@ class MainWindow(BaseWindowWithMenus):
         self.setCentralWidget(label)
 
 
+def is_system_dark_mode() -> bool:
+    """Check if system prefers dark mode.
+    
+    For now, defaults to True until we implement proper system theme detection.
+    """
+    return True
+
+
 @app.command()
 def main(
     db_path: str = "duckdb_browser.db",
