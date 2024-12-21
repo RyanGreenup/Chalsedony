@@ -10,12 +10,25 @@ from PySide6.QtWidgets import (
     QStatusBar,
 )
 from PySide6.QtCore import Qt  # Import Qt from PySide6.QtCore
-from typing import Optional
+from typing import Optional, Dict, List
+from pydantic import BaseModel
 import typer
 import signal
 
 
 app = typer.Typer(pretty_exceptions_enable=False)
+
+class MenuAction(BaseModel):
+    name: str
+    handler: str = "close"  # default handler
+    shortcut: str = ""
+
+class MenuStructure(BaseModel):
+    name: str
+    actions: List[MenuAction]
+
+class MenuConfig(BaseModel):
+    menus: List[MenuStructure]
 
 
 class MainWindow(QMainWindow):
@@ -24,6 +37,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Draftsmith")
         self.setGeometry(100, 100, 800, 600)
 
+        # Create menu bar first so actions are available
         self.create_menu_bar()
         self.create_tool_bar()
         self.create_status_bar()
@@ -32,27 +46,52 @@ class MainWindow(QMainWindow):
         label.setAlignment(Qt.AlignCenter)
         self.setCentralWidget(label)
 
+    @classmethod
+    def get_menu_config(cls) -> MenuConfig:
+        return MenuConfig(
+            menus=[
+                MenuStructure(
+                    name="File",
+                    actions=[
+                        MenuAction(name="Exit", handler="close"),
+                    ]
+                ),
+                MenuStructure(
+                    name="Edit",
+                    actions=[
+                        # Add more actions as needed
+                    ]
+                ),
+            ]
+        )
+
     def create_menu_bar(self):
         menu_bar = QMenuBar(self)
         self.setMenuBar(menu_bar)
-
-        # File Menu
-        file_menu = menu_bar.addMenu("File")
-        exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self.close)
-        file_menu.addAction(exit_action)
-
-        # Edit Menu
-        edit_menu = menu_bar.addMenu("Edit")
-        # Add more actions to the Edit menu if needed
+        
+        menu_config = self.get_menu_config()
+        self.actions = {}  # Store actions for reuse
+        
+        for menu_struct in menu_config.menus:
+            menu = menu_bar.addMenu(menu_struct.name)
+            for action_item in menu_struct.actions:
+                action = QAction(action_item.name, self)
+                if action_item.shortcut:
+                    action.setShortcut(action_item.shortcut)
+                # Get the handler method by name using getattr
+                handler = getattr(self, action_item.handler, None)
+                if handler:
+                    action.triggered.connect(handler)
+                menu.addAction(action)
+                self.actions[action_item.name] = action
 
     def create_tool_bar(self):
         tool_bar = QToolBar("Main Toolbar", self)
         self.addToolBar(tool_bar)
-
-        exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self.close)
-        tool_bar.addAction(exit_action)
+        
+        # Reuse actions from menu
+        if 'Exit' in self.actions:
+            tool_bar.addAction(self.actions['Exit'])
 
     def create_status_bar(self):
         status_bar = QStatusBar()
