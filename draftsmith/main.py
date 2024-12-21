@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-from PySide6.QtGui import QAction, QColor, QPalette
+from PySide6.QtGui import QAction, QPalette
 from PySide6.QtWidgets import (
     QApplication,
     QStyle,
@@ -114,7 +114,7 @@ class MainWindow(QMainWindow):
                             shortcut="Ctrl++",
                         ),
                         MenuAction(
-                            id="zoom_out", 
+                            id="zoom_out",
                             text="Zoom &Out",
                             handler="zoom_out",
                             shortcut="Ctrl+-",
