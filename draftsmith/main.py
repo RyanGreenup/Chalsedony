@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import sys
 from PySide6.QtGui import QAction, QPalette, QColor
-from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
