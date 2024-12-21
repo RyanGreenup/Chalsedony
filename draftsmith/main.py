@@ -95,9 +95,7 @@ class BaseWindowWithMenus(QMainWindow):
 
     def show_about_dialog(self) -> None:
         QMessageBox.about(
-            self,
-            "About Draftsmith",
-            "Draftsmith\nVersion 0.1.0\n\nA notetaking tool."
+            self, "About Draftsmith", "Draftsmith\nVersion 0.1.0\n\nA notetaking tool."
         )
 
     def create_menu_bar(self) -> None:
@@ -120,7 +118,7 @@ class BaseWindowWithMenus(QMainWindow):
                     case "about":
                         action.triggered.connect(self.show_about_dialog)
                     case _:
-                        if (handler := getattr(self, action_item.handler, None)):
+                        if handler := getattr(self, action_item.handler, None):
                             action.triggered.connect(handler)
 
                 menu.addAction(action)
@@ -142,7 +140,7 @@ class BaseWindowWithMenus(QMainWindow):
 
 def create_dark_palette() -> QPalette:
     palette = QPalette()
-    
+
     # Base colors
     base_dark = QColor(35, 35, 35)
     widget_dark = QColor(53, 53, 53)
@@ -159,26 +157,36 @@ def create_dark_palette() -> QPalette:
     palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.white)
     palette.setColor(QPalette.ColorRole.Button, widget_dark)
     palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.white)
-    
+
     # Selection and highlights
     palette.setColor(QPalette.ColorRole.Highlight, highlight)
     palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.black)
-    
+
     # Menu specific (replaces QSS)
     palette.setColor(QPalette.ColorRole.Light, widget_dark)  # For menu borders
-    palette.setColor(QPalette.ColorRole.Mid, widget_dark)    # For menu separators
-    palette.setColor(QPalette.ColorRole.Dark, base_dark)     # For pressed states
-    
+    palette.setColor(QPalette.ColorRole.Mid, widget_dark)  # For menu separators
+    palette.setColor(QPalette.ColorRole.Dark, base_dark)  # For pressed states
+
     # Tooltips
     palette.setColor(QPalette.ColorRole.ToolTipBase, highlight)
     palette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.white)
 
     # Disabled state
-    palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, disabled_gray)
-    palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, disabled_gray)
-    palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, disabled_gray)
-    palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Highlight, QColor(80, 80, 80))
-    palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.HighlightedText, disabled_gray)
+    palette.setColor(
+        QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, disabled_gray
+    )
+    palette.setColor(
+        QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, disabled_gray
+    )
+    palette.setColor(
+        QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, disabled_gray
+    )
+    palette.setColor(
+        QPalette.ColorGroup.Disabled, QPalette.ColorRole.Highlight, QColor(80, 80, 80)
+    )
+    palette.setColor(
+        QPalette.ColorGroup.Disabled, QPalette.ColorRole.HighlightedText, disabled_gray
+    )
 
     return palette
 
@@ -196,7 +204,7 @@ class MainWindow(BaseWindowWithMenus):
 
 def is_system_dark_mode() -> bool:
     """Check if system prefers dark mode.
-    
+
     For now, defaults to True until we implement proper system theme detection.
     """
     return True
@@ -210,23 +218,23 @@ def main(
 ) -> None:
     """
     Start the application
-    
+
     Args:
         db_path: Path to the database file
         table_name: Optional table name to open
         dark_mode: Force dark mode on/off. If None, use system preference
     """
     app = QApplication(sys.argv)
-    
+
     # Determine dark mode setting
     use_dark = dark_mode if dark_mode is not None else is_system_dark_mode()
-    
+
     # Set the appropriate palette
     if use_dark:
         app.setPalette(create_dark_palette())
     else:
         app.setPalette(app.style().standardPalette())
-    
+
     window = MainWindow(api_url="http://example.com/api")
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     window.show()
