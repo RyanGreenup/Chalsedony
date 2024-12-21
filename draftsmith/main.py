@@ -9,8 +9,8 @@ from PySide6.QtWidgets import (
     QToolBar,
     QStatusBar,
 )
-from PySide6.QtCore import Qt  # Import Qt from PySide6.QtCore
-from typing import Optional, List
+from PySide6.QtCore import Qt, Alignment  # Import Qt and Alignment
+from typing import Optional, List, Dict
 from pydantic import BaseModel
 import typer
 import signal
@@ -35,8 +35,11 @@ class MenuConfig(BaseModel):
 
 
 class MainWindow(QMainWindow):
+    actions: Dict[str, QAction]  # Add class attribute with type annotation
+    
     def __init__(self, api_url: str):
         super().__init__()
+        self.actions = {}  # Initialize in constructor
         self.setWindowTitle("Draftsmith")
         self.setGeometry(100, 100, 800, 600)
 
@@ -46,7 +49,7 @@ class MainWindow(QMainWindow):
         self.create_status_bar()
 
         label = QLabel(f"API URL: {api_url}", self)
-        label.setAlignment(Qt.AlignCenter)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setCentralWidget(label)
 
     @classmethod
@@ -68,7 +71,7 @@ class MainWindow(QMainWindow):
             ]
         )
 
-    def create_menu_bar(self):
+    def create_menu_bar(self) -> None:
         menu_bar = QMenuBar(self)
         self.setMenuBar(menu_bar)
 
@@ -88,15 +91,16 @@ class MainWindow(QMainWindow):
                 menu.addAction(action)
                 self.actions[action_item.name] = action
 
-    def create_tool_bar(self):
+    def create_tool_bar(self) -> None:
         tool_bar = QToolBar("Main Toolbar", self)
         self.addToolBar(tool_bar)
 
-        # Reuse actions from menu
-        if "Exit" in self.actions:
-            tool_bar.addAction(self.actions["Exit"])
+        # Reuse actions from menu with proper type checking
+        exit_action = self.actions.get("Exit")
+        if exit_action is not None:
+            tool_bar.addAction(exit_action)
 
-    def create_status_bar(self):
+    def create_status_bar(self) -> None:
         status_bar = QStatusBar()
         self.setStatusBar(status_bar)
         status_bar.showMessage("Ready")
