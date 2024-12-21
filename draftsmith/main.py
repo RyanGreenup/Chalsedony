@@ -44,10 +44,10 @@ class ApplicationPalettes(TypedDict):
     light: QPalette
 
 
-class BaseWindowWithMenus(QMainWindow):
+class MainWindow(QMainWindow):
     menu_actions: Dict[str, QAction]
 
-    def __init__(self) -> None:
+    def __init__(self, api_url: str) -> None:
         super().__init__()
         app = QApplication.instance()
         if app is None:
@@ -69,13 +69,20 @@ class BaseWindowWithMenus(QMainWindow):
         self.create_tool_bar()
         self.create_status_bar()
 
+        self.setWindowTitle("Draftsmith")
+        self.setGeometry(100, 100, 800, 600)
+
+        label = QLabel(f"API URL: {api_url}", self)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setCentralWidget(label)
+
     def toggle_style(self) -> None:
         if app := QApplication.instance():
             if isinstance(app, QApplication):
-                if app.palette() == self.palettes['light']:
-                    app.setPalette(self.palettes['dark'])
+                if app.palette() == self.palettes["light"]:
+                    app.setPalette(self.palettes["dark"])
                 else:
-                    app.setPalette(self.palettes['light'])
+                    app.setPalette(self.palettes["light"])
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
@@ -158,17 +165,6 @@ class BaseWindowWithMenus(QMainWindow):
         status_bar = QStatusBar()
         self.setStatusBar(status_bar)
         status_bar.showMessage("Ready")
-
-
-class MainWindow(BaseWindowWithMenus):
-    def __init__(self, api_url: str) -> None:
-        super().__init__()
-        self.setWindowTitle("Draftsmith")
-        self.setGeometry(100, 100, 800, 600)
-
-        label = QLabel(f"API URL: {api_url}", self)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setCentralWidget(label)
 
 
 def is_system_dark_mode() -> bool:
