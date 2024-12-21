@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 from PySide6.QtGui import QAction, QPalette, QColor
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -41,7 +42,10 @@ class BaseWindowWithMenus(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.default_palette = QApplication.instance().style().standardPalette()
+        app = QApplication.instance()
+        if app is None:
+            raise RuntimeError("No QApplication instance found")
+        self.default_palette = app.style().standardPalette()
         self.dark_palette = create_dark_palette()
         self.menu_actions = {}
         self.create_menu_bar()
@@ -50,6 +54,8 @@ class BaseWindowWithMenus(QMainWindow):
 
     def toggle_style(self) -> None:
         app = QApplication.instance()
+        if app is None:
+            return
         if app.palette() == self.default_palette:
             app.setPalette(self.dark_palette)
         else:
