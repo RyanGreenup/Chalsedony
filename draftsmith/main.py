@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QStatusBar,
 )
 from PySide6.QtCore import Qt  # Import Qt from PySide6.QtCore
-from typing import Optional, Dict, List
+from typing import Optional, List
 from pydantic import BaseModel
 import typer
 import signal
@@ -18,14 +18,17 @@ import signal
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
+
 class MenuAction(BaseModel):
     name: str
     handler: str = "close"  # default handler
     shortcut: str = ""
 
+
 class MenuStructure(BaseModel):
     name: str
     actions: List[MenuAction]
+
 
 class MenuConfig(BaseModel):
     menus: List[MenuStructure]
@@ -54,13 +57,13 @@ class MainWindow(QMainWindow):
                     name="File",
                     actions=[
                         MenuAction(name="Exit", handler="close"),
-                    ]
+                    ],
                 ),
                 MenuStructure(
                     name="Edit",
                     actions=[
                         # Add more actions as needed
-                    ]
+                    ],
                 ),
             ]
         )
@@ -68,10 +71,10 @@ class MainWindow(QMainWindow):
     def create_menu_bar(self):
         menu_bar = QMenuBar(self)
         self.setMenuBar(menu_bar)
-        
+
         menu_config = self.get_menu_config()
         self.actions = {}  # Store actions for reuse
-        
+
         for menu_struct in menu_config.menus:
             menu = menu_bar.addMenu(menu_struct.name)
             for action_item in menu_struct.actions:
@@ -88,10 +91,10 @@ class MainWindow(QMainWindow):
     def create_tool_bar(self):
         tool_bar = QToolBar("Main Toolbar", self)
         self.addToolBar(tool_bar)
-        
+
         # Reuse actions from menu
-        if 'Exit' in self.actions:
-            tool_bar.addAction(self.actions['Exit'])
+        if "Exit" in self.actions:
+            tool_bar.addAction(self.actions["Exit"])
 
     def create_status_bar(self):
         status_bar = QStatusBar()
