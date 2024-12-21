@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 from PySide6.QtGui import QAction, QPalette
-from .settings import SettingsDialog
+from settings import SettingsDialog
 from PySide6.QtWidgets import (
     QApplication,
     QStyle,
