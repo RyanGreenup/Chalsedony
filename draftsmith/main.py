@@ -134,30 +134,30 @@ class MainWindow(QMainWindow):
             ]
         )
 
-    def zoom_in(self) -> None:
-        """Increase the UI scale factor by 10%"""
+    def zoom(self, factor: float) -> None:
+        """Change the UI scale by the given factor.
+        
+        Args:
+            factor: Scale multiplier (e.g., 1.1 for 10% increase, 0.9 for 10% decrease)
+        """
         if app := QApplication.instance():
             if isinstance(app, QApplication):
                 current_font = app.font()
                 current_size = current_font.pointSize()
-                if (
-                    current_size <= 0
-                ):  # If point size is invalid, start from a reasonable size
+                if current_size <= 0:  # If point size is invalid, start from a reasonable size
                     current_size = 10
-                new_size = max(6, round(current_size * 1.1))  # Ensure we don't go below 6pt
+                    current_font.setPointSize(current_size)  # Set the base size first
+                new_size = max(6, round(current_size * factor))  # Ensure we don't go below 6pt
                 current_font.setPointSize(new_size)
                 app.setFont(current_font)
 
+    def zoom_in(self) -> None:
+        """Increase the UI scale factor by 10%"""
+        self.zoom(1.1)
+
     def zoom_out(self) -> None:
         """Decrease the UI scale factor by 10%"""
-        if app := QApplication.instance():
-            if isinstance(app, QApplication):
-                current_font = app.font()
-                current_size = current_font.pointSize()
-                if current_size > 0:  # Only adjust if using point size
-                    new_size = max(6, round(current_size * 0.9))  # Don't go below 6pt
-                    current_font.setPointSize(new_size)
-                    app.setFont(current_font)
+        self.zoom(0.9)
 
     def show_about_dialog(self) -> None:
         QMessageBox.about(
