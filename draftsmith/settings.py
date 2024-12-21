@@ -5,12 +5,13 @@ from PySide6.QtWidgets import (
     QPushButton,
     QFontDialog,
     QApplication,
+    QWidget,
 )
 from PySide6.QtGui import QFont
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Settings")
         self.setModal(True)
