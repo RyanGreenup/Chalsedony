@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 from PySide6.QtGui import QAction, QPalette
+from .settings import SettingsDialog
 from PySide6.QtWidgets import (
     QApplication,
     QStyle,
@@ -92,6 +93,12 @@ class MainWindow(QMainWindow):
                     name="&File",
                     actions=[
                         MenuAction(
+                            id="settings",
+                            text="&Settings",
+                            handler="show_settings",
+                            shortcut="Ctrl+,",
+                        ),
+                        MenuAction(
                             id="exit",
                             text="E&xit",
                             handler="close",
@@ -162,6 +169,11 @@ class MainWindow(QMainWindow):
     def zoom_out(self) -> None:
         """Decrease the UI scale factor by 10%"""
         self.zoom(0.9)
+
+    def show_settings(self) -> None:
+        """Show the settings dialog"""
+        dialog = SettingsDialog(self)
+        dialog.exec()
 
     def show_about_dialog(self) -> None:
         QMessageBox.about(
