@@ -187,8 +187,6 @@ def main(
     Start the application
 
     Args:
-        db_path: Path to the database file
-        table_name: Optional table name to open
         dark_mode: Force dark mode on/off. If None, use system preference
     """
     app = QApplication(sys.argv)
