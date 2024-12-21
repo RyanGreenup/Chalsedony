@@ -36,11 +36,11 @@ class MenuConfig(BaseModel):
 
 
 class MainWindow(QMainWindow):
-    actions: Dict[str, QAction]  # Add class attribute with type annotation
+    menu_actions: Dict[str, QAction]  # Renamed from 'actions' to 'menu_actions'
 
     def __init__(self, api_url: str):
         super().__init__()
-        self.actions = {}  # Initialize in constructor
+        self.menu_actions = {}  # Initialize with new name
         self.setWindowTitle("Draftsmith")
         self.setGeometry(100, 100, 800, 600)
 
@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
         self.setMenuBar(menu_bar)
 
         menu_config = self.get_menu_config()
-        self.actions = {}  # Store actions for reuse
+        self.menu_actions = {}  # Use new name
 
         for menu_struct in menu_config.menus:
             menu = menu_bar.addMenu(menu_struct.name)  # Qt handles & automatically
@@ -98,14 +98,14 @@ class MainWindow(QMainWindow):
 
                 # Store using stable ID
                 menu.addAction(action)
-                self.actions[action_item.id] = action
+                self.menu_actions[action_item.id] = action
 
     def create_tool_bar(self) -> None:
         tool_bar = QToolBar("Main Toolbar", self)
         self.addToolBar(tool_bar)
 
         # Reuse actions from menu using stable ID
-        exit_action = self.actions.get("exit")  # Use ID instead of display text
+        exit_action = self.menu_actions.get("exit")  # Use ID instead of display text
         if exit_action is not None:
             tool_bar.addAction(exit_action)
 
