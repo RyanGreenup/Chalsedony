@@ -111,7 +111,7 @@ class MainWindow(QMainWindow):
                             id="zoom_in",
                             text="Zoom &In",
                             handler="zoom_in",
-                            shortcut="Ctrl++",
+                            shortcut="Ctrl+=",
                         ),
                         MenuAction(
                             id="zoom_out",
@@ -136,7 +136,7 @@ class MainWindow(QMainWindow):
 
     def zoom(self, factor: float) -> None:
         """Change the UI scale by the given factor.
-        
+
         Args:
             factor: Scale multiplier (e.g., 1.1 for 10% increase, 0.9 for 10% decrease)
         """
@@ -144,10 +144,14 @@ class MainWindow(QMainWindow):
             if isinstance(app, QApplication):
                 current_font = app.font()
                 current_size = current_font.pointSize()
-                if current_size <= 0:  # If point size is invalid, start from a reasonable size
+                if (
+                    current_size <= 0
+                ):  # If point size is invalid, start from a reasonable size
                     current_size = 10
                     current_font.setPointSize(current_size)  # Set the base size first
-                new_size = max(6, round(current_size * factor))  # Ensure we don't go below 6pt
+                new_size = max(
+                    6, round(current_size * factor)
+                )  # Ensure we don't go below 6pt
                 current_font.setPointSize(new_size)
                 app.setFont(current_font)
 
