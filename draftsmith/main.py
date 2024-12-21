@@ -91,9 +91,8 @@ class MainWindow(QMainWindow):
                 if action_item.shortcut:
                     action.setShortcut(action_item.shortcut)
 
-                # Get the handler method by name using getattr
-                handler = getattr(self, action_item.handler, None)
-                if handler:
+                # call self.close
+                if (handler := getattr(self, action_item.handler, None)):
                     action.triggered.connect(handler)
 
                 # Store using stable ID
