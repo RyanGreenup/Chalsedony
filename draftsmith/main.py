@@ -137,15 +137,21 @@ class MainWindow(QMainWindow):
     def zoom_in(self) -> None:
         """Increase the UI scale factor by 10%"""
         if app := QApplication.instance():
+            if not isinstance(app, QApplication):
+                return
             current_font = app.font()
             current_size = current_font.pointSize()
-            if current_size > 0:  # Only adjust if using point size
-                current_font.setPointSize(int(current_size * 1.1))
-                app.setFont(current_font)
+            if current_size <= 0:  # If point size is invalid, start from a reasonable size
+                current_size = 10
+            new_size = max(6, int(current_size * 1.1))  # Ensure we don't go below 6pt
+            current_font.setPointSize(new_size)
+            app.setFont(current_font)
 
     def zoom_out(self) -> None:
         """Decrease the UI scale factor by 10%"""
         if app := QApplication.instance():
+            if not isinstance(app, QApplication):
+                return
             current_font = app.font()
             current_size = current_font.pointSize()
             if current_size > 0:  # Only adjust if using point size
