@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QToolBar,
     QStatusBar,
 )
-from PySide6.QtCore import Qt, Alignment  # Import Qt and Alignment
+from PySide6.QtCore import Qt  # Import Qt and Alignment
 from typing import Optional, List, Dict
 from pydantic import BaseModel
 import typer
@@ -37,7 +37,7 @@ class MenuConfig(BaseModel):
 
 class MainWindow(QMainWindow):
     actions: Dict[str, QAction]  # Add class attribute with type annotation
-    
+
     def __init__(self, api_url: str):
         super().__init__()
         self.actions = {}  # Initialize in constructor
@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
                         MenuAction(
                             id="exit",  # Stable identifier
                             text="E&xit",  # Display text with accelerator
-                            handler="close"
+                            handler="close",
                         ),
                     ],
                 ),
@@ -90,12 +90,12 @@ class MainWindow(QMainWindow):
                 action = QAction(action_item.text, self)
                 if action_item.shortcut:
                     action.setShortcut(action_item.shortcut)
-                
+
                 # Get the handler method by name using getattr
                 handler = getattr(self, action_item.handler, None)
                 if handler:
                     action.triggered.connect(handler)
-                
+
                 # Store using stable ID
                 menu.addAction(action)
                 self.actions[action_item.id] = action
