@@ -41,7 +41,7 @@ class BaseWindowWithMenus(QMainWindow):
     menu_actions: Dict[str, QAction]
 
     def __init__(self) -> None:
-        super().__init__()  # type: ignore
+        super().__init__()
         app = QApplication.instance()
         if app is None:
             raise RuntimeError("No QApplication instance found")
@@ -207,7 +207,7 @@ def create_dark_palette() -> QPalette:
 
 class MainWindow(BaseWindowWithMenus):
     def __init__(self, api_url: str) -> None:
-        super().__init__()  # type: ignore
+        super().__init__()
         self.setWindowTitle("Draftsmith")
         self.setGeometry(100, 100, 800, 600)
 
