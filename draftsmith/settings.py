@@ -31,6 +31,8 @@ class SettingsDialog(QDialog):
         if app := QApplication.instance():
             if isinstance(app, QApplication):
                 current_font = app.font()
-                font, ok = QFontDialog.getFont(current_font, self)
-                if ok:
-                    app.setFont(font)
+                result = QFontDialog.getFont(current_font, self)
+                if isinstance(result, tuple):  # Explicitly check if it's a tuple
+                    font, ok = result
+                    if ok and isinstance(font, QFont):  # Verify we have a valid QFont
+                        app.setFont(font)
