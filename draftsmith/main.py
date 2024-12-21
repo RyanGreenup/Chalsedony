@@ -195,9 +195,29 @@ class MainWindow(BaseWindowWithMenus):
 
 
 @app.command()
-def main(db_path: str = "duckdb_browser.db", table_name: Optional[str] = None) -> None:
+def main(
+    db_path: str = "duckdb_browser.db",
+    table_name: Optional[str] = None,
+    dark_mode: Optional[bool] = None,
+) -> None:
+    """
+    Start the application
+    
+    Args:
+        db_path: Path to the database file
+        table_name: Optional table name to open
+        dark_mode: Force dark mode on/off. If None, use system preference
+    """
     app = QApplication(sys.argv)
-    app.setPalette(create_dark_palette())
+    
+    # Determine dark mode setting
+    use_dark = dark_mode if dark_mode is not None else is_system_dark_mode()
+    
+    # Set the appropriate palette
+    if use_dark:
+        app.setPalette(create_dark_palette())
+    else:
+        app.setPalette(app.style().standardPalette())
     
     window = MainWindow(api_url="http://example.com/api")
     signal.signal(signal.SIGINT, signal.SIG_DFL)
