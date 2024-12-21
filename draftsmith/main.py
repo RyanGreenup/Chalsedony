@@ -43,7 +43,7 @@ class BaseWindowWithMenus(QMainWindow):
         super().__init__()
         self.menu_actions = {}
         self.create_menu_bar()
-        self.create_tool_bar() 
+        self.create_tool_bar()
         self.create_status_bar()
 
     @classmethod
@@ -77,7 +77,7 @@ class BaseWindowWithMenus(QMainWindow):
         QMessageBox.about(
             self,
             "About Draftsmith",
-            "Draftsmith\nVersion 0.1.0\n\nA powerful draft management tool."
+            "Draftsmith\nVersion 0.1.0\n\nA notetaking tool."
         )
 
     def create_menu_bar(self) -> None:
