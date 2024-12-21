@@ -107,6 +107,18 @@ class MainWindow(QMainWindow):
                             handler="toggle_style",
                             shortcut="Ctrl+D",
                         ),
+                        MenuAction(
+                            id="zoom_in",
+                            text="Zoom &In",
+                            handler="zoom_in",
+                            shortcut="Ctrl++",
+                        ),
+                        MenuAction(
+                            id="zoom_out", 
+                            text="Zoom &Out",
+                            handler="zoom_out",
+                            shortcut="Ctrl+-",
+                        ),
                     ],
                 ),
                 MenuStructure(
@@ -121,6 +133,23 @@ class MainWindow(QMainWindow):
                 ),
             ]
         )
+
+    def zoom_in(self) -> None:
+        """Increase the UI scale factor by 10%"""
+        current = QApplication.instance()
+        if current:
+            current.setStyleHint(QApplication.StyleHint.SH_WindowScaling, True)
+            current_factor = current.devicePixelRatio()
+            current.setDevicePixelRatio(current_factor + 0.1)
+
+    def zoom_out(self) -> None:
+        """Decrease the UI scale factor by 10%"""
+        current = QApplication.instance()
+        if current:
+            current.setStyleHint(QApplication.StyleHint.SH_WindowScaling, True)
+            current_factor = current.devicePixelRatio()
+            new_factor = max(0.5, current_factor - 0.1)  # Don't go below 50%
+            current.setDevicePixelRatio(new_factor)
 
     def show_about_dialog(self) -> None:
         QMessageBox.about(
