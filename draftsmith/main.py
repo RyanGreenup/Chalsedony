@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QMenuBar,
     QToolBar,
     QStatusBar,
+    QMessageBox,
 )
 from PySide6.QtCore import Qt  # Import Qt and Alignment
 from typing import Optional, List, Dict
@@ -61,19 +62,30 @@ class MainWindow(QMainWindow):
                     name="&File",
                     actions=[
                         MenuAction(
-                            id="exit",  # Stable identifier
-                            text="E&xit",  # Display text with accelerator
+                            id="exit",
+                            text="E&xit",
                             handler="close",
                         ),
                     ],
                 ),
                 MenuStructure(
-                    name="&Edit",
+                    name="&Help",
                     actions=[
-                        # Add more actions as needed
+                        MenuAction(
+                            id="about",
+                            text="&About",
+                            handler="about",
+                        ),
                     ],
                 ),
             ]
+        )
+
+    def show_about_dialog(self) -> None:
+        QMessageBox.about(
+            self,
+            "About Draftsmith",
+            "Draftsmith\nVersion 0.1.0\n\nA powerful draft management tool."
         )
 
     def create_menu_bar(self) -> None:
@@ -81,21 +93,25 @@ class MainWindow(QMainWindow):
         self.setMenuBar(menu_bar)
 
         menu_config = self.get_menu_config()
-        self.menu_actions = {}  # Use new name
+        self.menu_actions = {}
 
         for menu_struct in menu_config.menus:
-            menu = menu_bar.addMenu(menu_struct.name)  # Qt handles & automatically
+            menu = menu_bar.addMenu(menu_struct.name)
             for action_item in menu_struct.actions:
-                # Create action with display text
                 action = QAction(action_item.text, self)
                 if action_item.shortcut:
                     action.setShortcut(action_item.shortcut)
 
-                # call self.close
-                if (handler := getattr(self, action_item.handler, None)):
-                    action.triggered.connect(handler)
+                # Use match statement for handler assignment
+                match action_item.handler:
+                    case "close":
+                        action.triggered.connect(self.close)
+                    case "about":
+                        action.triggered.connect(self.show_about_dialog)
+                    case _:
+                        if (handler := getattr(self, action_item.handler, None)):
+                            action.triggered.connect(handler)
 
-                # Store using stable ID
                 menu.addAction(action)
                 self.menu_actions[action_item.id] = action
 
