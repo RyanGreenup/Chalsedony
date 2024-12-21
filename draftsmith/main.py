@@ -41,10 +41,19 @@ class BaseWindowWithMenus(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.default_palette = QApplication.instance().style().standardPalette()
+        self.dark_palette = create_dark_palette()
         self.menu_actions = {}
         self.create_menu_bar()
         self.create_tool_bar()
         self.create_status_bar()
+
+    def toggle_style(self) -> None:
+        app = QApplication.instance()
+        if app.palette() == self.default_palette:
+            app.setPalette(self.dark_palette)
+        else:
+            app.setPalette(self.default_palette)
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
@@ -57,6 +66,17 @@ class BaseWindowWithMenus(QMainWindow):
                             id="exit",
                             text="E&xit",
                             handler="close",
+                        ),
+                    ],
+                ),
+                MenuStructure(
+                    name="&View",
+                    actions=[
+                        MenuAction(
+                            id="toggle_style",
+                            text="Toggle &Dark Mode",
+                            handler="toggle_style",
+                            shortcut="Ctrl+D",
                         ),
                     ],
                 ),
