@@ -17,6 +17,7 @@ import signal
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
+
 class MainWindow(QMainWindow):
     def __init__(self, api_url: str):
         super().__init__()
@@ -58,6 +59,7 @@ class MainWindow(QMainWindow):
         self.setStatusBar(status_bar)
         status_bar.showMessage("Ready")
 
+
 @app.command()
 def main(db_path: str = "duckdb_browser.db", table_name: Optional[str] = None) -> None:
     app = QApplication(sys.argv)
@@ -65,6 +67,7 @@ def main(db_path: str = "duckdb_browser.db", table_name: Optional[str] = None) -
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     window.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     app()
