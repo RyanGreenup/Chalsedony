@@ -75,6 +75,9 @@ class MainWindow(QMainWindow):
         is_dark = app.palette() == self.palettes["dark"]
         app.setProperty("darkMode", is_dark)
         
+        # Setup application font
+        self.setup_application_font()
+        
         self.menu_actions = {}
         self.create_menu_bar()
         self.create_tool_bar()
@@ -220,6 +223,16 @@ class MainWindow(QMainWindow):
             lambda action: action.trigger()
         )  # Connect the signal
         dialog.exec()
+
+    def setup_application_font(self) -> None:
+        """Set up the application font, using Fira Sans if available"""
+        if app := QApplication.instance():
+            if isinstance(app, QApplication):
+                font = app.font()
+                # Try to set Fira Sans, falling back to system default if unavailable
+                font.setFamilies(["Fira Sans", font.family()])
+                self.base_font_size = font.pointSize()
+                app.setFont(font)
 
     def create_menu_bar(self) -> None:
         menu_bar = QMenuBar(self)
