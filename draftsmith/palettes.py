@@ -89,7 +89,7 @@ def create_light_palette() -> QPalette:
     }
 
     # Set the palette colors for dark theme
-    palette.setColor(QPalette.ColorRole.Window, QColor(colors["Crust"]["Hex"]))
+    palette.setColor(QPalette.ColorRole.Window, QColor(colors["Base"]["Hex"]))
     palette.setColor(QPalette.ColorRole.WindowText, QColor(colors["Text"]["Hex"]))
     palette.setColor(QPalette.ColorRole.Base, QColor(colors["Surface 0"]["Hex"]))
     palette.setColor(
@@ -98,7 +98,7 @@ def create_light_palette() -> QPalette:
     palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(colors["Surface 2"]["Hex"]))
     palette.setColor(QPalette.ColorRole.ToolTipText, QColor(colors["Text"]["Hex"]))
     palette.setColor(QPalette.ColorRole.Text, QColor(colors["Subtext 0"]["Hex"]))
-    palette.setColor(QPalette.ColorRole.Button, QColor(colors["Overlay 1"]["Hex"]))
+    palette.setColor(QPalette.ColorRole.Button, QColor(colors["Crust"]["Hex"]))
     palette.setColor(QPalette.ColorRole.ButtonText, QColor(colors["Text"]["Hex"]))
     palette.setColor(QPalette.ColorRole.BrightText, QColor(colors["Red"]["Hex"]))
     palette.setColor(QPalette.ColorRole.Link, QColor(colors["Blue"]["Hex"]))
@@ -106,6 +106,7 @@ def create_light_palette() -> QPalette:
     palette.setColor(
         QPalette.ColorRole.HighlightedText, QColor(colors["Surface 0"]["Hex"])
     )
+    palette.setColor(QPalette.ColorRole.Shadow, QColor(colors["Surface 2"]["Hex"]))
 
     return palette
 
@@ -205,11 +206,12 @@ def create_dark_palette() -> QPalette:
     palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(colors["Surface 0"]["Hex"]))
     palette.setColor(QPalette.ColorRole.ToolTipText, QColor(colors["Text"]["Hex"]))
     palette.setColor(QPalette.ColorRole.Text, QColor(colors["Subtext 0"]["Hex"]))
-    palette.setColor(QPalette.ColorRole.Button, QColor(colors["Overlay 1"]["Hex"]))
+    palette.setColor(QPalette.ColorRole.Button, QColor(colors["Crust"]["Hex"]))
     palette.setColor(QPalette.ColorRole.ButtonText, QColor(colors["Text"]["Hex"]))
     palette.setColor(QPalette.ColorRole.BrightText, QColor(colors["Rosewater"]["Hex"]))
     palette.setColor(QPalette.ColorRole.Link, QColor(colors["Blue"]["Hex"]))
     palette.setColor(QPalette.ColorRole.Highlight, QColor(colors["Sapphire"]["Hex"]))
     palette.setColor(QPalette.ColorRole.HighlightedText, QColor(colors["Base"]["Hex"]))
+    palette.setColor(QPalette.ColorRole.Shadow, QColor(colors["Surface 2"]["Hex"]))
 
     return palette

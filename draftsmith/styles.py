@@ -102,7 +102,7 @@ SelectionDialog QListWidget::item:selected {
 }
 
 SelectionDialog QListWidget::item:hover:!selected {
-    background: palette(mid);
+    background: palette(shadow);
 }
 
 """

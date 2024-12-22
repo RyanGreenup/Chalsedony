@@ -6,3 +6,5 @@ check:
     mypy --strict draftsmith
     # vulture draftsmith/*.py
 
+run:
+    python draftsmith/main.py --no-dark-mode
