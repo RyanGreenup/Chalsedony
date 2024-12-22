@@ -50,6 +50,9 @@ class CommandPalette(QDialog):
         
         # Connect return/enter key in search to trigger selected item
         self.search.returnPressed.connect(self.trigger_selected_item)
+        
+        # Connect return/enter key in search to trigger selected item
+        self.search.returnPressed.connect(self.trigger_selected_item)
 
     def populate_commands(self) -> None:
         """Populate the list with all commands"""
