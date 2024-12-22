@@ -188,7 +188,8 @@ class MainWindow(QMainWindow):
 
     def show_command_palette(self) -> None:
         """Show the command palette dialog"""
-        from .command_palette import CommandPalette
+        from command_palette import CommandPalette
+
         dialog = CommandPalette(self, self.menu_actions)
         dialog.exec()
 

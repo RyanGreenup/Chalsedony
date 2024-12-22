@@ -95,17 +95,27 @@ class CommandPalette(QDialog):
                 self.close()
                 break
 
-    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
-        """Handle keyboard events in search box"""
+    def eventFilter(self, arg__1: QObject, arg__2: QEvent) -> bool:
+        """Handle keyboard events in search box
+
+        Args:
+            arg__1: QObject - The object that the event is being sent to
+            arg__2: QEvent - The event being sent"""
+        # Redefine the arguments to have more descriptive names
+        obj = arg__1
+        event = arg__2
         if obj is self.search and event.type() == QEvent.Type.KeyPress:
             key_event = cast(QKeyEvent, event)
             key = key_event.key()
-            if key == Qt.Key.Key_Up:
-                self._select_previous_visible()
-                return True
-            elif key == Qt.Key.Key_Down:
-                self._select_next_visible()
-                return True
+
+            match key:
+                case Qt.Key.Key_Up:
+                    self._select_previous_visible()
+                    return True
+                case Qt.Key.Key_Down:
+                    self._select_next_visible()
+                    return True
+
         return super().eventFilter(obj, event)
 
     def _select_previous_visible(self) -> None:
