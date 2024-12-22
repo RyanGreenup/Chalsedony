@@ -295,6 +295,7 @@ QToolButton {
 
 QToolButton:hover {
     background: palette(mid);
+    color: palette(text);
 }
 
 QToolButton:pressed {
@@ -335,10 +336,12 @@ QMenuBar::item {
 
 QMenuBar::item:selected {
     background: palette(mid);
+    color: palette(text);
 }
 
 QMenuBar::item:pressed {
     background: palette(dark);
+    color: palette(text);
 }
 
 QMenu {
@@ -357,6 +360,7 @@ QMenu::item {
 
 QMenu::item:selected {
     background: palette(mid);
+    color: palette(text);
 }
 
 QMenu::separator {
