@@ -1,6 +1,69 @@
 from PySide6.QtCore import Qt
 
 
+tree_view = """
+
+QTreeView {
+    border: none;
+    background: palette(base);
+    padding: 8px;
+    font-size: 13px;
+}
+
+QTreeView::item {
+    padding: 4px;
+}
+
+QTreeView::item:hover {
+    background: palette(mid);
+    padding: 8px 4px;
+}
+
+QTreeView::item:selected {
+    background: palette(highlight);
+    color: palette(highlighted-text);
+}
+
+/* Style for the row itself to ensure continuous highlighting */
+QTreeView::item:selected:active {
+    background: palette(highlight);
+}
+
+QTreeView::item:selected:!active {
+    background: palette(highlight);
+}
+
+QTreeView::branch {
+    background: transparent;
+}
+
+QTreeView::branch:has-siblings:!adjoins-item {
+    border-image: none;
+    image: none;
+}
+
+QTreeView::branch:has-siblings:adjoins-item {
+    border-image: none;
+    image: none;
+}
+
+QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+    border-image: none;
+    image: none;
+}
+
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+    image: url(draftsmith/icons/chevron-right.svg);
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings {
+    image: url(draftsmith/icons/chevron-down.svg);
+}
+
+"""
+
 
 command_palette_style = """
 
@@ -146,4 +209,223 @@ QDialogButtonBox {
 
 """
 
-QSS_STYLE = command_palette_style + buttons + settings_dialog
+scrollbars = """
+
+/* Scrollbar styling */
+QScrollBar:vertical {
+    border: none;
+    background: transparent;
+    width: 12px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: palette(mid);
+    border-radius: 4px;
+    min-height: 20px;
+    margin: 2px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: palette(dark);
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+/* Horizontal scrollbar */
+QScrollBar:horizontal {
+    border: none;
+    background: transparent;
+    height: 12px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: palette(mid);
+    border-radius: 4px;
+    min-width: 20px;
+    margin: 2px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: palette(dark);
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background: none;
+}
+"""
+
+toolbar = """
+
+QToolBar {
+    border: none;
+    background: transparent;
+    spacing: 8px;
+    padding: 4px;
+}
+
+QToolBar::separator {
+    width: 1px;
+    background: palette(mid);
+    margin: 4px 8px;
+}
+
+QToolButton {
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 4px;
+    margin: 2px;
+    color: palette(button-text);
+}
+
+QToolButton:hover {
+    background: palette(mid);
+}
+
+QToolButton:pressed {
+    background: palette(dark);
+}
+
+QToolButton:checked {
+    background: palette(mid);
+    border: 1px solid palette(mid);
+}
+
+QToolButton:disabled {
+    color: palette(disabled-text);
+}
+
+QToolButton::menu-indicator {
+    image: none;
+}
+
+"""
+
+
+menus = """
+
+QMenuBar {
+    border: none;
+    background: transparent;
+    padding: 2px;
+    spacing: 4px;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: palette(text);
+}
+
+QMenuBar::item:selected {
+    background: palette(mid);
+}
+
+QMenuBar::item:pressed {
+    background: palette(dark);
+}
+
+QMenu {
+    background: palette(window);
+    border: 1px solid palette(mid);
+    border-radius: 6px;
+    padding: 4px;
+}
+
+QMenu::item {
+    padding: 6px 32px 6px 24px;
+    border-radius: 4px;
+    margin: 2px 4px;
+    color: palette(text);
+}
+
+QMenu::item:selected {
+    background: palette(mid);
+}
+
+QMenu::separator {
+    height: 1px;
+    background: palette(mid);
+    margin: 4px 8px;
+}
+
+QMenu::indicator {
+    width: 16px;
+    height: 16px;
+    left: 6px;
+}
+
+QMenu::icon {
+    padding-left: 4px;
+}
+
+QMenu QMenu {
+    border: 1px solid palette(mid);
+    border-radius: 6px;
+}
+
+QMenu::item:disabled {
+    color: palette(disabled-text);
+}
+
+"""
+
+
+labels = """
+
+QLabel {
+    font-size: 13px;
+    padding: 2px;
+}
+
+/* For section headers or group titles */
+QLabel[heading="true"] {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 0px;
+}
+
+/* For smaller helper/hint text */
+QLabel[hint="true"] {
+    font-size: 12px;
+    color: palette(disabled-text);
+}
+
+/* For error messages */
+QLabel[error="true"] {
+    color: #dc3545;
+}
+
+/* For success messages */
+QLabel[success="true"] {
+    color: #28a745;
+}
+
+/* For labels that act as links */
+QLabel[link="true"] {
+    color: palette(highlight);
+}
+
+QLabel[link="true"]:hover {
+    text-decoration: underline;
+}
+
+"""
+
+QSS_STYLE = command_palette_style + buttons + settings_dialog + tree_view + scrollbars + labels + toolbar + menus
