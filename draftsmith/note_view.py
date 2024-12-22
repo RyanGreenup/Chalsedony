@@ -83,10 +83,19 @@ class NoteView(QWidget):
         # Emit signals to Model
         self.content_area.editor.textChanged.connect(self._on_editor_text_changed)
         self.note_saved.connect(self.model.save)
+        self.tree_widget.note_created.connect(
+            lambda folder_id: self._on_note_created(folder_id)
+        )
 
         # Receive signals
         # Receive signals from Model
         self.model.refreshed.connect(self._refresh)
+
+    def _on_note_created(self, folder_id: int) -> None:
+        try:
+            self.model.create_note(folder_id)
+        except ValueError as e:
+            print(e)
 
     def _refresh(self) -> None:
         """

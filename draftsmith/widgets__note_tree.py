@@ -1,10 +1,12 @@
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu
 from note_model import NoteModel, Folder
 
 
 class NoteTree(QTreeWidget):
+    note_created = Signal(int)
+
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.note_model = note_model
@@ -21,7 +23,7 @@ class NoteTree(QTreeWidget):
         # Stop Animation
         is_animated = self.isAnimated()
         self.setAnimated(False)
-        
+
         try:
             self.clear()
             root_folders = self.note_model.get_root_folders()
@@ -62,17 +64,15 @@ class NoteTree(QTreeWidget):
 
         menu.exec(self.viewport().mapToGlobal(position))
 
-    def create_note(self, parent_item: QTreeWidgetItem) -> None:
+    def create_note(self, clicked_item: QTreeWidgetItem) -> None:
         """Create a new note under the selected folder"""
-        if parent_item.data(0, Qt.ItemDataRole.UserRole)[0] == "folder":
-            # TODO Emit a signal to create a new note
-            # TODO Insert an item below in the tree
-            # NOTE thoughts, if the note is not created, we shouldn't show it
-            # so, should the model not update it's representation and then we
-            # refresh based on its representation?
-            # Building the tree could be expensive, but, if we decide
-            # this now, we can minimize the impact
-
-            # Logic to create a new note
-            print("Creating a new note in:", parent_item.text(0))
-            # You can add your logic here to actually create and add the note
+        if clicked_item.data(0, Qt.ItemDataRole.UserRole)[0] == "folder":
+            # Emit a signal to create a new note
+            if parent_folder_id := clicked_item.data(0, Qt.ItemDataRole.UserRole)[1]:
+                if isinstance(parent_folder_id, int):
+                    self.note_created.emit(parent_folder_id)
+            else:
+                print("Parent folder ID is not an integer")
+            # The Model will trigger the view to update by emitting a signal
+        else:
+            print("Cannot create a note under a note")
