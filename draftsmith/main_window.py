@@ -1,6 +1,6 @@
 from PySide6.QtGui import QAction, QPalette
 from note_view import NoteView
-from note_model import NoteTreeModel
+from note_model import NoteTreeModel  # Ensure this imports the correct module with generate_dummy_data
 from settings import SettingsDialog
 from styles import QSS_STYLE
 from PySide6.QtWidgets import (
@@ -81,19 +81,13 @@ class MainWindow(QMainWindow):
 
         # Initialize model and view
         self.note_model = NoteTreeModel()
+        
+        # Use the generate_dummy_data method to populate the model
+        dummy_data = self.note_model.generate_dummy_data()
+        self.note_model.load_data(dummy_data)
+
         self.note_view = NoteView(self)
         self.setCentralWidget(self.note_view)
-
-        # Load example data (replace with actual data loading later)
-        example_data = [
-            {
-                "id": 1,
-                "name": "Work",
-                "children": [{"id": 4, "name": "meeting", "children": [], "notes": []}],
-                "notes": [],
-            }
-        ]
-        self.note_model.load_data(example_data)
 
     def toggle_style(self) -> None:
         """Toggle between light and dark mode"""
