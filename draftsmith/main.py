@@ -2,6 +2,7 @@
 import sys
 from PySide6.QtGui import QAction, QPalette
 from settings import SettingsDialog
+from styles import MODERN_STYLE
 from PySide6.QtWidgets import (
     QApplication,
     QStyle,
@@ -255,6 +256,9 @@ def main(
         dark_mode: Force dark mode on/off. If None, use system preference
     """
     app = QApplication(sys.argv)
+    
+    # Apply the modern style sheet
+    app.setStyleSheet(MODERN_STYLE)
 
     # Determine dark mode setting
     use_dark = dark_mode if dark_mode is not None else is_system_dark_mode()
