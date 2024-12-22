@@ -21,13 +21,13 @@ class CommandPalette(QDialog):
 
         # Store actions
         self._actions: Dict[str, QAction] = actions
-        
+
         # Create layout
         layout = QVBoxLayout(self)
 
         # Create search box
         self.search = QLineEdit(self)
-        
+
         # Install event filter on search box to handle up/down keys
         self.search.installEventFilter(self)
         self.search.setPlaceholderText("Type to search commands...")
@@ -47,10 +47,10 @@ class CommandPalette(QDialog):
 
         # Set focus to search box
         self.search.setFocus()
-        
+
         # Connect return/enter key in search to trigger selected item
         self.search.returnPressed.connect(self.trigger_selected_item)
-        
+
         # Connect return/enter key in search to trigger selected item
         self.search.returnPressed.connect(self.trigger_selected_item)
 
@@ -64,7 +64,7 @@ class CommandPalette(QDialog):
             if shortcut := action.shortcut().toString():
                 text += f"({shortcut})"
             self.list.addItem(text)
-        
+
         # Select first item
         if self.list.count() > 0:
             self.list.setCurrentRow(0)
@@ -95,8 +95,14 @@ class CommandPalette(QDialog):
                 self.close()
                 break
 
-    def eventFilter(self, obj: QWidget, event: QEvent) -> bool:
-        """Handle keyboard events in search box"""
+    def eventFilter(self, arg__1: QWidget, arg__2: QEvent) -> bool:
+        """Handle keyboard events in search box
+
+        Args:
+            arg__1 (QWidget): The object that is being watched
+            arg__2 (QEvent): The event that was triggered"""
+        obj = arg__1
+        event = arg__2
         if obj is self.search and event.type() == QEvent.Type.KeyPress:
             key = event.key()
             if key == Qt.Key.Key_Up:
