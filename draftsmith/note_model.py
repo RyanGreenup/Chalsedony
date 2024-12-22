@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 import yaml
 
@@ -13,11 +13,11 @@ class Note(BaseModel):
     created_at: datetime = datetime.now()
     modified_at: datetime = datetime.now()
 
-    def model_dump(self, *args, **kwargs):
+    def model_dump(self, *args, **kwargs) -> Dict[str, Any]:  # type: ignore [no-untyped-def]
         # Convert datetime objects to ISO format strings for YAML serialization
         d = super().model_dump(*args, **kwargs)
-        d['created_at'] = d['created_at'].isoformat()
-        d['modified_at'] = d['modified_at'].isoformat()
+        d["created_at"] = d["created_at"].isoformat()
+        d["modified_at"] = d["modified_at"].isoformat()
         return d
 
 
@@ -36,7 +36,7 @@ class NoteModel:
     def _load_from_file(self) -> None:
         """Load data from YAML file if it exists"""
         if NOTES_FILE.exists():
-            with NOTES_FILE.open('r') as f:
+            with NOTES_FILE.open("r") as f:
                 data = yaml.safe_load(f)
                 if data:
                     self.load_data(data)
@@ -48,7 +48,7 @@ class NoteModel:
     def _save_to_file(self) -> None:
         """Save current data to YAML file"""
         data = [folder.model_dump() for folder in self._root_folders]
-        with NOTES_FILE.open('w') as f:
+        with NOTES_FILE.open("w") as f:
             yaml.safe_dump(data, f, default_flow_style=False)
 
     @classmethod
