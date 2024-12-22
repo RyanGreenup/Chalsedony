@@ -48,6 +48,8 @@ class ApplicationPalettes(TypedDict):
 
 class MainWindow(QMainWindow):
     menu_actions: Dict[str, QAction]
+    base_font_size: float = 10.0  # Store original size
+    current_scale: float = 1.0    # Track current scale factor
 
     def __init__(self, api_url: str) -> None:
         super().__init__()
@@ -170,18 +172,26 @@ class MainWindow(QMainWindow):
         """
         if app := QApplication.instance():
             if isinstance(app, QApplication):
+                # Update the current scale
+                self.current_scale *= factor
+                
+                # Calculate new size based on base size and total scale
+                new_size = max(6, round(self.base_font_size * self.current_scale))
+                
+                # Create a new font with the calculated size
                 current_font = app.font()
-                current_size = current_font.pointSize()
-                if (
-                    current_size <= 0
-                ):  # If point size is invalid, start from a reasonable size
-                    current_size = 10
-                    current_font.setPointSize(current_size)  # Set the base size first
-                new_size = max(
-                    6, round(current_size * factor)
-                )  # Ensure we don't go below 6pt
                 current_font.setPointSize(new_size)
+                
+                # Apply the font to the application
                 app.setFont(current_font)
+                
+                # Force update on all widgets
+                for widget in app.allWidgets():
+                    widget.setFont(current_font)
+                    widget.update()
+                
+                # Trigger style refresh
+                app.setStyleSheet(app.styleSheet())
 
     def zoom_in(self) -> None:
         """Increase the UI scale factor by 10%"""
