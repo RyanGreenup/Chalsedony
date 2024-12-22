@@ -1,6 +1,13 @@
 from PySide6.QtCore import Qt
 
 
+base_style = """
+* {
+    font-family: "Fira Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+"""
+
+
 tree_view = """
 
 QTreeView {
@@ -455,4 +462,4 @@ QLabel[link="true"]:hover {
 """
 
 # QSS_STYLE = command_palette_style + buttons + settings_dialog + tree_view + scrollbars + labels + toolbar + menus
-QSS_STYLE = command_palette_style + buttons + settings_dialog + tree_view + scrollbars + labels
+QSS_STYLE = base_style + command_palette_style + buttons + settings_dialog + tree_view + scrollbars + labels
