@@ -17,7 +17,7 @@ class Folder(BaseModel):
     notes: List[Note] = []
 
 
-class NoteTreeModel:
+class NoteModel:
     def __init__(self):
         self._root_folders: List[Folder] = []
 
@@ -31,19 +31,11 @@ class NoteTreeModel:
         note2 = Note(id=2, title="Second Note")
 
         # Create a subfolder with a note
-        subfolder = Folder(
-            id=3,
-            name="Subfolder",
-            children=[],
-            notes=[note2]
-        )
+        subfolder = Folder(id=3, name="Subfolder", children=[], notes=[note2])
 
         # Create a root folder with notes and a subfolder
         root_folder = Folder(
-            id=1,
-            name="Root Folder",
-            children=[subfolder],
-            notes=[note1]
+            id=1, name="Root Folder", children=[subfolder], notes=[note1]
         )
 
         model._root_folders.append(root_folder)

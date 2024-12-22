@@ -1,6 +1,8 @@
 from PySide6.QtGui import QAction, QPalette
 from note_view import NoteView
-from note_model import NoteTreeModel  # Ensure this imports the correct module with generate_dummy_data
+from note_model import (
+    NoteModel,
+)  # Ensure this imports the correct module with generate_dummy_data
 from settings import SettingsDialog
 from styles import QSS_STYLE
 from PySide6.QtWidgets import (
@@ -80,8 +82,8 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
 
         # Initialize model and view
-        self.note_model = NoteTreeModel()
-        
+        self.note_model = NoteModel()
+
         # Use the generate_dummy_data method to populate the model
         dummy_data = self.note_model.generate_dummy_data()
         self.note_model.load_data(dummy_data)
