@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from note_view import NoteView
+    pass
+from PySide6.QtCore import QObject, Signal
 from pydantic import BaseModel
 import yaml
 
@@ -32,7 +33,9 @@ class Folder(BaseModel):
     notes: List[Note] = []
 
 
-class NoteModel:
+class NoteModel(QObject):
+    refreshed = Signal()  # Notify view to refresh
+
     def __init__(self) -> None:
         super().__init__()
         self._root_folders: List[Folder] = []
@@ -142,15 +145,44 @@ class NoteModel:
         collect_notes(self._root_folders)
         return notes
 
-
-    def connect_view(self, view: 'NoteView') -> None:
-        """Connect to view signals"""
-        view.note_content_changed.connect(self._on_note_content_changed)
-
-    def _on_note_content_changed(self, note_id: int, content: str) -> None:
+    def on_note_content_changed(self, note_id: int, content: str) -> None:
         """Handle note content changes from view"""
-        note = self.find_note_by_id(note_id)
-        if note:
-            note.content = content
-            note.modified_at = datetime.now()
-            self._save_to_file()
+        self.save(note_id, content)
+
+    def update_note(self, note_id: int, content: str) -> None:
+        """Handle note content changes from view
+
+        This receives the note ID and the new content, and updates the models
+        internal representation of the note. It does not save to disk
+        (use `save` method for that which updates the model representation
+         **and** saves to disk)
+
+        """
+        note_ptr = self.find_note_by_id(note_id)
+        if note_ptr:
+            note_ptr.content = content
+            note_ptr.modified_at = datetime.now()
+        else:
+            raise ValueError(f"Note with ID {note_id} not found")
+
+    def refresh(self) -> None:
+        """Refresh the model from the file"""
+        # Load the data from the file
+        self._load_from_file()
+        # Notify the view to refresh
+        self.refreshed.emit()
+
+    def save(self, note_id: int, content: str) -> None:
+        """Update the model representation of a note and save to disk
+
+        Note, if this is being called, the developer may want to:
+
+            - Refresh the view (It may be ok, but there may be bugs in the a
+                                attempt to mirror the model in the view)
+                see: `refreshed` signal and `refresh` method
+            - Save across all tabs (especially if refreshing the view)"""
+        # Update the given note
+        self.update_note(note_id, content)
+
+        # Save to disk
+        self._save_to_file()

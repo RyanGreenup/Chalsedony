@@ -1,3 +1,4 @@
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction, QPalette
 from note_view import NoteView
 from note_model import (
@@ -45,6 +46,7 @@ class MainWindow(QMainWindow):
     menu_actions: Dict[str, QAction]
     base_font_size: float = 10.0  # Store original size
     current_scale: float = 1.0  # Track current scale factor
+    refresh = Signal()
 
     def __init__(self) -> None:
         super().__init__()
@@ -85,6 +87,10 @@ class MainWindow(QMainWindow):
         self.note_model = NoteModel()
         self.note_view = NoteView(self, model=self.note_model)
 
+        # Connect signals to the view
+        # Ask the model to refresh the data (which will emit a signal to refresh the view)
+        self.refresh.connect(self.note_model.refresh)
+
         # Set the view as the central widget
         self.setCentralWidget(self.note_view)
 
@@ -120,6 +126,11 @@ class MainWindow(QMainWindow):
                             id="exit",
                             text="E&xit",
                             handler="close",
+                        ),
+                        MenuAction(
+                            id="refresh",
+                            text="&Refresh",
+                            handler="refresh",
                         ),
                     ],
                 ),
@@ -251,6 +262,8 @@ class MainWindow(QMainWindow):
                         action.triggered.connect(self.close)
                     case "about":
                         action.triggered.connect(self.show_about_dialog)
+                    case "refresh":
+                        action.triggered.connect(self.refresh.emit)
                     case _:
                         if handler := getattr(self, action_item.handler, None):
                             action.triggered.connect(handler)

@@ -14,10 +14,13 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 import markdown
 from markdown.extensions.wikilinks import WikiLinkExtension
 from PySide6.QtCore import Signal
+from utils__tree_handler import TreeStateHandler
 
 
 class NoteView(QWidget):
     note_content_changed = Signal(int, str)  # (note_id, content)
+    note_saved = Signal(int, str)  # (note_id)
+
     def __init__(
         self, parent: QWidget | None = None, model: NoteModel | None = None
     ) -> None:
@@ -25,8 +28,11 @@ class NoteView(QWidget):
         self.model = model or NoteModel()
         self.current_note_id: int | None = None
         self.setup_ui()
-        self.populate_tree()
+        self._populate_ui()
         self._connect_signals()
+
+    def _populate_ui(self) -> None:
+        self._populate_tree()
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -71,7 +77,7 @@ class NoteView(QWidget):
         # Set initial sizes (similar proportions to the previous stretch factors)
         self.main_splitter.setSizes([100, 300, 100])
 
-    def populate_tree(self) -> None:
+    def _populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model"""
         self.tree_widget.clear()
         root_folders = self.model.get_root_folders()
@@ -96,28 +102,62 @@ class NoteView(QWidget):
         for subfolder in folder.children:
             self._add_folder_to_tree(subfolder, folder_item)
 
-
     def _connect_signals(self) -> None:
         """Connect UI signals to handlers"""
+        # Internal Signals
         self.tree_widget.itemSelectionChanged.connect(self._on_tree_selection_changed)
-        self.content_area.editor.textChanged.connect(self._on_editor_text_changed)
 
+        # Emit Signals
+        # Emit signals to Model
+        self.content_area.editor.textChanged.connect(self._on_editor_text_changed)
+        self.note_saved.connect(self.model.save)
+
+        # Receive signals
+        # Receive signals from Model
+        self.model.refreshed.connect(self._refresh)
+
+    def _refresh(self) -> None:
+        """
+        Refresh the view after the model has been updated.
+
+        This is private, as it should only be triggered by a signal,
+        typically from the model.
+        """
+        tree_state_handler = TreeStateHandler(self.tree_widget)
+        tree_state_handler.save_state()
+
+        # Populate the UI
+        self._populate_ui()
+
+        # Restore the fold state
+        tree_state_handler.restore_state(self.tree_widget)
+
+    def save(self) -> None:
+        """Emit a signal to save the current note"""
+        if id := self.current_note_id:
+            # Save the note
+            self.note_saved.emit(id, self.content_area.editor.toPlainText())
 
     def _on_editor_text_changed(self) -> None:
         """
         Handle the text changed signal from the editor
         """
-        if self.current_note_id is not None:
-            self.note_content_changed.emit(self.current_note_id, self.content_area.editor.toPlainText())
+        if id := self.current_note_id:
+            try:
+                self.model.on_note_content_changed(
+                    id, self.content_area.editor.toPlainText()
+                )
+            except ValueError as e:
+                print(e)
 
     def _on_tree_selection_changed(self) -> None:
         items = self.tree_widget.selectedItems()
         if not items:
             return
-        
+
         item = items[0]
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
-        
+
         if item_type == "note":
             self.current_note_id = item_id
             note = self.model.find_note_by_id(item_id)
@@ -126,8 +166,6 @@ class NoteView(QWidget):
         else:
             self.current_note_id = None
             self.content_area.editor.clear()
-
-
 
 
 class EditPreview(QWidget):
@@ -162,10 +200,8 @@ class EditPreview(QWidget):
         # Set initial sizes after adding to layout
         splitter.setSizes([300, 300])
 
-
-
     def _apply_html_template(self, html: str) -> str:
-        css_includes = "" # self._get_css_resources()
+        css_includes = ""  # self._get_css_resources()
         return f"""<!DOCTYPE html>
         <html>
         <head>
