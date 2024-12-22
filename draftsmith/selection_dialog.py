@@ -13,7 +13,7 @@ from typing import cast
 
 class SelectionDialog(QDialog):
     """Base class for selection dialogs with search functionality"""
-    
+
     selection_made = Signal(object)  # Generic signal for selection
 
     def __init__(self, parent: QWidget, title: str) -> None:
@@ -62,9 +62,10 @@ class SelectionDialog(QDialog):
 
     def on_item_selected(self, item: QListWidgetItem) -> None:
         """Handle item selection - to be implemented by subclasses"""
+        _ = item
         raise NotImplementedError
 
-    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # type: ignore
         """Handle keyboard events in search box"""
         if obj is self.search and event.type() == QEvent.Type.KeyPress:
             key_event = cast(QKeyEvent, event)

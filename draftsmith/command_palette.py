@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget, QListWidgetItem
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction
 from typing import Dict
-from .selection_dialog import SelectionDialog
+from selection_dialog import SelectionDialog
 
 
 class CommandPalette(SelectionDialog):
