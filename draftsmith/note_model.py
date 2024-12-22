@@ -6,20 +6,48 @@ from pydantic import BaseModel
 class Note(BaseModel):
     id: int
     title: str
-    created_at: datetime
-    modified_at: datetime
+    created_at: datetime = datetime.now()
+    modified_at: datetime = datetime.now()
 
 
 class Folder(BaseModel):
     id: int
     name: str
-    children: List["Folder"]
-    notes: List[Note]
+    children: List["Folder"] = []
+    notes: List[Note] = []
 
 
 class NoteTreeModel:
     def __init__(self):
         self._root_folders: List[Folder] = []
+
+    @classmethod
+    def generate_dummy_data(cls) -> "NoteTreeModel":
+        """Generate dummy data for development purposes."""
+        model = cls()
+
+        # Create some notes
+        note1 = Note(id=1, title="First Note")
+        note2 = Note(id=2, title="Second Note")
+
+        # Create a subfolder with a note
+        subfolder = Folder(
+            id=3,
+            name="Subfolder",
+            children=[],
+            notes=[note2]
+        )
+
+        # Create a root folder with notes and a subfolder
+        root_folder = Folder(
+            id=1,
+            name="Root Folder",
+            children=[subfolder],
+            notes=[note1]
+        )
+
+        model._root_folders.append(root_folder)
+        return model
 
     def load_data(self, data: List[dict]) -> None:
         """Load data from JSON-like structure into the model"""
