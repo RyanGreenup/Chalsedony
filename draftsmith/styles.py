@@ -1,6 +1,9 @@
 from PySide6.QtCore import Qt
 
-QSS_STYLE = """
+
+
+command_palette_style = """
+
 SelectionDialog {
     border: 1px solid palette(mid);
     border-radius: 8px;
@@ -34,6 +37,11 @@ SelectionDialog QListWidget::item:selected {
 SelectionDialog QListWidget::item:hover:!selected {
     background: palette(mid);
 }
+
+"""
+
+
+buttons = """
 
 QPushButton {
     padding: 6px 16px;
@@ -91,4 +99,9 @@ QPushButton[primary="true"]:disabled {
     border-color: palette(mid);
     color: palette(disabled-text);
 }
+
 """
+
+
+
+QSS_STYLE = command_palette_style + buttons
