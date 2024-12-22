@@ -1,6 +1,10 @@
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
 from pydantic import BaseModel
+import yaml
+
+NOTES_FILE = Path("/tmp/notes.yml")
 
 
 class Note(BaseModel):
@@ -8,6 +12,13 @@ class Note(BaseModel):
     title: str
     created_at: datetime = datetime.now()
     modified_at: datetime = datetime.now()
+
+    def dict(self, *args, **kwargs):
+        # Convert datetime objects to ISO format strings for YAML serialization
+        d = super().dict(*args, **kwargs)
+        d['created_at'] = d['created_at'].isoformat()
+        d['modified_at'] = d['modified_at'].isoformat()
+        return d
 
 
 class Folder(BaseModel):
@@ -20,12 +31,30 @@ class Folder(BaseModel):
 class NoteModel:
     def __init__(self) -> None:
         self._root_folders: List[Folder] = []
+        self._load_from_file()
+
+    def _load_from_file(self) -> None:
+        """Load data from YAML file if it exists"""
+        if NOTES_FILE.exists():
+            with NOTES_FILE.open('r') as f:
+                data = yaml.safe_load(f)
+                if data:
+                    self.load_data(data)
+        else:
+            # Initialize with dummy data if file doesn't exist
+            self._root_folders = self.generate_dummy_data()
+            self._save_to_file()
+
+    def _save_to_file(self) -> None:
+        """Save current data to YAML file"""
+        data = [folder.dict() for folder in self._root_folders]
+        with NOTES_FILE.open('w') as f:
+            yaml.safe_dump(data, f, default_flow_style=False)
 
     @classmethod
     def generate_dummy_data(cls) -> List[Folder]:
-        """Generate dummy data for development purposes."""
-        model = cls()
-
+        """Generate dummy data for development purposes.
+        Returns a list of folders rather than setting internal state."""
         # Create some notes
         note1 = Note(id=1, title="First Note")
         note2 = Note(id=2, title="Second Note")
@@ -38,12 +67,12 @@ class NoteModel:
             id=1, name="Root Folder", children=[subfolder], notes=[note1]
         )
 
-        model._root_folders.append(root_folder)
-        return model._root_folders
+        return [root_folder]
 
     def load_data(self, data: List[Folder]) -> None:
         """Load data from JSON-like structure into the model"""
         self._root_folders = [Folder.model_validate(folder) for folder in data]
+        self._save_to_file()
 
     def get_root_folders(self) -> List[Folder]:
         """Return all root level folders"""
