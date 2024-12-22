@@ -22,7 +22,7 @@ class NoteTreeModel:
         self._root_folders: List[Folder] = []
 
     @classmethod
-    def generate_dummy_data(cls) -> "NoteTreeModel":
+    def generate_dummy_data(cls) -> List[Folder]:
         """Generate dummy data for development purposes."""
         model = cls()
 
@@ -47,7 +47,7 @@ class NoteTreeModel:
         )
 
         model._root_folders.append(root_folder)
-        return model
+        return model._root_folders
 
     def load_data(self, data: List[dict]) -> None:
         """Load data from JSON-like structure into the model"""
