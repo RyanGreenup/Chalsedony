@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys
 from PySide6.QtGui import QAction, QPalette
+from note_view import NoteView
+from note_model import NoteTreeModel
 from settings import SettingsDialog
 from styles import QSS_STYLE
 from PySide6.QtWidgets import (
@@ -51,7 +53,7 @@ class MainWindow(QMainWindow):
     base_font_size: float = 10.0  # Store original size
     current_scale: float = 1.0  # Track current scale factor
 
-    def __init__(self, api_url: str) -> None:
+    def __init__(self) -> None:
         super().__init__()
         app = QApplication.instance()
         if app is None:
@@ -86,9 +88,28 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Draftsmith")
         self.setGeometry(100, 100, 800, 600)
 
-        label = QLabel(f"API URL: {api_url}", self)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setCentralWidget(label)
+        # Initialize model and view
+        self.note_model = NoteTreeModel()
+        self.note_view = NoteView(self)
+        self.setCentralWidget(self.note_view)
+
+        # Load example data (replace with actual data loading later)
+        example_data = [
+            {
+                "id": 1,
+                "name": "Work",
+                "children": [
+                    {
+                        "id": 4,
+                        "name": "meeting",
+                        "children": [],
+                        "notes": []
+                    }
+                ],
+                "notes": []
+            }
+        ]
+        self.note_model.load_data(example_data)
 
     def toggle_style(self) -> None:
         """Toggle between light and dark mode"""
@@ -268,6 +289,13 @@ class MainWindow(QMainWindow):
         if exit_action is not None:
             tool_bar.addAction(exit_action)
 
+    def update_view(self) -> None:
+        """Update the view with current model data"""
+        root_folders = self.note_model.get_root_folders()
+        # Update view with model data
+        # This is a placeholder - implement actual view updates based on your needs
+        pass
+
     def create_status_bar(self) -> None:
         status_bar = QStatusBar()
         self.setStatusBar(status_bar)
@@ -308,7 +336,7 @@ def main(
     # Apply the modern style sheet
     app.setStyleSheet(QSS_STYLE)
 
-    window = MainWindow(api_url="http://example.com/api")
+    window = MainWindow()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     window.show()
     sys.exit(app.exec())
