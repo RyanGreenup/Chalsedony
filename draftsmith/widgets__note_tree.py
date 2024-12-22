@@ -1,7 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget
-from note_model import NoteModel, Folder
-
+from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu, QAction
 
 class NoteTree(QTreeWidget):
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
@@ -12,6 +10,8 @@ class NoteTree(QTreeWidget):
     def setup_ui(self) -> None:
         self.setAnimated(True)
         self.setHeaderHidden(True)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.show_context_menu)
 
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model"""
@@ -37,3 +37,23 @@ class NoteTree(QTreeWidget):
         # Recursively add subfolders
         for subfolder in folder.children:
             self._add_folder_to_tree(subfolder, folder_item)
+
+    def show_context_menu(self, position: QPoint) -> None:
+        """Show context menu with create action"""
+        item = self.itemAt(position)
+        if not item:
+            return
+
+        menu = QMenu()
+        create_action = QAction("Create Note", self)
+        create_action.triggered.connect(lambda: self.create_note(item))
+        menu.addAction(create_action)
+
+        menu.exec(self.viewport().mapToGlobal(position))
+
+    def create_note(self, parent_item: QTreeWidgetItem) -> None:
+        """Create a new note under the selected folder"""
+        if parent_item.data(0, Qt.ItemDataRole.UserRole)[0] == "folder":
+            # Logic to create a new note
+            print("Creating a new note in:", parent_item.text(0))
+            # You can add your logic here to actually create and add the note
