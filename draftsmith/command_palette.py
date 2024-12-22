@@ -105,6 +105,17 @@ class CommandPalette(QDialog):
             key_event = cast(QKeyEvent, event)
             key = key_event.key()
 
+            # Check for Ctrl+N/P
+            if key_event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                match key:
+                    case Qt.Key.Key_N:
+                        self._select_next_visible()
+                        return True
+                    case Qt.Key.Key_P:
+                        self._select_previous_visible()
+                        return True
+
+            # Check for arrow keys
             match key:
                 case Qt.Key.Key_Up:
                     self._select_previous_visible()
