@@ -1,9 +1,8 @@
-from PySide6.QtCore import Qt, QPoint  # Added QPoint here
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu, QAction
+from PySide6.QtCore import Qt, QPoint
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu
+from note_model import NoteModel, Folder
 
-# Import NoteModel and Folder from their respective modules.
-# Replace 'your_module' with the actual module name where these classes are defined.
-from your_module import NoteModel, Folder
 
 class NoteTree(QTreeWidget):
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
@@ -14,15 +13,20 @@ class NoteTree(QTreeWidget):
     def setup_ui(self) -> None:
         self.setAnimated(True)
         self.setHeaderHidden(True)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model"""
+        # Stop Animation
+        is_animated = self.isAnimated()
+        self.setAnimated(False)
         self.clear()
         root_folders = self.note_model.get_root_folders()
         for folder in root_folders:
             self._add_folder_to_tree(folder, self)
+        # Restore Animation
+        self.setAnimated(is_animated)
 
     def _add_folder_to_tree(
         self, folder: Folder, parent: QTreeWidget | QTreeWidgetItem
@@ -58,7 +62,14 @@ class NoteTree(QTreeWidget):
     def create_note(self, parent_item: QTreeWidgetItem) -> None:
         """Create a new note under the selected folder"""
         if parent_item.data(0, Qt.ItemDataRole.UserRole)[0] == "folder":
+            # TODO Emit a signal to create a new note
+            # TODO Insert an item below in the tree
+            # NOTE thoughts, if the note is not created, we shouldn't show it
+            # so, should the model not update it's representation and then we
+            # refresh based on its representation?
+            # Building the tree could be expensive, but, if we decide
+            # this now, we can minimize the impact
+
             # Logic to create a new note
             print("Creating a new note in:", parent_item.text(0))
             # You can add your logic here to actually create and add the note
-
