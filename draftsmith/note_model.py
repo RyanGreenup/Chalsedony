@@ -13,9 +13,9 @@ class Note(BaseModel):
     created_at: datetime = datetime.now()
     modified_at: datetime = datetime.now()
 
-    def dict(self, *args, **kwargs):
+    def model_dump(self, *args, **kwargs):
         # Convert datetime objects to ISO format strings for YAML serialization
-        d = super().dict(*args, **kwargs)
+        d = super().model_dump(*args, **kwargs)
         d['created_at'] = d['created_at'].isoformat()
         d['modified_at'] = d['modified_at'].isoformat()
         return d
@@ -47,7 +47,7 @@ class NoteModel:
 
     def _save_to_file(self) -> None:
         """Save current data to YAML file"""
-        data = [folder.dict() for folder in self._root_folders]
+        data = [folder.model_dump() for folder in self._root_folders]
         with NOTES_FILE.open('w') as f:
             yaml.safe_dump(data, f, default_flow_style=False)
 
