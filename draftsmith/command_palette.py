@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QWidget,
 )
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QAction
 from typing import Dict
 
@@ -42,6 +42,12 @@ class CommandPalette(QDialog):
         # Set size
         self.resize(400, 300)
 
+        # Set focus to search box
+        self.search.setFocus()
+        
+        # Connect return/enter key in search to select first visible item
+        self.search.returnPressed.connect(self.select_first_visible)
+
     def populate_commands(self) -> None:
         """Populate the list with all commands"""
         self.list.clear()
@@ -52,13 +58,30 @@ class CommandPalette(QDialog):
             if shortcut := action.shortcut().toString():
                 text += f"({shortcut})"
             self.list.addItem(text)
+        
+        # Select first item
+        if self.list.count() > 0:
+            self.list.setCurrentRow(0)
 
     def filter_commands(self, text: str) -> None:
         """Filter commands based on search text"""
+        had_visible = False
         for i in range(self.list.count()):
             item = self.list.item(i)
             if item:
-                item.setHidden(text.lower() not in item.text().lower())
+                is_visible = text.lower() in item.text().lower()
+                item.setHidden(not is_visible)
+                if is_visible and not had_visible:
+                    self.list.setCurrentItem(item)
+                    had_visible = True
+
+    def select_first_visible(self) -> None:
+        """Select the first visible item in the list"""
+        for i in range(self.list.count()):
+            item = self.list.item(i)
+            if item and not item.isHidden():
+                self.on_command_selected(item)
+                break
 
     def on_command_selected(self, item: QListWidgetItem) -> None:
         """Handle command selection"""
