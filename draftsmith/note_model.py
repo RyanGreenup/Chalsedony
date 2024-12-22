@@ -13,7 +13,7 @@ class Note(BaseModel):
 class Folder(BaseModel):
     id: int
     name: str
-    children: List['Folder']
+    children: List["Folder"]
     notes: List[Note]
 
 
@@ -31,6 +31,7 @@ class NoteTreeModel:
 
     def find_folder_by_id(self, folder_id: int) -> Optional[Folder]:
         """Find a folder by its ID in the entire tree"""
+
         def search_folder(folders: List[Folder]) -> Optional[Folder]:
             for folder in folders:
                 if folder.id == folder_id:
@@ -44,6 +45,7 @@ class NoteTreeModel:
 
     def find_note_by_id(self, note_id: int) -> Optional[Note]:
         """Find a note by its ID in the entire tree"""
+
         def search_note(folders: List[Folder]) -> Optional[Note]:
             for folder in folders:
                 for note in folder.notes:
@@ -58,7 +60,10 @@ class NoteTreeModel:
 
     def get_folder_path(self, folder_id: int) -> List[Folder]:
         """Get the path from root to the specified folder"""
-        def find_path(folders: List[Folder], target_id: int, current_path: List[Folder]) -> Optional[List[Folder]]:
+
+        def find_path(
+            folders: List[Folder], target_id: int, current_path: List[Folder]
+        ) -> Optional[List[Folder]]:
             for folder in folders:
                 new_path = current_path + [folder]
                 if folder.id == target_id:
@@ -74,7 +79,7 @@ class NoteTreeModel:
     def get_all_notes(self) -> List[Note]:
         """Get all notes from all folders"""
         notes: List[Note] = []
-        
+
         def collect_notes(folders: List[Folder]) -> None:
             for folder in folders:
                 notes.extend(folder.notes)
