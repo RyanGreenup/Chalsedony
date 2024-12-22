@@ -104,4 +104,46 @@ QPushButton[primary="true"]:disabled {
 
 
 
-QSS_STYLE = command_palette_style + buttons
+settings_dialog = """
+
+QDialog {
+    background: palette(window);
+}
+
+QGroupBox {
+    font-weight: bold;
+    border: none;
+    margin-top: 16px;
+    padding-top: 16px;
+}
+
+QGroupBox::title {
+    padding: 0px 8px;
+}
+
+/* Settings specific button styling */
+QDialog QPushButton {
+    min-width: 80px;
+}
+
+QDialog QLabel {
+    font-size: 13px;
+}
+
+/* Font preview styling */
+QDialog QLabel[frameStyle="48"] {  /* For the font preview specifically */
+    padding: 8px;
+    background: palette(base);
+    border: 1px solid palette(mid);
+    border-radius: 4px;
+}
+
+/* Dialog button box styling */
+QDialogButtonBox {
+    border-top: 1px solid palette(mid);
+    padding-top: 16px;
+}
+
+"""
+
+QSS_STYLE = command_palette_style + buttons + settings_dialog
