@@ -88,7 +88,9 @@ class CommandPalette(QDialog):
         text = item.text().split(" (")[0].strip()  # Remove shortcut and whitespace
         for action in self._actions.values():
             if action.text().replace("&", "") == text:
-                self.command_selected.emit(action)  # Emit the signal instead of triggering directly
+                self.command_selected.emit(
+                    action
+                )  # Emit the signal instead of triggering directly
                 self.close()
                 break
 
