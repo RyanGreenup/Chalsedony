@@ -17,7 +17,7 @@ from PySide6.QtCore import Signal
 
 
 class NoteView(QWidget):
-    note_content_changed = Signal(str)
+    note_content_changed = Signal(int, str)  # (note_id, content)
     def __init__(
         self, parent: QWidget | None = None, model: NoteModel | None = None
     ) -> None:
@@ -26,8 +26,7 @@ class NoteView(QWidget):
         self.current_note_id: int | None = None
         self.setup_ui()
         self.populate_tree()
-        self._emit_signals()
-        self._receive_signals()
+        self._connect_signals()
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -98,15 +97,9 @@ class NoteView(QWidget):
             self._add_folder_to_tree(subfolder, folder_item)
 
 
-    def _emit_signals(self) -> None:
+    def _connect_signals(self) -> None:
         """Connect UI signals to handlers"""
         self.tree_widget.itemSelectionChanged.connect(self._on_tree_selection_changed)
-        self.note_content_changed.connect(self.model.update_note_content)
-
-    def _receive_signals(self) -> None:
-        """
-        Connect the signals
-        """
         self.content_area.editor.textChanged.connect(self._on_editor_text_changed)
 
 
@@ -114,7 +107,8 @@ class NoteView(QWidget):
         """
         Handle the text changed signal from the editor
         """
-        self.note_content_changed.emit(self.content_area.editor.toPlainText())
+        if self.current_note_id is not None:
+            self.note_content_changed.emit(self.current_note_id, self.content_area.editor.toPlainText())
 
     def _on_tree_selection_changed(self) -> None:
         items = self.tree_widget.selectedItems()

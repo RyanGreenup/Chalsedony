@@ -31,6 +31,7 @@ class Folder(BaseModel):
 
 class NoteModel:
     def __init__(self) -> None:
+        super().__init__()
         self._root_folders: List[Folder] = []
         self._load_from_file()
 
@@ -139,9 +140,13 @@ class NoteModel:
         return notes
 
 
-    def update_note_content(self, content: str) -> None:
-        """Update the content of the currently selected note"""
-        note = self.find_note_by_id(self.current_note_id)
+    def connect_view(self, view: 'NoteView') -> None:
+        """Connect to view signals"""
+        view.note_content_changed.connect(self._on_note_content_changed)
+
+    def _on_note_content_changed(self, note_id: int, content: str) -> None:
+        """Handle note content changes from view"""
+        note = self.find_note_by_id(note_id)
         if note:
             note.content = content
             note.modified_at = datetime.now()
