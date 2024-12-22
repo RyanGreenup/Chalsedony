@@ -233,6 +233,14 @@ QScrollBar::handle:vertical:hover {
 QScrollBar::add-line:vertical,
 QScrollBar::sub-line:vertical {
     height: 0px;
+    background: none;
+    border: none;
+}
+
+QScrollBar::up-arrow:vertical,
+QScrollBar::down-arrow:vertical {
+    background: none;
+    border: none;
 }
 
 QScrollBar::add-page:vertical,
@@ -262,11 +270,25 @@ QScrollBar::handle:horizontal:hover {
 QScrollBar::add-line:horizontal,
 QScrollBar::sub-line:horizontal {
     width: 0px;
+    background: none;
+    border: none;
+}
+
+QScrollBar::left-arrow:horizontal,
+QScrollBar::right-arrow:horizontal {
+    background: none;
+    border: none;
 }
 
 QScrollBar::add-page:horizontal,
 QScrollBar::sub-page:horizontal {
     background: none;
+}
+
+/* Corner widget where scrollbars meet */
+QAbstractScrollArea::corner {
+    background: transparent;
+    border: none;
 }
 """
 
