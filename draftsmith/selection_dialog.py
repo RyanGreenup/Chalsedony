@@ -35,6 +35,7 @@ class SelectionDialog(QDialog):
         # Create list widget
         self.list = QListWidget(self)
         self.list.itemActivated.connect(self.on_item_selected)
+        self.list.itemClicked.connect(self.on_item_selected)
         layout.addWidget(self.list)
 
         # Set size and focus
