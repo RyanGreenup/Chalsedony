@@ -26,15 +26,21 @@ QTreeView::item:hover {
 QTreeView::item:selected {
     background: palette(highlight);
     color: palette(highlighted-text);
+    border: none;
+    outline: none;
 }
 
 /* Style for the row itself to ensure continuous highlighting */
 QTreeView::item:selected:active {
     background: palette(highlight);
+    border: none;
+    outline: none;
 }
 
 QTreeView::item:selected:!active {
     background: palette(highlight);
+    border: none;
+    outline: none;
 }
 
 QTreeView::branch {
