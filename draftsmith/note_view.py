@@ -20,7 +20,7 @@ class NoteView(QWidget):
         self.setup_ui()
         self.populate_tree()
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         # Main layout to hold the splitter
         main_layout = QHBoxLayout(self)
         main_layout.setSpacing(0)
@@ -28,6 +28,7 @@ class NoteView(QWidget):
 
         # Create main horizontal splitter
         self.main_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.main_splitter.setHandleWidth(15)  # Increase grab area
         main_layout.addWidget(self.main_splitter)
 
         # Left sidebar

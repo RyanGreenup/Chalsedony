@@ -18,7 +18,7 @@ class Folder(BaseModel):
 
 
 class NoteModel:
-    def __init__(self):
+    def __init__(self) -> None:
         self._root_folders: List[Folder] = []
 
     @classmethod
@@ -41,7 +41,7 @@ class NoteModel:
         model._root_folders.append(root_folder)
         return model._root_folders
 
-    def load_data(self, data: List[dict]) -> None:
+    def load_data(self, data: List[Folder]) -> None:
         """Load data from JSON-like structure into the model"""
         self._root_folders = [Folder.model_validate(folder) for folder in data]
 
