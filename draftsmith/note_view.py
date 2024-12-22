@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import (
+    QPlainTextEdit,
     QWidget,
     QHBoxLayout,
     QVBoxLayout,
@@ -9,6 +10,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from note_model import NoteModel, Folder
+from PySide6.QtWebEngineWidgets import QWebEngineView
 
 
 class NoteView(QWidget):
@@ -43,12 +45,8 @@ class NoteView(QWidget):
         self.left_sidebar.setLayout(left_layout)
 
         # Main content area
-        self.content_area = QFrame()
+        self.content_area = EditPreview()
         self.content_area.setObjectName("contentArea")
-        self.content_area.setFrameShape(QFrame.Shape.StyledPanel)
-        content_layout = QVBoxLayout()
-        content_layout.setContentsMargins(0, 0, 0, 0)
-        self.content_area.setLayout(content_layout)
 
         # Right sidebar
         self.right_sidebar = QFrame()
@@ -90,3 +88,26 @@ class NoteView(QWidget):
         # Recursively add subfolders
         for subfolder in folder.children:
             self._add_folder_to_tree(subfolder, folder_item)
+
+
+class EditPreview(QWidget):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setup_ui()
+
+    def setup_ui(self) -> None:
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setHandleWidth(15)
+        splitter.setSizes([300, 300])
+
+        self.edit_widget = QPlainTextEdit()
+        self.preview_widget = QWebEngineView()
+
+        # Connect the edit widget to the preview widget
+        self.edit_widget.textChanged.connect(self.preview_widget)
+
+        splitter.addWidget(self.edit_widget)
+        splitter.addWidget(self.preview_widget)
+
+        self.edit_widget.setHidden(True)
+        self.preview_widget.setHidden(True)
