@@ -3,10 +3,12 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLineEdit,
     QListWidget,
+    QListWidgetItem,
     QWidget,
 )
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction
+from typing import Dict
 
 
 class CommandPalette(QDialog):
@@ -18,7 +20,7 @@ class CommandPalette(QDialog):
         self.setModal(True)
 
         # Store actions
-        self.actions = actions
+        self._actions: Dict[str, QAction] = actions
 
         # Create layout
         layout = QVBoxLayout(self)
@@ -43,7 +45,7 @@ class CommandPalette(QDialog):
     def populate_commands(self) -> None:
         """Populate the list with all commands"""
         self.list.clear()
-        for action_id, action in self.actions.items():
+        for action_id, action in self._actions.items():
             if not action.text():
                 continue
             text = f"{action.text().replace('&', '')} "
@@ -58,10 +60,10 @@ class CommandPalette(QDialog):
             if item:
                 item.setHidden(text.lower() not in item.text().lower())
 
-    def on_command_selected(self, item: QListWidget.Item) -> None:
+    def on_command_selected(self, item: QListWidgetItem) -> None:
         """Handle command selection"""
         text = item.text().split(" (")[0]  # Remove shortcut from display text
-        for action in self.actions.values():
+        for action in self._actions.values():
             if action.text().replace("&", "") == text:
                 action.trigger()
                 self.close()
