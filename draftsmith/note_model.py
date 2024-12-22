@@ -42,7 +42,7 @@ class NoteModel:
                     self.load_data(data)
         else:
             # Initialize with dummy data if file doesn't exist
-            self._root_folders = self.generate_dummy_data()
+            self._root_folders = self.__class__.generate_dummy_data()
             self._save_to_file()
 
     def _save_to_file(self) -> None:
