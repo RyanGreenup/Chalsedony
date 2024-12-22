@@ -21,6 +21,9 @@ class CommandPalette(QDialog):
 
         # Store actions
         self._actions: Dict[str, QAction] = actions
+        
+        # Install event filter on search box to handle up/down keys
+        self.search.installEventFilter(self)
 
         # Create layout
         layout = QVBoxLayout(self)
@@ -91,3 +94,45 @@ class CommandPalette(QDialog):
                 action.trigger()
                 self.close()
                 break
+
+    def eventFilter(self, obj: QWidget, event: Qt.QEvent) -> bool:
+        """Handle keyboard events in search box"""
+        if obj is self.search and event.type() == Qt.QEvent.Type.KeyPress:
+            key = event.key()
+            if key == Qt.Key.Key_Up:
+                self._select_previous_visible()
+                return True
+            elif key == Qt.Key.Key_Down:
+                self._select_next_visible()
+                return True
+        return super().eventFilter(obj, event)
+
+    def _select_previous_visible(self) -> None:
+        """Select the previous visible item in the list"""
+        current = self.list.currentRow()
+        for i in range(current - 1, -1, -1):
+            item = self.list.item(i)
+            if item and not item.isHidden():
+                self.list.setCurrentRow(i)
+                return
+        # Wrap around to bottom if at top
+        for i in range(self.list.count() - 1, current, -1):
+            item = self.list.item(i)
+            if item and not item.isHidden():
+                self.list.setCurrentRow(i)
+                return
+
+    def _select_next_visible(self) -> None:
+        """Select the next visible item in the list"""
+        current = self.list.currentRow()
+        for i in range(current + 1, self.list.count()):
+            item = self.list.item(i)
+            if item and not item.isHidden():
+                self.list.setCurrentRow(i)
+                return
+        # Wrap around to top if at bottom
+        for i in range(0, current):
+            item = self.list.item(i)
+            if item and not item.isHidden():
+                self.list.setCurrentRow(i)
+                return
