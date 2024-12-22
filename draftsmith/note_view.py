@@ -96,18 +96,30 @@ class EditPreview(QWidget):
         self.setup_ui()
 
     def setup_ui(self) -> None:
+        # Create main layout
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.setHandleWidth(15)
-        splitter.setSizes([300, 300])
 
         self.edit_widget = QPlainTextEdit()
         self.preview_widget = QWebEngineView()
 
-        # Connect the edit widget to the preview widget
-        self.edit_widget.textChanged.connect(self.preview_widget)
+        # Connect the edit widget to update preview
+        self.edit_widget.textChanged.connect(self.update_preview)
 
         splitter.addWidget(self.edit_widget)
         splitter.addWidget(self.preview_widget)
 
-        self.edit_widget.setHidden(True)
-        self.preview_widget.setHidden(True)
+        # Add splitter to layout
+        layout.addWidget(splitter)
+        
+        # Set initial sizes after adding to layout
+        splitter.setSizes([300, 300])
+
+    def update_preview(self) -> None:
+        """Update the preview with the current text content"""
+        text = self.edit_widget.toPlainText()
+        # TODO: Convert markdown to HTML
+        self.preview_widget.setHtml(text)
