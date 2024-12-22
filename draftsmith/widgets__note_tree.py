@@ -1,8 +1,13 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPoint  # Added QPoint here
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu, QAction
 
+# Assuming NoteModel and Folder are defined elsewhere in your project.
+# If they are part of another module, you need to import them accordingly.
+# For example:
+# from some_module import NoteModel, Folder
+
 class NoteTree(QTreeWidget):
-    def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
+    def __init__(self, note_model: 'NoteModel', parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.note_model = note_model
         self.setup_ui()
@@ -21,7 +26,7 @@ class NoteTree(QTreeWidget):
             self._add_folder_to_tree(folder, self)
 
     def _add_folder_to_tree(
-        self, folder: Folder, parent: QTreeWidget | QTreeWidgetItem
+        self, folder: 'Folder', parent: QTreeWidget | QTreeWidgetItem
     ) -> None:
         """Recursively add a folder and its contents to the tree"""
         folder_item = QTreeWidgetItem(parent)
@@ -57,3 +62,4 @@ class NoteTree(QTreeWidget):
             # Logic to create a new note
             print("Creating a new note in:", parent_item.text(0))
             # You can add your logic here to actually create and add the note
+
