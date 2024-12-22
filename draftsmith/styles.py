@@ -21,6 +21,7 @@ QTreeView::item {
 QTreeView::item:hover {
     background: palette(shadow);
     padding: 8px 4px;
+    border: none;
 }
 
 QTreeView::item:selected {
@@ -39,6 +40,11 @@ QTreeView::item:selected:active {
 
 QTreeView::item:selected:!active {
     background: palette(highlight);
+    border: none;
+    outline: none;
+}
+
+QTreeView::item:focus {
     border: none;
     outline: none;
 }
