@@ -34,4 +34,61 @@ SelectionDialog QListWidget::item:selected {
 SelectionDialog QListWidget::item:hover:!selected {
     background: palette(mid);
 }
+
+QPushButton {
+    padding: 6px 16px;
+    border-radius: 4px;
+    border: 1px solid palette(mid);
+    background: palette(button);
+    min-height: 24px;
+    font-size: 13px;
+}
+
+QPushButton:hover {
+    background: palette(light);
+    border-color: palette(mid);
+}
+
+QPushButton:pressed {
+    background: palette(dark);
+}
+
+QPushButton:disabled {
+    background: palette(window);
+    border-color: palette(mid);
+    color: palette(disabled-text);
+}
+
+QPushButton:default {
+    border-width: 2px;
+    border-color: palette(highlight);
+}
+
+QPushButton:focus {
+    border-color: palette(highlight);
+    outline: none;
+}
+
+/* Style for primary action buttons */
+QPushButton[primary="true"] {
+    background: palette(highlight);
+    color: palette(highlighted-text);
+    border-color: palette(highlight);
+}
+
+QPushButton[primary="true"]:hover {
+    background: palette(highlight);
+    border-color: palette(dark);
+}
+
+QPushButton[primary="true"]:pressed {
+    background: palette(dark);
+    border-color: palette(shadow);
+}
+
+QPushButton[primary="true"]:disabled {
+    background: palette(mid);
+    border-color: palette(mid);
+    color: palette(disabled-text);
+}
 """
