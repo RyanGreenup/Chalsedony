@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
 
 
 class NoteView(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setup_ui()
 
