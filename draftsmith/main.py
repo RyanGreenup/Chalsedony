@@ -109,6 +109,12 @@ class MainWindow(QMainWindow):
                     name="&View",
                     actions=[
                         MenuAction(
+                            id="command_palette",
+                            text="Command &Palette",
+                            handler="show_command_palette",
+                            shortcut="Ctrl+Shift+P",
+                        ),
+                        MenuAction(
                             id="toggle_style",
                             text="Toggle &Dark Mode",
                             handler="toggle_style",
@@ -179,6 +185,12 @@ class MainWindow(QMainWindow):
         QMessageBox.about(
             self, "About Draftsmith", "Draftsmith\nVersion 0.1.0\n\nA notetaking tool."
         )
+
+    def show_command_palette(self) -> None:
+        """Show the command palette dialog"""
+        from .command_palette import CommandPalette
+        dialog = CommandPalette(self, self.menu_actions)
+        dialog.exec()
 
     def create_menu_bar(self) -> None:
         menu_bar = QMenuBar(self)
