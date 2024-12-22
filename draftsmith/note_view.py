@@ -8,11 +8,13 @@ from PySide6.QtWidgets import (
     QTreeWidgetItem,
 )
 from PySide6.QtCore import Qt
-from .note_model import NoteModel, Folder, Note
+from note_model import NoteModel, Folder
 
 
 class NoteView(QWidget):
-    def __init__(self, parent: QWidget | None = None, model: NoteModel | None = None) -> None:
+    def __init__(
+        self, parent: QWidget | None = None, model: NoteModel | None = None
+    ) -> None:
         super().__init__(parent)
         self.model = model or NoteModel()
         self.setup_ui()
@@ -70,18 +72,20 @@ class NoteView(QWidget):
         for folder in root_folders:
             self._add_folder_to_tree(folder, self.tree_widget)
 
-    def _add_folder_to_tree(self, folder: Folder, parent: QTreeWidget | QTreeWidgetItem) -> None:
+    def _add_folder_to_tree(
+        self, folder: Folder, parent: QTreeWidget | QTreeWidgetItem
+    ) -> None:
         """Recursively add a folder and its contents to the tree"""
         folder_item = QTreeWidgetItem(parent)
         folder_item.setText(0, folder.name)
         folder_item.setData(0, Qt.ItemDataRole.UserRole, ("folder", folder.id))
-        
+
         # Add notes in this folder
         for note in folder.notes:
             note_item = QTreeWidgetItem(folder_item)
             note_item.setText(0, note.title)
             note_item.setData(0, Qt.ItemDataRole.UserRole, ("note", note.id))
-        
+
         # Recursively add subfolders
         for subfolder in folder.children:
             self._add_folder_to_tree(subfolder, folder_item)
