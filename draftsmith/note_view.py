@@ -32,7 +32,7 @@ class NoteView(QWidget):
         self._connect_signals()
 
     def _populate_ui(self) -> None:
-        self._populate_tree()
+        self.tree_widget.populate_tree()
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -51,9 +51,7 @@ class NoteView(QWidget):
         self.left_sidebar.setFrameShape(QFrame.Shape.StyledPanel)
         left_layout = QVBoxLayout()
         left_layout.setContentsMargins(0, 0, 0, 0)
-        self.tree_widget = QTreeWidget()
-        self.tree_widget.setAnimated(True)
-        self.tree_widget.setHeaderHidden(True)
+        self.tree_widget = NoteTree(self.model)
         left_layout.addWidget(self.tree_widget)
         self.left_sidebar.setLayout(left_layout)
 
@@ -76,31 +74,6 @@ class NoteView(QWidget):
 
         # Set initial sizes (similar proportions to the previous stretch factors)
         self.main_splitter.setSizes([100, 300, 100])
-
-    def _populate_tree(self) -> None:
-        """Populate the tree widget with folders and notes from the model"""
-        self.tree_widget.clear()
-        root_folders = self.model.get_root_folders()
-        for folder in root_folders:
-            self._add_folder_to_tree(folder, self.tree_widget)
-
-    def _add_folder_to_tree(
-        self, folder: Folder, parent: QTreeWidget | QTreeWidgetItem
-    ) -> None:
-        """Recursively add a folder and its contents to the tree"""
-        folder_item = QTreeWidgetItem(parent)
-        folder_item.setText(0, folder.name)
-        folder_item.setData(0, Qt.ItemDataRole.UserRole, ("folder", folder.id))
-
-        # Add notes in this folder
-        for note in folder.notes:
-            note_item = QTreeWidgetItem(folder_item)
-            note_item.setText(0, note.title)
-            note_item.setData(0, Qt.ItemDataRole.UserRole, ("note", note.id))
-
-        # Recursively add subfolders
-        for subfolder in folder.children:
-            self._add_folder_to_tree(subfolder, folder_item)
 
     def _connect_signals(self) -> None:
         """Connect UI signals to handlers"""
@@ -255,3 +228,39 @@ class EditPreview(QWidget):
 
         html = md.convert(self.editor.toPlainText())
         self.preview.setHtml(self._apply_html_template(html))
+
+
+class NoteTree(QTreeWidget):
+    def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.note_model = note_model
+        self.setup_ui()
+
+    def setup_ui(self) -> None:
+        self.setAnimated(True)
+        self.setHeaderHidden(True)
+
+    def populate_tree(self) -> None:
+        """Populate the tree widget with folders and notes from the model"""
+        self.clear()
+        root_folders = self.note_model.get_root_folders()
+        for folder in root_folders:
+            self._add_folder_to_tree(folder, self)
+
+    def _add_folder_to_tree(
+        self, folder: Folder, parent: QTreeWidget | QTreeWidgetItem
+    ) -> None:
+        """Recursively add a folder and its contents to the tree"""
+        folder_item = QTreeWidgetItem(parent)
+        folder_item.setText(0, folder.name)
+        folder_item.setData(0, Qt.ItemDataRole.UserRole, ("folder", folder.id))
+
+        # Add notes in this folder
+        for note in folder.notes:
+            note_item = QTreeWidgetItem(folder_item)
+            note_item.setText(0, note.title)
+            note_item.setData(0, Qt.ItemDataRole.UserRole, ("note", note.id))
+
+        # Recursively add subfolders
+        for subfolder in folder.children:
+            self._add_folder_to_tree(subfolder, folder_item)

@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from typing import List, Tuple, Dict
 
+
 class TreeStateHandler:
     def __init__(self, tree_widget: QTreeWidget) -> None:
         self.tree_widget = tree_widget
