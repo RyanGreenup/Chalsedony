@@ -48,8 +48,8 @@ class CommandPalette(QDialog):
         # Set focus to search box
         self.search.setFocus()
         
-        # Connect return/enter key in search to select first visible item
-        self.search.returnPressed.connect(self.select_first_visible)
+        # Connect return/enter key in search to trigger selected item
+        self.search.returnPressed.connect(self.trigger_selected_item)
 
     def populate_commands(self) -> None:
         """Populate the list with all commands"""
@@ -78,13 +78,10 @@ class CommandPalette(QDialog):
                     self.list.setCurrentItem(item)
                     had_visible = True
 
-    def select_first_visible(self) -> None:
-        """Select the first visible item in the list"""
-        for i in range(self.list.count()):
-            item = self.list.item(i)
-            if item and not item.isHidden():
-                self.on_command_selected(item)
-                break
+    def trigger_selected_item(self) -> None:
+        """Trigger the currently selected item in the list"""
+        if current_item := self.list.currentItem():
+            self.on_command_selected(current_item)
 
     def on_command_selected(self, item: QListWidgetItem) -> None:
         """Handle command selection"""
