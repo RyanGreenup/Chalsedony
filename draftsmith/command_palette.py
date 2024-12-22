@@ -22,14 +22,14 @@ class CommandPalette(QDialog):
         # Store actions
         self._actions: Dict[str, QAction] = actions
         
-        # Install event filter on search box to handle up/down keys
-        self.search.installEventFilter(self)
-
         # Create layout
         layout = QVBoxLayout(self)
 
         # Create search box
         self.search = QLineEdit(self)
+        
+        # Install event filter on search box to handle up/down keys
+        self.search.installEventFilter(self)
         self.search.setPlaceholderText("Type to search commands...")
         self.search.textChanged.connect(self.filter_commands)
         layout.addWidget(self.search)
