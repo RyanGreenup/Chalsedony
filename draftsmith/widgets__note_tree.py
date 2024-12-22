@@ -20,18 +20,10 @@ class NoteTree(QTreeWidget):
 
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model"""
-        # Stop Animation
-        is_animated = self.isAnimated()
-        self.setAnimated(False)
-
-        try:
-            self.clear()
-            root_folders = self.note_model.get_root_folders()
-            for folder in root_folders:
-                self._add_folder_to_tree(folder, self)
-        finally:
-            # Restore Animation - this should happen even if an error occurs
-            self.setAnimated(is_animated)
+        self.clear()
+        root_folders = self.note_model.get_root_folders()
+        for folder in root_folders:
+            self._add_folder_to_tree(folder, self)
 
     def _add_folder_to_tree(
         self, folder: Folder, parent: QTreeWidget | QTreeWidgetItem

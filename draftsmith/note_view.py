@@ -104,14 +104,22 @@ class NoteView(QWidget):
         This is private, as it should only be triggered by a signal,
         typically from the model.
         """
-        tree_state_handler = TreeStateHandler(self.tree_widget)
-        tree_state_handler.save_state()
+        # Save current animation state and disable animation
+        is_animated = self.tree_widget.isAnimated()
+        self.tree_widget.setAnimated(False)
+        
+        try:
+            tree_state_handler = TreeStateHandler(self.tree_widget)
+            tree_state_handler.save_state()
 
-        # Populate the UI
-        self._populate_ui()
+            # Populate the UI
+            self._populate_ui()
 
-        # Restore the fold state
-        tree_state_handler.restore_state(self.tree_widget)
+            # Restore the fold state
+            tree_state_handler.restore_state(self.tree_widget)
+        finally:
+            # Restore original animation state
+            self.tree_widget.setAnimated(is_animated)
 
     def save(self) -> None:
         """Emit a signal to save the current note"""
