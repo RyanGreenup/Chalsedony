@@ -10,6 +10,7 @@ NOTES_FILE = Path("/tmp/notes.yml")
 class Note(BaseModel):
     id: int
     title: str
+    content: str
     created_at: datetime = datetime.now()
     modified_at: datetime = datetime.now()
 
@@ -56,8 +57,8 @@ class NoteModel:
         """Generate dummy data for development purposes.
         Returns a list of folders rather than setting internal state."""
         # Create some notes
-        note1 = Note(id=1, title="First Note")
-        note2 = Note(id=2, title="Second Note")
+        note1 = Note(id=1, title="First Note", content="This is the first note")
+        note2 = Note(id=2, title="Second Note", content="This is the second note")
 
         # Create a subfolder with a note
         subfolder = Folder(id=3, name="Subfolder", children=[], notes=[note2])
@@ -136,3 +137,22 @@ class NoteModel:
 
         collect_notes(self._root_folders)
         return notes
+
+
+    def _receive_signals(self) -> None:
+        """
+        Receive signals from the controller (in QT the view also acts as a controller)
+        and update the model accordingly.
+        """
+        TODO
+
+    def _emit_signals(self) -> None:
+        """
+        Emit signals to the view to update the user interface.
+        """
+        This acts as the controller for the view, connecting signals from the user interface to the model.
+
+
+        Connect the signals
+        """
+        TODO

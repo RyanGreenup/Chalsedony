@@ -11,9 +11,13 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from note_model import NoteModel, Folder
 from PySide6.QtWebEngineWidgets import QWebEngineView
+import markdown
+from markdown.extensions.wikilinks import WikiLinkExtension
+from PySide6.QtCore import Signal
 
 
 class NoteView(QWidget):
+    note_content_changed = Signal(str)
     def __init__(
         self, parent: QWidget | None = None, model: NoteModel | None = None
     ) -> None:
@@ -40,6 +44,7 @@ class NoteView(QWidget):
         left_layout = QVBoxLayout()
         left_layout.setContentsMargins(0, 0, 0, 0)
         self.tree_widget = QTreeWidget()
+        self.tree_widget.setAnimated(True)
         self.tree_widget.setHeaderHidden(True)
         left_layout.addWidget(self.tree_widget)
         self.left_sidebar.setLayout(left_layout)
@@ -90,6 +95,34 @@ class NoteView(QWidget):
             self._add_folder_to_tree(subfolder, folder_item)
 
 
+    def _emit_signals(self) -> None:
+        """
+        This acts as the controller for the view, connecting signals from the user interface to the model.
+
+
+        Connect the signals
+        """
+        self.tree_widget.itemSelectionChanged.connect(self._on_tree_selection_changed)
+
+    def _receive_signals(self) -> None:
+        """
+        Connect the signals
+        """
+        self.content_area.editor.textChanged.connect(self._on_editor_text_changed)
+
+
+    def _on_editor_text_changed(self) -> None:
+        """
+        Handle the text changed signal from the editor
+        """
+        self.note_content_changed.emit(self.content_area.editor.toPlainText())
+
+    def _on_tree_selection_changed(self) -> None:
+        print("TODO Tree selection changed")
+
+
+
+
 class EditPreview(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -103,23 +136,79 @@ class EditPreview(QWidget):
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.setHandleWidth(15)
 
-        self.edit_widget = QPlainTextEdit()
-        self.preview_widget = QWebEngineView()
+        self.editor = QPlainTextEdit()
+        self.preview = QWebEngineView()
+
+        # The background should be transparent to match the UI
+        self.preview.setStyleSheet("background: transparent;")
+        self.preview.page().setBackgroundColor(Qt.GlobalColor.transparent)
 
         # Connect the edit widget to update preview
-        self.edit_widget.textChanged.connect(self.update_preview)
+        self.editor.textChanged.connect(self.update_preview_local)
 
-        splitter.addWidget(self.edit_widget)
-        splitter.addWidget(self.preview_widget)
+        splitter.addWidget(self.editor)
+        splitter.addWidget(self.preview)
 
         # Add splitter to layout
         layout.addWidget(splitter)
-        
+
         # Set initial sizes after adding to layout
         splitter.setSizes([300, 300])
 
-    def update_preview(self) -> None:
-        """Update the preview with the current text content"""
-        text = self.edit_widget.toPlainText()
-        # TODO: Convert markdown to HTML
-        self.preview_widget.setHtml(text)
+
+
+    def _apply_html_template(self, html: str) -> str:
+        css_includes = "" # self._get_css_resources()
+        return f"""<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            <link rel="stylesheet" href="qrc:/katex/katex.min.css">
+            {css_includes}
+            <style>
+                body {{
+                    background-color: transparent !important;
+                }}
+                .markdown {{
+                    background-color: transparent !important;
+                }}
+
+                :root,
+                [data-theme] {{
+                  background-color: transparent !important;
+                }}
+
+                .prose :where(code):not(:where([class~="not-prose"] *)) {{
+                  background-color: transparent !important;
+                }}
+            </style>
+        </head>
+        <body><div class="markdown">
+            {html}
+            </div>
+            <script src="qrc:/katex/katex.min.js"></script>
+            <script src="qrc:/katex/contrib/auto-render.min.js"></script>
+            <script src="qrc:/katex/config.js"></script>
+        </body>
+        </html>
+        """
+
+    def update_preview_local(self) -> None:
+        """
+        Converts the editor from markdown to HTML and sets the preview HTML content.
+        """
+        # Convert markdown to HTML
+        md = markdown.Markdown(
+            extensions=[
+                "fenced_code",
+                "tables",
+                "footnotes",
+                WikiLinkExtension(
+                    base_url=""
+                ),  # TODO this is inconsistent, consider using scheme handler and prefixing with a url
+            ]
+        )
+
+        html = md.convert(self.editor.toPlainText())
+        self.preview.setHtml(self._apply_html_template(html))
