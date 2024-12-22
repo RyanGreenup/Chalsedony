@@ -49,7 +49,7 @@ class ApplicationPalettes(TypedDict):
 class MainWindow(QMainWindow):
     menu_actions: Dict[str, QAction]
     base_font_size: float = 10.0  # Store original size
-    current_scale: float = 1.0    # Track current scale factor
+    current_scale: float = 1.0  # Track current scale factor
 
     def __init__(self, api_url: str) -> None:
         super().__init__()
@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         assert isinstance(app, QApplication)
         style = app.style()
         assert isinstance(style, QStyle)
-        
+
         # Initialize palettes
         self.default_palette = style.standardPalette()
         self.dark_palette = create_dark_palette()
@@ -70,14 +70,14 @@ class MainWindow(QMainWindow):
             dark=create_dark_palette(),
             light=create_light_palette(),
         )
-        
+
         # Set initial darkMode property based on current palette
         is_dark = app.palette() == self.palettes["dark"]
         app.setProperty("darkMode", is_dark)
-        
+
         # Setup application font
         self.setup_application_font()
-        
+
         self.menu_actions = {}
         self.create_menu_bar()
         self.create_tool_bar()
@@ -177,22 +177,22 @@ class MainWindow(QMainWindow):
             if isinstance(app, QApplication):
                 # Update the current scale
                 self.current_scale *= factor
-                
+
                 # Calculate new size based on base size and total scale
                 new_size = max(6, round(self.base_font_size * self.current_scale))
-                
+
                 # Create a new font with the calculated size
                 current_font = app.font()
                 current_font.setPointSize(new_size)
-                
+
                 # Apply the font to the application
                 app.setFont(current_font)
-                
+
                 # Force update on all widgets
                 for widget in app.allWidgets():
                     widget.setFont(current_font)
                     widget.update()
-                
+
                 # Trigger style refresh
                 app.setStyleSheet(app.styleSheet())
 

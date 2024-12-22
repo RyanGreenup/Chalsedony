@@ -7,7 +7,6 @@ from PySide6.QtWidgets import (
     QFontDialog,
     QApplication,
     QWidget,
-    QFrame,
     QDialogButtonBox,
     QGroupBox,
 )
@@ -33,7 +32,6 @@ class SettingsDialog(QDialog):
         font_layout = QHBoxLayout()
         font_label = QLabel("Application Font:")
         self.font_preview = QLabel("Preview text")
-        self.font_preview.setFrameStyle(QFrame.Shape.Panel | QFrame.Shadow.Sunken)
         self.font_preview.setMinimumWidth(200)
         self.update_font_preview()
 
