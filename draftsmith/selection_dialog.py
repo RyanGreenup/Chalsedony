@@ -18,6 +18,7 @@ class SelectionDialog(QDialog):
 
     def __init__(self, parent: QWidget, title: str) -> None:
         super().__init__(parent)
+        self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
         self.setWindowTitle(title)
         self.setModal(True)
 
