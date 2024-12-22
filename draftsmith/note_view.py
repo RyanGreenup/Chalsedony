@@ -23,8 +23,11 @@ class NoteView(QWidget):
     ) -> None:
         super().__init__(parent)
         self.model = model or NoteModel()
+        self.current_note_id: int | None = None
         self.setup_ui()
         self.populate_tree()
+        self._emit_signals()
+        self._receive_signals()
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -96,13 +99,9 @@ class NoteView(QWidget):
 
 
     def _emit_signals(self) -> None:
-        """
-        This acts as the controller for the view, connecting signals from the user interface to the model.
-
-
-        Connect the signals
-        """
+        """Connect UI signals to handlers"""
         self.tree_widget.itemSelectionChanged.connect(self._on_tree_selection_changed)
+        self.note_content_changed.connect(self.model.update_note_content)
 
     def _receive_signals(self) -> None:
         """
@@ -118,7 +117,21 @@ class NoteView(QWidget):
         self.note_content_changed.emit(self.content_area.editor.toPlainText())
 
     def _on_tree_selection_changed(self) -> None:
-        print("TODO Tree selection changed")
+        items = self.tree_widget.selectedItems()
+        if not items:
+            return
+        
+        item = items[0]
+        item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
+        
+        if item_type == "note":
+            self.current_note_id = item_id
+            note = self.model.find_note_by_id(item_id)
+            if note:
+                self.content_area.editor.setPlainText(note.content)
+        else:
+            self.current_note_id = None
+            self.content_area.editor.clear()
 
 
 

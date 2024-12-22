@@ -139,20 +139,10 @@ class NoteModel:
         return notes
 
 
-    def _receive_signals(self) -> None:
-        """
-        Receive signals from the controller (in QT the view also acts as a controller)
-        and update the model accordingly.
-        """
-        TODO
-
-    def _emit_signals(self) -> None:
-        """
-        Emit signals to the view to update the user interface.
-        """
-        This acts as the controller for the view, connecting signals from the user interface to the model.
-
-
-        Connect the signals
-        """
-        TODO
+    def update_note_content(self, content: str) -> None:
+        """Update the content of the currently selected note"""
+        note = self.find_note_by_id(self.current_note_id)
+        if note:
+            note.content = content
+            note.modified_at = datetime.now()
+            self._save_to_file()
