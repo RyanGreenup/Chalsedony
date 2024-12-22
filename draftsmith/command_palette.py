@@ -6,9 +6,9 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QWidget,
 )
-from PySide6.QtCore import Signal, Qt, QEvent
-from PySide6.QtGui import QAction
-from typing import Dict
+from PySide6.QtCore import Signal, Qt, QEvent, QObject
+from PySide6.QtGui import QAction, QKeyEvent
+from typing import Dict, cast
 
 
 class CommandPalette(QDialog):
@@ -95,16 +95,11 @@ class CommandPalette(QDialog):
                 self.close()
                 break
 
-    def eventFilter(self, arg__1: QWidget, arg__2: QEvent) -> bool:
-        """Handle keyboard events in search box
-
-        Args:
-            arg__1 (QWidget): The object that is being watched
-            arg__2 (QEvent): The event that was triggered"""
-        obj = arg__1
-        event = arg__2
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
+        """Handle keyboard events in search box"""
         if obj is self.search and event.type() == QEvent.Type.KeyPress:
-            key = event.key()
+            key_event = cast(QKeyEvent, event)
+            key = key_event.key()
             if key == Qt.Key.Key_Up:
                 self._select_previous_visible()
                 return True
