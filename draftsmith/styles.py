@@ -19,7 +19,7 @@ QTreeView::item {
 }
 
 QTreeView::item:hover {
-    background: palette(mid);
+    background: palette(shadow);
     padding: 8px 4px;
 }
 
@@ -319,7 +319,7 @@ QToolButton {
 }
 
 QToolButton:hover {
-    background: palette(mid);
+    background: palette(shadow);
     color: palette(text);
 }
 
@@ -360,7 +360,7 @@ QMenuBar::item {
 }
 
 QMenuBar::item:selected {
-    background: palette(mid);
+    background: palette(shadow);
     color: palette(text);
 }
 
@@ -371,7 +371,7 @@ QMenuBar::item:pressed {
 
 QMenu {
     background: palette(window);
-    border: 1px solid palette(mid);
+    border: 1px solid palette(shadow);
     border-radius: 6px;
     padding: 4px;
 }
@@ -384,13 +384,13 @@ QMenu::item {
 }
 
 QMenu::item:selected {
-    background: palette(mid);
+    background: palette(shadow);
     color: palette(text);
 }
 
 QMenu::separator {
     height: 1px;
-    background: palette(mid);
+    background: palette(shadow);
     margin: 4px 8px;
 }
 
@@ -405,7 +405,7 @@ QMenu::icon {
 }
 
 QMenu QMenu {
-    border: 1px solid palette(mid);
+    border: 1px solid palette(shadow);
     border-radius: 6px;
 }
 
@@ -466,4 +466,6 @@ QSS_STYLE = (
     + tree_view
     + scrollbars
     + labels
+    + toolbar
+    + menus
 )

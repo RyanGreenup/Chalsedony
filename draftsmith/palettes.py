@@ -107,6 +107,7 @@ def create_light_palette() -> QPalette:
         QPalette.ColorRole.HighlightedText, QColor(colors["Surface 0"]["Hex"])
     )
     palette.setColor(QPalette.ColorRole.Shadow, QColor(colors["Surface 2"]["Hex"]))
+    palette.setColor(QPalette.ColorRole.Midlight, QColor(colors["Surface 1"]["Hex"]))
 
     return palette
 
@@ -213,5 +214,6 @@ def create_dark_palette() -> QPalette:
     palette.setColor(QPalette.ColorRole.Highlight, QColor(colors["Sapphire"]["Hex"]))
     palette.setColor(QPalette.ColorRole.HighlightedText, QColor(colors["Base"]["Hex"]))
     palette.setColor(QPalette.ColorRole.Shadow, QColor(colors["Surface 2"]["Hex"]))
+    palette.setColor(QPalette.ColorRole.Midlight, QColor(colors["Surface 1"]["Hex"]))
 
     return palette
