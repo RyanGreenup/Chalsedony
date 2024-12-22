@@ -432,4 +432,5 @@ QLabel[link="true"]:hover {
 
 """
 
-QSS_STYLE = command_palette_style + buttons + settings_dialog + tree_view + scrollbars + labels + toolbar + menus
+# QSS_STYLE = command_palette_style + buttons + settings_dialog + tree_view + scrollbars + labels + toolbar + menus
+QSS_STYLE = command_palette_style + buttons + settings_dialog + tree_view + scrollbars + labels
