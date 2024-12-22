@@ -186,3 +186,29 @@ class NoteModel(QObject):
 
         # Save to disk
         self._save_to_file()
+
+    def create_note(self, parent_folder_id: int) -> None:
+        """Create a new note under the specified folder"""
+        parent_folder = self.find_folder_by_id(parent_folder_id)
+        if parent_folder:
+            new_note = Note(
+                id=self._get_next_note_id(),
+                title="New Note",
+                content="",
+            )
+            parent_folder.notes.append(new_note)
+            self._save_to_file()
+        else:
+            raise ValueError(f"Folder with ID {parent_folder_id} not found")
+
+        # Emit a signal to refresh the view
+        # NOTE: here the model is in perfect sync with the underlying data
+        # as the memory representation clobbers the file
+        # In a more complex system, we might want to reload the data from the file / api
+        # and/or take great care to keep the model in sync with the upstream data
+        self.refreshed.emit()
+
+    def _get_next_note_id(self) -> int:
+        """Get the next available note ID"""
+        all_notes = self.get_all_notes()
+        return max(note.id for note in all_notes) + 1 if all_notes else 1

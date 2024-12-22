@@ -107,7 +107,7 @@ class NoteView(QWidget):
         # Save current animation state and disable animation
         is_animated = self.tree_widget.isAnimated()
         self.tree_widget.setAnimated(False)
-        
+
         try:
             tree_state_handler = TreeStateHandler(self.tree_widget)
             tree_state_handler.save_state()
