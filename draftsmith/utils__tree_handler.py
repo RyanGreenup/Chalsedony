@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from typing import List, Tuple, Dict
 
+
 class TreeStateHandler:
     def __init__(self, tree_widget: QTreeWidget) -> None:
         self.tree_widget = tree_widget
@@ -18,7 +19,9 @@ class TreeStateHandler:
         self._restore_selection()
         self._set_tree_fold_state(self.tree_widget.invisibleRootItem(), self.fold_state)
 
-    def _get_tree_fold_state(self, parent: QTreeWidgetItem, path: Tuple[int] = ()) -> Dict[Tuple[int], bool]:
+    def _get_tree_fold_state(
+        self, parent: QTreeWidgetItem, path: Tuple[int] = ()
+    ) -> Dict[Tuple[int], bool]:
         state: Dict[Tuple[int], bool] = {}
         for i in range(parent.childCount()):
             child = parent.child(i)
@@ -29,7 +32,12 @@ class TreeStateHandler:
                 state.update(self._get_tree_fold_state(child, current_path))
         return state
 
-    def _set_tree_fold_state(self, parent: QTreeWidgetItem, state: Dict[Tuple[int], bool], path: Tuple[int] = ()) -> None:
+    def _set_tree_fold_state(
+        self,
+        parent: QTreeWidgetItem,
+        state: Dict[Tuple[int], bool],
+        path: Tuple[int] = (),
+    ) -> None:
         for i in range(parent.childCount()):
             child = parent.child(i)
             current_path = path + (i,)
