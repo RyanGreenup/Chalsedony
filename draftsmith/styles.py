@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt
 
-MODERN_STYLE = """
+QSS_STYLE = """
 QTreeView {
     background-color: #1e293b;  /* slate-800 */
     border: none;
