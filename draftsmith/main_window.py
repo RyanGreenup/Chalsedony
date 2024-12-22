@@ -83,12 +83,9 @@ class MainWindow(QMainWindow):
 
         # Initialize model and view
         self.note_model = NoteModel()
+        self.note_view = NoteView(self, model=self.note_model)
 
-        # Use the generate_dummy_data method to populate the model
-        dummy_data = self.note_model.generate_dummy_data()
-        self.note_model.load_data(dummy_data)
-
-        self.note_view = NoteView(self, model=self.note_model)  # Pass the model here
+        # Set the view as the central widget
         self.setCentralWidget(self.note_view)
 
     def toggle_style(self) -> None:
