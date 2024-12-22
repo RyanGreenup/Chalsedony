@@ -91,7 +91,7 @@ class CommandPalette(QDialog):
         text = item.text().split(" (")[0]  # Remove shortcut from display text
         for action in self._actions.values():
             if action.text().replace("&", "") == text:
-                action.trigger()
+                self.command_selected.emit(action)  # Emit the signal instead of triggering directly
                 self.close()
                 break
 

@@ -191,6 +191,7 @@ class MainWindow(QMainWindow):
         from command_palette import CommandPalette
 
         dialog = CommandPalette(self, self.menu_actions)
+        dialog.command_selected.connect(lambda action: action.trigger())  # Connect the signal
         dialog.exec()
 
     def create_menu_bar(self) -> None:
