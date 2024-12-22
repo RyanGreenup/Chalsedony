@@ -88,7 +88,7 @@ class CommandPalette(QDialog):
 
     def on_command_selected(self, item: QListWidgetItem) -> None:
         """Handle command selection"""
-        text = item.text().split(" (")[0]  # Remove shortcut from display text
+        text = item.text().split(" (")[0].strip()  # Remove shortcut and whitespace
         for action in self._actions.values():
             if action.text().replace("&", "") == text:
                 self.command_selected.emit(action)  # Emit the signal instead of triggering directly
