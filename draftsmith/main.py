@@ -59,6 +59,8 @@ class MainWindow(QMainWindow):
         assert isinstance(app, QApplication)
         style = app.style()
         assert isinstance(style, QStyle)
+        
+        # Initialize palettes
         self.default_palette = style.standardPalette()
         self.dark_palette = create_dark_palette()
         self.palettes = ApplicationPalettes(
@@ -66,6 +68,11 @@ class MainWindow(QMainWindow):
             dark=create_dark_palette(),
             light=create_light_palette(),
         )
+        
+        # Set initial darkMode property based on current palette
+        is_dark = app.palette() == self.palettes["dark"]
+        app.setProperty("darkMode", is_dark)
+        
         self.menu_actions = {}
         self.create_menu_bar()
         self.create_tool_bar()
@@ -79,14 +86,19 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(label)
 
     def toggle_style(self) -> None:
+        """Toggle between light and dark mode"""
         if app := QApplication.instance():
             if isinstance(app, QApplication):
                 if app.palette() == self.palettes["light"]:
+                    # Switch to dark mode
                     app.setPalette(self.palettes["dark"])
-                    app.setStyleSheet(QSS_STYLE)
+                    app.setProperty("darkMode", True)
+                    app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
                 else:
+                    # Switch to light mode
                     app.setPalette(self.palettes["light"])
-                    app.setStyleSheet(QSS_STYLE)
+                    app.setProperty("darkMode", False)
+                    app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
@@ -259,17 +271,19 @@ def main(
     """
     app = QApplication(sys.argv)
 
-    # Apply the modern style sheet
-    app.setStyleSheet(QSS_STYLE)
-
     # Determine dark mode setting
     use_dark = dark_mode if dark_mode is not None else is_system_dark_mode()
 
-    # Set the appropriate palette
+    # Set the appropriate palette and dark mode property
     if use_dark:
         app.setPalette(create_dark_palette())
+        app.setProperty("darkMode", True)
     else:
         app.setPalette(create_light_palette())
+        app.setProperty("darkMode", False)
+
+    # Apply the modern style sheet
+    app.setStyleSheet(QSS_STYLE)
 
     window = MainWindow(api_url="http://example.com/api")
     signal.signal(signal.SIGINT, signal.SIG_DFL)
