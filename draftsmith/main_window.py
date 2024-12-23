@@ -162,6 +162,12 @@ class MainWindow(QMainWindow):
                             shortcut="Ctrl+Alt+E",
                         ),
                         MenuAction(
+                            id="toggle_editor_preview",
+                            text="Toggle Editor/&Preview",
+                            handler="toggle_editor_preview",
+                            shortcut="Ctrl+T",
+                        ),
+                        MenuAction(
                             id="toggle_style",
                             text="Toggle &Dark Mode",
                             handler="toggle_style",
@@ -267,6 +273,11 @@ class MainWindow(QMainWindow):
         """Split editor and preview equally"""
         if self.note_view:
             self.note_view.equal_split_editor()
+
+    def toggle_editor_preview(self) -> None:
+        """Toggle between maximized editor and preview"""
+        if self.note_view:
+            self.note_view.toggle_editor_preview()
 
     def show_settings(self) -> None:
         """Show the settings dialog"""
