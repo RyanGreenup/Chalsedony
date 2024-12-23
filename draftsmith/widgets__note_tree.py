@@ -1,7 +1,8 @@
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu
-from note_model import NoteModel, Folder
+from note_model import NoteModel, TreeTagWithNotes
+from api_client import NoteAPI, TagAPI, Note, TreeTagWithNotes, TreeNote
 
 
 class NoteTree(QTreeWidget):
@@ -26,7 +27,7 @@ class NoteTree(QTreeWidget):
             self._add_folder_to_tree(folder, self)
 
     def _add_folder_to_tree(
-        self, folder: Folder, parent: QTreeWidget | QTreeWidgetItem
+        self, folder: TreeTagWithNotes, parent: QTreeWidget | QTreeWidgetItem
     ) -> None:
         """Recursively add a folder and its contents to the tree"""
         folder_item = QTreeWidgetItem(parent)

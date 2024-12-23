@@ -8,6 +8,7 @@ from pydantic import BaseModel
 import yaml
 
 NOTES_FILE = Path("/tmp/notes.yml")
+API_URL = "http://eir:37242"  # TODO inherit from cli
 
 
 # OK, so what we need to do here is take the `TreeTagWithNotes` and use it as the model
@@ -19,11 +20,31 @@ NOTES_FILE = Path("/tmp/notes.yml")
 # This means the content in memory would be lost and need to be pulled again for each one.
 
 
-class Folder(BaseModel):
-    id: int
-    name: str
-    children: List["Folder"] = []
-    notes: List[Note] = []
+def attach_notes_to_tags(
+    tag_tree: List[TreeTagWithNotes], note_map: Dict[int, TreeNote]
+) -> None:
+    """
+    Recursively attaches notes to tags based on the tag IDs present in the notes.
+
+    Args:
+        tag_tree (List[TreeTagWithNotes]): The list of tags with their hierarchical structure.
+        note_map (Dict[int, TreeNote]): A dictionary mapping note IDs to TreeNote objects for quick lookup.
+    """
+    for tag in tag_tree:
+        # Attach notes that have this tag
+        tag.notes.extend(
+            [
+                note
+                for note in note_map.values()
+                if any(t.id == tag.id for t in note.tags)
+            ]
+        )
+
+        # Recursively attach notes to children tags
+        if tag.children:
+            attach_notes_to_tags(tag.children, note_map)
+
+
 
 
 class NoteModel(QObject):
@@ -31,58 +52,65 @@ class NoteModel(QObject):
 
     def __init__(self) -> None:
         super().__init__()
-        self._root_folders: List[Folder] = []
-        self._load_from_file()
+        self._root_folders: List[TreeTagWithNotes] = []
+        base_url = API_URL
+        self.note_api = NoteAPI(base_url)
+        self.tag_api = TagAPI(base_url)
+        self._load_from_remote()
 
-    def _load_from_file(self) -> None:
+    def fetch_and_attach_notes_to_tags(self,
+        note_api: NoteAPI, tag_api: TagAPI
+    ) -> List[TreeTagWithNotes]:
+        # Fetch tags tree
+        self.tag_tree = tag_api.get_tags_tree()
+
+        # Fetch notes tree
+        print("Fetching notes")
+        self.notes_tree = note_api.get_notes_tree(exclude_content=True)
+
+        # Flatten the notes tree into a dictionary for quick lookup by ID
+        self.note_map: Dict[int, TreeNote] = {}
+
+        def flatten_notes(notes: List[TreeNote]) -> None:
+            for note in notes:
+                self.note_map[note.id] = note
+                if note.children:
+                    flatten_notes(note.children)
+
+        flatten_notes(self.notes_tree)
+
+        # Attach notes to tags
+        attach_notes_to_tags(self.tag_tree, self.note_map)
+
+    def _load_from_remote(self) -> None:
         """Load data from YAML file if it exists"""
-        if NOTES_FILE.exists():
-            with NOTES_FILE.open("r") as f:
-                data = yaml.safe_load(f)
-                if data:
-                    self.load_data(data)
-        else:
-            # Initialize with dummy data if file doesn't exist
-            self._root_folders = self.__class__.generate_dummy_data()
-            self._save_to_file()
-
-    def _save_to_file(self) -> None:
-        """Save current data to YAML file"""
-        data = [folder.model_dump() for folder in self._root_folders]
-        with NOTES_FILE.open("w") as f:
-            yaml.safe_dump(data, f, default_flow_style=False)
-
-    @classmethod
-    def generate_dummy_data(cls) -> List[Folder]:
-        """Generate dummy data for development purposes.
-        Returns a list of folders rather than setting internal state."""
-        # Create some notes
-        note1 = Note(id=1, title="First Note", content="This is the first note")
-        note2 = Note(id=2, title="Second Note", content="This is the second note")
-
-        # Create a subfolder with a note
-        subfolder = Folder(id=3, name="Subfolder", children=[], notes=[note2])
-
-        # Create a root folder with notes and a subfolder
-        root_folder = Folder(
-            id=1, name="Root Folder", children=[subfolder], notes=[note1]
+        tags = (
+            self.tag_api.get_tags_tree()
+        )  # TODO there's two calls here, only need one
+        # Resolve this by refactoring `fetch_and_attach_notes_to_tags` to take the tag tree as an argument
+        tagged_notes_and_subpages = self.fetch_and_attach_notes_to_tags(
+            self.note_api, self.tag_api
         )
+        self.load_data(tagged_notes_and_subpages, tags)
 
-        return [root_folder]
-
-    def load_data(self, data: List[Folder]) -> None:
+    def load_data(
+        self, data: List[TreeTagWithNotes], tags: List[TreeTagWithNotes]
+    ) -> None:
         """Load data from JSON-like structure into the model"""
-        self._root_folders = [Folder.model_validate(folder) for folder in data]
-        self._save_to_file()
+        self._root_folders = tags
 
-    def get_root_folders(self) -> List[Folder]:
+    def get_root_folders(self) -> List[TreeTagWithNotes]:
         """Return all root level folders"""
         return self._root_folders
 
-    def find_folder_by_id(self, folder_id: int) -> Optional[Folder]:
+    def find_folder_by_id(self, folder_id: int) -> Optional[TreeTagWithNotes]:
         """Find a folder by its ID in the entire tree"""
 
-        def search_folder(folders: List[Folder]) -> Optional[Folder]:
+        # TODO, could this be made more efficient with a hashmap? Create one on load and store as attribute?
+
+        def search_folder(
+            folders: List[TreeTagWithNotes],
+        ) -> Optional[TreeTagWithNotes]:
             for folder in folders:
                 if folder.id == folder_id:
                     return folder
@@ -93,27 +121,19 @@ class NoteModel(QObject):
 
         return search_folder(self._root_folders)
 
-    def find_note_by_id(self, note_id: int) -> Optional[Note]:
+    def find_note_by_id(self, note_id: int) -> Optional[TreeNote]:
         """Find a note by its ID in the entire tree"""
+        return self.note_map.get(note_id)
 
-        def search_note(folders: List[Folder]) -> Optional[Note]:
-            for folder in folders:
-                for note in folder.notes:
-                    if note.id == note_id:
-                        return note
-                result = search_note(folder.children)
-                if result:
-                    return result
-            return None
 
-        return search_note(self._root_folders)
-
-    def get_folder_path(self, folder_id: int) -> List[Folder]:
+    def get_folder_path(self, folder_id: int) -> List[TreeTagWithNotes]:
         """Get the path from root to the specified folder"""
 
         def find_path(
-            folders: List[Folder], target_id: int, current_path: List[Folder]
-        ) -> Optional[List[Folder]]:
+            folders: List[TreeTagWithNotes],
+            target_id: int,
+            current_path: List[TreeTagWithNotes],
+        ) -> Optional[List[TreeTagWithNotes]]:
             for folder in folders:
                 new_path = current_path + [folder]
                 if folder.id == target_id:
@@ -130,7 +150,7 @@ class NoteModel(QObject):
         """Get all notes from all folders"""
         notes: List[Note] = []
 
-        def collect_notes(folders: List[Folder]) -> None:
+        def collect_notes(folders: List[TreeTagWithNotes]) -> None:
             for folder in folders:
                 notes.extend(folder.notes)
                 collect_notes(folder.children)
@@ -161,7 +181,7 @@ class NoteModel(QObject):
     def refresh(self) -> None:
         """Refresh the model from the file"""
         # Load the data from the file
-        self._load_from_file()
+        self._load_from_remote()
         # Notify the view to refresh
         self.refreshed.emit()
 
@@ -174,6 +194,7 @@ class NoteModel(QObject):
                                 attempt to mirror the model in the view)
                 see: `refreshed` signal and `refresh` method
             - Save across all tabs (especially if refreshing the view)"""
+        return
         # Update the given note
         self.update_note(note_id, content)
 
@@ -192,7 +213,7 @@ class NoteModel(QObject):
             parent_folder.notes.append(new_note)
             self._save_to_file()
         else:
-            raise ValueError(f"Folder with ID {parent_folder_id} not found")
+            raise ValueError(f"TreeTagWithNotes with ID {parent_folder_id} not found")
 
         # Emit a signal to refresh the view
         # NOTE: here the model is in perfect sync with the underlying data
@@ -205,56 +226,3 @@ class NoteModel(QObject):
         """Get the next available note ID"""
         all_notes = self.get_all_notes()
         return max(note.id for note in all_notes) + 1 if all_notes else 1
-
-
-def attach_notes_to_tags(
-    tag_tree: List[TreeTagWithNotes], note_map: Dict[int, TreeNote]
-) -> None:
-    """
-    Recursively attaches notes to tags based on the tag IDs present in the notes.
-
-    Args:
-        tag_tree (List[TreeTagWithNotes]): The list of tags with their hierarchical structure.
-        note_map (Dict[int, TreeNote]): A dictionary mapping note IDs to TreeNote objects for quick lookup.
-    """
-    for tag in tag_tree:
-        # Attach notes that have this tag
-        tag.notes.extend(
-            [
-                note
-                for note in note_map.values()
-                if any(t.id == tag.id for t in note.tags)
-            ]
-        )
-
-        # Recursively attach notes to children tags
-        if tag.children:
-            attach_notes_to_tags(tag.children, note_map)
-
-
-def fetch_and_attach_notes_to_tags(
-    note_api: NoteAPI, tag_api: TagAPI
-) -> List[TreeTagWithNotes]:
-    # Fetch tags tree
-    print("Fetching tags tree")
-    tag_tree = tag_api.get_tags_tree()
-
-    # Fetch notes tree
-    print("Fetching notes")
-    notes_tree = note_api.get_notes_tree(exclude_content=True)
-
-    # Flatten the notes tree into a dictionary for quick lookup by ID
-    note_map: Dict[int, TreeNote] = {}
-
-    def flatten_notes(notes: List[TreeNote]) -> None:
-        for note in notes:
-            note_map[note.id] = note
-            if note.children:
-                flatten_notes(note.children)
-
-    flatten_notes(notes_tree)
-
-    # Attach notes to tags
-    attach_notes_to_tags(tag_tree, note_map)
-
-    return tag_tree
