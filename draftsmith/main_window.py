@@ -144,6 +144,24 @@ class MainWindow(QMainWindow):
                             shortcut="Ctrl+Shift+P",
                         ),
                         MenuAction(
+                            id="maximize_editor",
+                            text="Maximize &Editor",
+                            handler="maximize_editor",
+                            shortcut="Ctrl+K E",
+                        ),
+                        MenuAction(
+                            id="maximize_preview",
+                            text="Maximize &Preview",
+                            handler="maximize_preview",
+                            shortcut="Ctrl+K P",
+                        ),
+                        MenuAction(
+                            id="equal_split_editor",
+                            text="&Equal Split Editor",
+                            handler="equal_split_editor",
+                            shortcut="Ctrl+K =",
+                        ),
+                        MenuAction(
                             id="toggle_style",
                             text="Toggle &Dark Mode",
                             handler="toggle_style",
@@ -234,6 +252,21 @@ class MainWindow(QMainWindow):
         """Toggle the right sidebar visibility"""
         if self.note_view:
             self.note_view.toggle_right_sidebar()
+
+    def maximize_editor(self) -> None:
+        """Maximize the editor panel"""
+        if self.note_view:
+            self.note_view.maximize_editor()
+
+    def maximize_preview(self) -> None:
+        """Maximize the preview panel"""
+        if self.note_view:
+            self.note_view.maximize_preview()
+
+    def equal_split_editor(self) -> None:
+        """Split editor and preview equally"""
+        if self.note_view:
+            self.note_view.equal_split_editor()
 
     def show_settings(self) -> None:
         """Show the settings dialog"""
