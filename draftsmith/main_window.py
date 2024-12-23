@@ -161,6 +161,12 @@ class MainWindow(QMainWindow):
                             handler="zoom_out",
                             shortcut="Ctrl+-",
                         ),
+                        MenuAction(
+                            id="toggle_sidebar",
+                            text="Toggle &Sidebar",
+                            handler="toggle_sidebar",
+                            shortcut="Ctrl+B",
+                        ),
                     ],
                 ),
                 MenuStructure(
@@ -212,6 +218,11 @@ class MainWindow(QMainWindow):
     def zoom_out(self) -> None:
         """Decrease the UI scale factor by 10%"""
         self.zoom(0.9)
+
+    def toggle_sidebar(self) -> None:
+        """Toggle the sidebar visibility"""
+        if self.note_view:
+            self.note_view.toggle_sidebar()
 
     def show_settings(self) -> None:
         """Show the settings dialog"""
