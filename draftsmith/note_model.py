@@ -1,9 +1,8 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Dict, List, Optional
+from api_client import NoteAPI, TagAPI, Note, TreeTagWithNotes, TreeNote
 
-if TYPE_CHECKING:
-    pass
 from PySide6.QtCore import QObject, Signal
 from pydantic import BaseModel
 import yaml
@@ -11,19 +10,13 @@ import yaml
 NOTES_FILE = Path("/tmp/notes.yml")
 
 
-class Note(BaseModel):
-    id: int
-    title: str
-    content: str
-    created_at: datetime = datetime.now()
-    modified_at: datetime = datetime.now()
-
-    def model_dump(self, *args, **kwargs) -> Dict[str, Any]:  # type: ignore [no-untyped-def]
-        # Convert datetime objects to ISO format strings for YAML serialization
-        d = super().model_dump(*args, **kwargs)
-        d["created_at"] = d["created_at"].isoformat()
-        d["modified_at"] = d["modified_at"].isoformat()
-        return d
+# OK, so what we need to do here is take the `TreeTagWithNotes` and use it as the model
+# It will have no content by default, when the user requests it, check for None and fetch it.
+# The model will keep a copy of the TreeTagWithNotes in memory and update it when the user modifies it
+# the model will attempt to mirror the api representation of the TreeTagWithNotes on the server as closely as possible
+# A refresh signal will tell the view to update its representation of the in-memory model
+# If this receives a refresh signal, it will pull down the latest data from the server and send a refresh signal to the view
+# This means the content in memory would be lost and need to be pulled again for each one.
 
 
 class Folder(BaseModel):
@@ -212,3 +205,56 @@ class NoteModel(QObject):
         """Get the next available note ID"""
         all_notes = self.get_all_notes()
         return max(note.id for note in all_notes) + 1 if all_notes else 1
+
+
+def attach_notes_to_tags(
+    tag_tree: List[TreeTagWithNotes], note_map: Dict[int, TreeNote]
+) -> None:
+    """
+    Recursively attaches notes to tags based on the tag IDs present in the notes.
+
+    Args:
+        tag_tree (List[TreeTagWithNotes]): The list of tags with their hierarchical structure.
+        note_map (Dict[int, TreeNote]): A dictionary mapping note IDs to TreeNote objects for quick lookup.
+    """
+    for tag in tag_tree:
+        # Attach notes that have this tag
+        tag.notes.extend(
+            [
+                note
+                for note in note_map.values()
+                if any(t.id == tag.id for t in note.tags)
+            ]
+        )
+
+        # Recursively attach notes to children tags
+        if tag.children:
+            attach_notes_to_tags(tag.children, note_map)
+
+
+def fetch_and_attach_notes_to_tags(
+    note_api: NoteAPI, tag_api: TagAPI
+) -> List[TreeTagWithNotes]:
+    # Fetch tags tree
+    print("Fetching tags tree")
+    tag_tree = tag_api.get_tags_tree()
+
+    # Fetch notes tree
+    print("Fetching notes")
+    notes_tree = note_api.get_notes_tree(exclude_content=True)
+
+    # Flatten the notes tree into a dictionary for quick lookup by ID
+    note_map: Dict[int, TreeNote] = {}
+
+    def flatten_notes(notes: List[TreeNote]) -> None:
+        for note in notes:
+            note_map[note.id] = note
+            if note.children:
+                flatten_notes(note.children)
+
+    flatten_notes(notes_tree)
+
+    # Attach notes to tags
+    attach_notes_to_tags(tag_tree, note_map)
+
+    return tag_tree
