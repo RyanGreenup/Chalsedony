@@ -147,19 +147,19 @@ class MainWindow(QMainWindow):
                             id="maximize_editor",
                             text="Maximize &Editor",
                             handler="maximize_editor",
-                            shortcut="Ctrl+K E",
+                            shortcut="Ctrl+E",
                         ),
                         MenuAction(
                             id="maximize_preview",
                             text="Maximize &Preview",
                             handler="maximize_preview",
-                            shortcut="Ctrl+K P",
+                            shortcut="Ctrl+Shift+E",
                         ),
                         MenuAction(
                             id="equal_split_editor",
                             text="&Equal Split Editor",
                             handler="equal_split_editor",
-                            shortcut="Ctrl+K =",
+                            shortcut="Ctrl+Alt+E",
                         ),
                         MenuAction(
                             id="toggle_style",
