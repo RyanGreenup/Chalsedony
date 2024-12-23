@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (
-    QPlainTextEdit,
+    QTextEdit,
     QWidget,
     QVBoxLayout,
     QSplitter,
@@ -17,7 +17,7 @@ from markdown.extensions.wikilinks import WikiLinkExtension
 
 class EditPreview(QWidget):
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
-    
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._splitter_animation: QPropertyAnimation | None = None
@@ -31,7 +31,7 @@ class EditPreview(QWidget):
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
         self.splitter.setHandleWidth(15)
 
-        self.editor = QPlainTextEdit()
+        self.editor = MDTextEdit()
         self.preview = QWebEngineView()
 
         # The background should be transparent to match the UI
@@ -105,6 +105,7 @@ class EditPreview(QWidget):
 
         html = md.convert(self.editor.toPlainText())
         self.preview.setHtml(self._apply_html_template(html))
+
     def _get_editor_width(self) -> float:
         return float(self.editor.width())
 
@@ -136,7 +137,7 @@ class EditPreview(QWidget):
 
         total_width = self.splitter.width()
         target_width = int(total_width * target_ratio)
-        
+
         animation = QPropertyAnimation(self, b"editorWidth")
         self._splitter_animation = animation
         self._splitter_animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
@@ -156,3 +157,8 @@ class EditPreview(QWidget):
     def equal_split(self) -> None:
         """Split editor and preview equally"""
         self._animate_splitter(0.5)
+
+
+class MDTextEdit(QTextEdit):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)

@@ -92,6 +92,9 @@ def create_light_palette() -> QPalette:
     palette.setColor(QPalette.ColorRole.Window, QColor(colors["Base"]["Hex"]))
     palette.setColor(QPalette.ColorRole.WindowText, QColor(colors["Text"]["Hex"]))
     palette.setColor(QPalette.ColorRole.Base, QColor(colors["Surface 0"]["Hex"]))
+    # This changes sidebars etc. which looks nice.
+    # However it also changes the main QTextEdit background color. which then
+    # diverges from the preview. So this is modified in the QSS
     palette.setColor(
         QPalette.ColorRole.AlternateBase, QColor(colors["Surface 1"]["Hex"])
     )
@@ -203,6 +206,9 @@ def create_dark_palette() -> QPalette:
     palette.setColor(QPalette.ColorRole.Window, QColor(colors["Base"]["Hex"]))
     palette.setColor(QPalette.ColorRole.WindowText, QColor(colors["Text"]["Hex"]))
     palette.setColor(QPalette.ColorRole.Base, QColor(colors["Mantle"]["Hex"]))
+    # This changes sidebars etc. which looks nice.
+    # However it also changes the main QTextEdit background color. which then
+    # diverges from the preview. So this is modified in the QSS
     palette.setColor(QPalette.ColorRole.AlternateBase, QColor(colors["Crust"]["Hex"]))
     palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(colors["Surface 0"]["Hex"]))
     palette.setColor(QPalette.ColorRole.ToolTipText, QColor(colors["Text"]["Hex"]))

@@ -469,6 +469,10 @@ QLabel[link="true"]:hover {
 
 """
 
+override_text_edit_background = """
+    MDTextEdit { background: palette(window); }
+"""
+
 # QSS_STYLE = command_palette_style + buttons + settings_dialog + tree_view + scrollbars + labels + toolbar + menus
 QSS_STYLE = (
     base_style
@@ -480,4 +484,5 @@ QSS_STYLE = (
     + labels
     + toolbar
     + menus
+    + override_text_edit_background
 )
