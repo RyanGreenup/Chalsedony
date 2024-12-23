@@ -5,7 +5,13 @@ from PySide6.QtWidgets import (
     QFrame,
     QSplitter,
 )
-from PySide6.QtCore import Qt, Signal, Property, QPropertyAnimation, QEasingCurve
+from PySide6.QtCore import (
+    Qt, 
+    Signal, 
+    Property, 
+    QPropertyAnimation, 
+    QEasingCurve,
+)
 from note_model import NoteModel
 from utils__tree_handler import TreeStateHandler
 from widgets__note_tree import NoteTree
@@ -25,8 +31,8 @@ class NoteView(QWidget):
         super().__init__(parent)
         self.model = model or NoteModel()
         self.current_note_id: int | None = None
-        self._left_animation = None
-        self._right_animation = None
+        self._left_animation: QPropertyAnimation | None = None
+        self._right_animation: QPropertyAnimation | None = None
         self._sidebar_width = self.DEFAULT_SIDEBAR_WIDTH
         self.setup_ui()
         self._populate_ui()
@@ -198,7 +204,8 @@ class NoteView(QWidget):
         ):
             self._left_animation.stop()
 
-        self._left_animation = QPropertyAnimation(self, b"leftSidebarWidth")
+        animation = QPropertyAnimation(self, b"leftSidebarWidth")
+        self._left_animation = animation
         self._left_animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
         self._left_animation.setDuration(self.ANIMATION_DURATION)
 
@@ -221,7 +228,8 @@ class NoteView(QWidget):
         ):
             self._right_animation.stop()
 
-        self._right_animation = QPropertyAnimation(self, b"rightSidebarWidth")
+        animation = QPropertyAnimation(self, b"rightSidebarWidth")
+        self._right_animation = animation
         self._right_animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
         self._right_animation.setDuration(self.ANIMATION_DURATION)
 
