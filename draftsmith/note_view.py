@@ -176,11 +176,16 @@ class NoteView(QWidget):
 
     # Properties for animation
     leftSidebarWidth = Property(float, _get_left_sidebar_width, _set_left_sidebar_width)
-    rightSidebarWidth = Property(float, _get_right_sidebar_width, _set_right_sidebar_width)
+    rightSidebarWidth = Property(
+        float, _get_right_sidebar_width, _set_right_sidebar_width
+    )
 
     def toggle_left_sidebar(self) -> None:
         """Toggle the visibility of the left sidebar with animation"""
-        if self._left_animation and self._left_animation.state() == QPropertyAnimation.State.Running:
+        if (
+            self._left_animation
+            and self._left_animation.state() == QPropertyAnimation.State.Running
+        ):
             self._left_animation.stop()
 
         self._left_animation = QPropertyAnimation(self, b"leftSidebarWidth")
@@ -200,7 +205,10 @@ class NoteView(QWidget):
 
     def toggle_right_sidebar(self) -> None:
         """Toggle the visibility of the right sidebar with animation"""
-        if self._right_animation and self._right_animation.state() == QPropertyAnimation.State.Running:
+        if (
+            self._right_animation
+            and self._right_animation.state() == QPropertyAnimation.State.Running
+        ):
             self._right_animation.stop()
 
         self._right_animation = QPropertyAnimation(self, b"rightSidebarWidth")
