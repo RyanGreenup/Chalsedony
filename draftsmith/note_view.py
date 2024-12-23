@@ -25,7 +25,8 @@ class NoteView(QWidget):
         super().__init__(parent)
         self.model = model or NoteModel()
         self.current_note_id: int | None = None
-        self._animation = None
+        self._left_animation = None
+        self._right_animation = None
         self._sidebar_width = self.DEFAULT_SIDEBAR_WIDTH
         self.setup_ui()
         self._populate_ui()
@@ -159,32 +160,63 @@ class NoteView(QWidget):
             self.current_note_id = None
             self.content_area.editor.clear()
 
-    def _get_sidebar_width(self) -> float:
+    def _get_left_sidebar_width(self) -> float:
         return float(self.left_sidebar.width())
 
-    def _set_sidebar_width(self, width: float) -> None:
+    def _set_left_sidebar_width(self, width: float) -> None:
         if self.left_sidebar:
             self.left_sidebar.setFixedWidth(int(width))
 
-    # Property for animation
-    sidebarWidth = Property(float, _get_sidebar_width, _set_sidebar_width)
+    def _get_right_sidebar_width(self) -> float:
+        return float(self.right_sidebar.width())
 
-    def toggle_sidebar(self) -> None:
+    def _set_right_sidebar_width(self, width: float) -> None:
+        if self.right_sidebar:
+            self.right_sidebar.setFixedWidth(int(width))
+
+    # Properties for animation
+    leftSidebarWidth = Property(float, _get_left_sidebar_width, _set_left_sidebar_width)
+    rightSidebarWidth = Property(float, _get_right_sidebar_width, _set_right_sidebar_width)
+
+    def toggle_left_sidebar(self) -> None:
         """Toggle the visibility of the left sidebar with animation"""
-        if self._animation and self._animation.state() == QPropertyAnimation.State.Running:
-            self._animation.stop()
+        if self._left_animation and self._left_animation.state() == QPropertyAnimation.State.Running:
+            self._left_animation.stop()
 
-        self._animation = QPropertyAnimation(self, b"sidebarWidth")
-        self._animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
-        self._animation.setDuration(self.ANIMATION_DURATION)
+        self._left_animation = QPropertyAnimation(self, b"leftSidebarWidth")
+        self._left_animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        self._left_animation.setDuration(self.ANIMATION_DURATION)
 
         if self.left_sidebar.isVisible():
-            self._animation.setStartValue(self.left_sidebar.width())
-            self._animation.setEndValue(0)
-            self._animation.finished.connect(self.left_sidebar.hide)
+            self._left_animation.setStartValue(self.left_sidebar.width())
+            self._left_animation.setEndValue(0)
+            self._left_animation.finished.connect(self.left_sidebar.hide)
         else:
             self.left_sidebar.show()
-            self._animation.setStartValue(0)
-            self._animation.setEndValue(self._sidebar_width)
+            self._left_animation.setStartValue(0)
+            self._left_animation.setEndValue(self._sidebar_width)
 
-        self._animation.start()
+        self._left_animation.start()
+
+    def toggle_right_sidebar(self) -> None:
+        """Toggle the visibility of the right sidebar with animation"""
+        if self._right_animation and self._right_animation.state() == QPropertyAnimation.State.Running:
+            self._right_animation.stop()
+
+        self._right_animation = QPropertyAnimation(self, b"rightSidebarWidth")
+        self._right_animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        self._right_animation.setDuration(self.ANIMATION_DURATION)
+
+        if self.right_sidebar.isVisible():
+            self._right_animation.setStartValue(self.right_sidebar.width())
+            self._right_animation.setEndValue(0)
+            self._right_animation.finished.connect(self.right_sidebar.hide)
+        else:
+            self.right_sidebar.show()
+            self._right_animation.setStartValue(0)
+            self._right_animation.setEndValue(self._sidebar_width)
+
+        self._right_animation.start()
+
+    # Alias for backward compatibility
+    toggle_sidebar = toggle_left_sidebar
