@@ -246,3 +246,15 @@ class NoteView(QWidget):
 
     # Alias for backward compatibility
     toggle_sidebar = toggle_left_sidebar
+
+    def maximize_editor(self) -> None:
+        """Maximize the editor panel in the content area"""
+        self.content_area.maximize_editor()
+
+    def maximize_preview(self) -> None:
+        """Maximize the preview panel in the content area"""
+        self.content_area.maximize_preview()
+
+    def equal_split_editor(self) -> None:
+        """Split editor and preview panels equally in the content area"""
+        self.content_area.equal_split()
