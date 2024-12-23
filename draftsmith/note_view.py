@@ -175,9 +175,19 @@ class NoteView(QWidget):
             self.right_sidebar.setFixedWidth(int(width))
 
     # Properties for animation
-    leftSidebarWidth = Property(float, _get_left_sidebar_width, _set_left_sidebar_width)
+    leftSidebarWidth = Property(
+        float,
+        _get_left_sidebar_width,
+        _set_left_sidebar_width,
+        freset=None,
+        doc="Property for animating left sidebar width",
+    )
     rightSidebarWidth = Property(
-        float, _get_right_sidebar_width, _set_right_sidebar_width
+        float,
+        _get_right_sidebar_width,
+        _set_right_sidebar_width,
+        freset=None,
+        doc="Property for animating right sidebar width",
     )
 
     def toggle_left_sidebar(self) -> None:
