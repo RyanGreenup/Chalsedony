@@ -5,9 +5,8 @@ from PySide6.QtWidgets import (
     QFrame,
     QSplitter,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal, Property, QPropertyAnimation, QEasingCurve
 from note_model import NoteModel
-from PySide6.QtCore import Signal
 from utils__tree_handler import TreeStateHandler
 from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
@@ -17,12 +16,17 @@ class NoteView(QWidget):
     note_content_changed = Signal(int, str)  # (note_id, content)
     note_saved = Signal(int, str)  # (note_id)
 
+    ANIMATION_DURATION = 300  # Animation duration in milliseconds
+    DEFAULT_SIDEBAR_WIDTH = 200  # Default sidebar width
+
     def __init__(
         self, parent: QWidget | None = None, model: NoteModel | None = None
     ) -> None:
         super().__init__(parent)
         self.model = model or NoteModel()
         self.current_note_id: int | None = None
+        self._animation = None
+        self._sidebar_width = self.DEFAULT_SIDEBAR_WIDTH
         self.setup_ui()
         self._populate_ui()
         self._connect_signals()
@@ -155,9 +159,32 @@ class NoteView(QWidget):
             self.current_note_id = None
             self.content_area.editor.clear()
 
+    def _get_sidebar_width(self) -> float:
+        return float(self.left_sidebar.width())
+
+    def _set_sidebar_width(self, width: float) -> None:
+        if self.left_sidebar:
+            self.left_sidebar.setFixedWidth(int(width))
+
+    # Property for animation
+    sidebarWidth = Property(float, _get_sidebar_width, _set_sidebar_width)
+
     def toggle_sidebar(self) -> None:
-        """Toggle the visibility of the left sidebar"""
+        """Toggle the visibility of the left sidebar with animation"""
+        if self._animation and self._animation.state() == QPropertyAnimation.State.Running:
+            self._animation.stop()
+
+        self._animation = QPropertyAnimation(self, b"sidebarWidth")
+        self._animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        self._animation.setDuration(self.ANIMATION_DURATION)
+
         if self.left_sidebar.isVisible():
-            self.left_sidebar.hide()
+            self._animation.setStartValue(self.left_sidebar.width())
+            self._animation.setEndValue(0)
+            self._animation.finished.connect(self.left_sidebar.hide)
         else:
             self.left_sidebar.show()
+            self._animation.setStartValue(0)
+            self._animation.setEndValue(self._sidebar_width)
+
+        self._animation.start()
