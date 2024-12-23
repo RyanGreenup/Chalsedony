@@ -154,3 +154,10 @@ class NoteView(QWidget):
         else:
             self.current_note_id = None
             self.content_area.editor.clear()
+
+    def toggle_sidebar(self) -> None:
+        """Toggle the visibility of the left sidebar"""
+        if self.left_sidebar.isVisible():
+            self.left_sidebar.hide()
+        else:
+            self.left_sidebar.show()
