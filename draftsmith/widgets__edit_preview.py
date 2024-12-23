@@ -91,7 +91,20 @@ class EditPreview(QWidget):
         """
         Converts the editor from markdown to HTML and sets the preview HTML content.
         """
-        
+        # Convert markdown to HTML
+        md = markdown.Markdown(
+            extensions=[
+                "fenced_code",
+                "tables",
+                "footnotes",
+                WikiLinkExtension(
+                    base_url=""
+                ),  # TODO this is inconsistent, consider using scheme handler and prefixing with a url
+            ]
+        )
+
+        html = md.convert(self.editor.toPlainText())
+        self.preview.setHtml(self._apply_html_template(html))
     def _get_editor_width(self) -> float:
         return float(self.editor.width())
 
@@ -143,17 +156,3 @@ class EditPreview(QWidget):
     def equal_split(self) -> None:
         """Split editor and preview equally"""
         self._animate_splitter(0.5)
-        # Convert markdown to HTML
-        md = markdown.Markdown(
-            extensions=[
-                "fenced_code",
-                "tables",
-                "footnotes",
-                WikiLinkExtension(
-                    base_url=""
-                ),  # TODO this is inconsistent, consider using scheme handler and prefixing with a url
-            ]
-        )
-
-        html = md.convert(self.editor.toPlainText())
-        self.preview.setHtml(self._apply_html_template(html))
