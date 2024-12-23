@@ -31,6 +31,7 @@ class NoteView(QWidget):
         super().__init__(parent)
         self.model = model or NoteModel()
         self.current_note_id: int | None = None
+        self._editor_maximized = False  # Track editor maximization state
         self._left_animation: QPropertyAnimation | None = None
         self._right_animation: QPropertyAnimation | None = None
         self._sidebar_width = self.DEFAULT_SIDEBAR_WIDTH
@@ -250,10 +251,21 @@ class NoteView(QWidget):
     def maximize_editor(self) -> None:
         """Maximize the editor panel in the content area"""
         self.content_area.maximize_editor()
+        self._editor_maximized = True
 
     def maximize_preview(self) -> None:
         """Maximize the preview panel in the content area"""
         self.content_area.maximize_preview()
+        self._editor_maximized = False
+
+    def toggle_editor_preview(self) -> None:
+        """Toggle between maximized editor and maximized preview"""
+        if self._editor_maximized:
+            self.maximize_preview()
+            self._editor_maximized = False
+        else:
+            self.maximize_editor()
+            self._editor_maximized = True
 
     def equal_split_editor(self) -> None:
         """Split editor and preview panels equally in the content area"""
