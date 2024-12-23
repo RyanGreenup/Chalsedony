@@ -168,7 +168,7 @@ class MainWindow(QMainWindow):
                             shortcut="Ctrl+B",
                         ),
                         MenuAction(
-                            id="toggle_right_sidebar", 
+                            id="toggle_right_sidebar",
                             text="Toggle &Right Sidebar",
                             handler="toggle_right_sidebar",
                             shortcut="Ctrl+Shift+B",

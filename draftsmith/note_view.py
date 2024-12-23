@@ -6,10 +6,10 @@ from PySide6.QtWidgets import (
     QSplitter,
 )
 from PySide6.QtCore import (
-    Qt, 
-    Signal, 
-    Property, 
-    QPropertyAnimation, 
+    Qt,
+    Signal,
+    Property,
+    QPropertyAnimation,
     QEasingCurve,
 )
 from note_model import NoteModel
