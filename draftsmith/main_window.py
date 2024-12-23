@@ -162,10 +162,16 @@ class MainWindow(QMainWindow):
                             shortcut="Ctrl+-",
                         ),
                         MenuAction(
-                            id="toggle_sidebar",
-                            text="Toggle &Sidebar",
+                            id="toggle_left_sidebar",
+                            text="Toggle &Left Sidebar",
                             handler="toggle_sidebar",
                             shortcut="Ctrl+B",
+                        ),
+                        MenuAction(
+                            id="toggle_right_sidebar", 
+                            text="Toggle &Right Sidebar",
+                            handler="toggle_right_sidebar",
+                            shortcut="Ctrl+Shift+B",
                         ),
                     ],
                 ),
@@ -220,9 +226,14 @@ class MainWindow(QMainWindow):
         self.zoom(0.9)
 
     def toggle_sidebar(self) -> None:
-        """Toggle the sidebar visibility"""
+        """Toggle the left sidebar visibility"""
         if self.note_view:
-            self.note_view.toggle_sidebar()
+            self.note_view.toggle_left_sidebar()
+
+    def toggle_right_sidebar(self) -> None:
+        """Toggle the right sidebar visibility"""
+        if self.note_view:
+            self.note_view.toggle_right_sidebar()
 
     def show_settings(self) -> None:
         """Show the settings dialog"""
