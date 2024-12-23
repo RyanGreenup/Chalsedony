@@ -159,7 +159,7 @@ class MainWindow(QMainWindow):
                             id="equal_split_editor",
                             text="&Equal Split Editor",
                             handler="equal_split_editor",
-                            shortcut="Ctrl+Alt+E",
+                            shortcut="Ctrl+Shift+T",
                         ),
                         MenuAction(
                             id="toggle_editor_preview",
