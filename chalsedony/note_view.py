@@ -30,7 +30,7 @@ class NoteView(QWidget):
     def __init__(self, model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.model = model
-        self.current_note_id: int | None = None
+        self.current_note_id: str | None = None
         self._editor_maximized = False  # Track editor maximization state
         self._left_animation: QPropertyAnimation | None = None
         self._right_animation: QPropertyAnimation | None = None
@@ -219,7 +219,7 @@ class NoteView(QWidget):
         if note:
             self._handle_note_selection("note", note.id)
 
-    def _handle_note_selection(self, item_type: str, item_id: int) -> None:
+    def _handle_note_selection(self, item_type: str, item_id: str) -> None:
         """Common handler for note selection from either tree or list"""
         if item_type == "note":
             self.current_note_id = item_id

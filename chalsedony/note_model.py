@@ -8,7 +8,7 @@ from db_api import Note, Folder, FolderTreeItem
 class NoteSearchResult(NamedTuple):
     """Represents a search result containing note ID and title"""
 
-    id: int
+    id: str
     title: str
 
 
@@ -23,7 +23,7 @@ class NoteModel(QObject):
         super().__init__()
         self.db_connection = db_connection
 
-    def find_note_by_id(self, note_id: int) -> Optional[Note]:
+    def find_note_by_id(self, note_id: str) -> Optional[Note]:
         """Find a note by its ID in the entire tree"""
         cursor = self.db_connection.cursor()
         cursor.execute("SELECT * FROM notes WHERE id = ?", (note_id,))
@@ -45,7 +45,7 @@ class NoteModel(QObject):
         columns = [col[0] for col in cursor.description]
         return [Note(**dict(zip(columns, row))) for row in cursor.fetchall()]
 
-    def on_note_content_changed(self, note_id: int, content: str) -> None:
+    def on_note_content_changed(self, note_id: str, content: str) -> None:
         """Handle note content changes from view"""
         print("TODO Implement on note_content_changed 98032983298")
 
@@ -53,7 +53,9 @@ class NoteModel(QObject):
         """Create a new note under the specified folder"""
         print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
-    def get_note_tree_structure(self, order_by="order") -> Dict[str, FolderTreeItem]:
+    def get_note_tree_structure(
+        self, order_by: str = "order"
+    ) -> Dict[str, FolderTreeItem]:
         """Get the folder/note tree structure from the database
 
         params:
