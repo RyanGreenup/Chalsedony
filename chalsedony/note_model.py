@@ -57,6 +57,10 @@ class NoteModel(QObject):
             - parent_id: parent folder ID or None
             - notes: list of Note model instances in this folder
             - children: list of child FolderTreeItems (added)
+
+        Implementation Notes:
+            Jop
+
         """
         cursor = self.db_connection.cursor()
         cursor.row_factory = lambda cursor, row: {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
