@@ -7,6 +7,7 @@ from db_api import FolderTreeItem
 
 class NoteTree(QTreeWidget):
     note_created = Signal(int)
+    # AI: Create a signal to request a folder rename here
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -63,6 +64,7 @@ class NoteTree(QTreeWidget):
         # Expand all folders by default
         self.expandAll()
 
+    # Add a context menu to rename a note AI!
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)

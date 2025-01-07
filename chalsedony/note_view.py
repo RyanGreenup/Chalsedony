@@ -124,6 +124,7 @@ class NoteView(QWidget):
         # Set initial sizes (similar proportions to the previous stretch factors)
         self.main_splitter.setSizes([100, 300, 100])
 
+    # Connect the signal here so the user can rename the folder
     def _connect_signals(self) -> None:
         """Connect UI signals to handlers"""
         parent = self.parent()
@@ -164,15 +165,14 @@ class NoteView(QWidget):
                 update_title_from_heading=True,
             )
 
+    # AI: This method handles changing the folder title
     def update_folder_title(self, folder_id: str, new_title: str) -> None:
         """Update a folder's title and refresh the view"""
         self.model.update_folder(folder_id, title=new_title)
-        self.refreshed.emit()
 
     def update_folder_parent(self, folder_id: str, new_parent_id: str) -> None:
         """Update a folder's parent ID and refresh the view"""
         self.model.update_folder(folder_id, parent_id=new_parent_id)
-        self.refreshed.emit()
 
     def _on_note_created(self, folder_id: int) -> None:
         try:
