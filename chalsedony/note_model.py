@@ -143,7 +143,7 @@ class NoteModel(QObject):
         cursor.execute("""
             SELECT id, title FROM notes_fts
             WHERE notes_fts MATCH ?
-            ORDER BY rank
+            ORDER BY bm25(notes_fts)
         """, (query,))
         
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
