@@ -96,11 +96,3 @@ class NoteTree(QTreeWidget):
         """Create a new note under the selected folder"""
         print("TODO implement this")
 
-    # AI! Create a method that can update the following fields of a note:
-    # 
-    # - title
-    # - body
-    # - parent_id
-    # 
-    # These should be optional fields and be modified if not specified.
-

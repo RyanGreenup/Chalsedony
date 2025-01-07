@@ -221,14 +221,21 @@ class NoteView(QWidget):
 
     def _handle_note_selection(self, item_type: str, item_id: str) -> None:
         """Common handler for note selection from either tree or list"""
-        if item_type == "note":
-            self.current_note_id = item_id
-            note = self.model.find_note_by_id(item_id)
-            if note:
-                self.content_area.editor.setPlainText(note.body or "")
-        else:
-            self.current_note_id = None
-            self.content_area.editor.clear()
+        # Disconnect textChanged signal to prevent update loop
+        self.content_area.editor.textChanged.disconnect(self._on_editor_text_changed)
+
+        try:
+            if item_type == "note":
+                self.current_note_id = item_id
+                note = self.model.find_note_by_id(item_id)
+                if note:
+                    self.content_area.editor.setPlainText(note.body or "")
+            else:
+                self.current_note_id = None
+                self.content_area.editor.clear()
+        finally:
+            # Reconnect signal after text is set
+            self.content_area.editor.textChanged.connect(self._on_editor_text_changed)
 
     def _get_left_sidebar_width(self) -> float:
         return float(self.left_sidebar.width())

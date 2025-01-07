@@ -46,10 +46,25 @@ class NoteModel(QObject):
         columns = [col[0] for col in cursor.description]
         return [Note(**dict(zip(columns, row))) for row in cursor.fetchall()]
 
-    # Implement a method to update the database as the content changes AI!
     def on_note_content_changed(self, note_id: str, content: str) -> None:
-        """Handle note content changes from view"""
-        print("TODO Implement on note_content_changed 98032983298")
+        """Handle note content changes from view
+
+        Args:
+            note_id: ID of the note being updated
+            content: New content for the note
+        """
+        self.save_note(note_id, content)
+
+    def save_note(self, note_id: str, content: str, refresh: bool = False) -> None:
+        """
+        Write the content to the given note id
+        Args:
+            note_id: ID of the note being updated
+            content: New content for the note
+        """
+        self.update_note(note_id, body=content)
+        if refresh:
+            self.refreshed.emit()
 
     def create_note(self, parent_folder_id: int) -> None:
         """Create a new note under the specified folder"""
@@ -170,8 +185,14 @@ class NoteModel(QObject):
         """
         return self.find_note_by_id(result.id)
 
-    # AI: The following method can be used to update content in the database
-    def update_note(self, note_id: str, *, title: Optional[str] = None, body: Optional[str] = None, parent_id: Optional[str] = None) -> None:
+    def update_note(
+        self,
+        note_id: str,
+        *,
+        title: Optional[str] = None,
+        body: Optional[str] = None,
+        parent_id: Optional[str] = None,
+    ) -> None:
         """Update specific fields of a note
 
         Args:
@@ -182,7 +203,7 @@ class NoteModel(QObject):
         """
         updates = []
         params = []
-        
+
         if title is not None:
             updates.append("title = ?")
             params.append(title)
@@ -192,20 +213,19 @@ class NoteModel(QObject):
         if parent_id is not None:
             updates.append("parent_id = ?")
             params.append(parent_id)
-            
+
         if not updates:
             return
-            
+
         # Add updated_time
         updates.append("updated_time = ?")
         params.append(int(time.time()))
-        
+
         # Add note_id last for WHERE clause
         params.append(note_id)
-        
+
         query = f"UPDATE notes SET {', '.join(updates)} WHERE id = ?"
-        
+
         cursor = self.db_connection.cursor()
         cursor.execute(query, params)
         self.db_connection.commit()
-
