@@ -1,7 +1,14 @@
 from sqlite3 import Connection
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TypedDict
 from db_api import Note, Folder
+from pydantic import BaseModel
+
+class FolderTreeItem(BaseModel):
+    type: str
+    folder: Folder
+    parent_id: Optional[int]
+    notes: List[Note]
 
 from PySide6.QtCore import QObject, Signal
 
@@ -42,15 +49,15 @@ class NoteModel(QObject):
         print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
     # Create a pydantic model for the folder/note tree structure and return that structure instead of a dictionary AI!
-    def get_note_tree_structure(self) -> Dict[str, dict]:
+    def get_note_tree_structure(self) -> Dict[str, FolderTreeItem]:
         """Get the folder/note tree structure from the database
 
         Returns:
-            A dictionary where keys are folder IDs and values are folder data including:
+            A dictionary where keys are folder IDs and values are FolderTreeItem objects containing:
             - type: "folder"
-            - title: folder title
+            - folder: Folder model instance
             - parent_id: parent folder ID or None
-            - notes: list of notes in this folder
+            - notes: list of Note model instances in this folder
         """
         cursor = self.db_connection.cursor()
         cursor.row_factory = lambda cursor, row: {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
@@ -58,12 +65,12 @@ class NoteModel(QObject):
         # Get all folders
         cursor.execute("SELECT * FROM folders")
         folders = {
-            row["id"]: {
-                "type": "folder",
-                "folder": Folder(**row),
-                "parent_id": row["parent_id"],
-                "notes": [],
-            }
+            row["id"]: FolderTreeItem(
+                type="folder",
+                folder=Folder(**row),
+                parent_id=row["parent_id"],
+                notes=[]
+            )
             for row in cursor.fetchall()
         }
 
