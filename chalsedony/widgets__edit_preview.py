@@ -6,6 +6,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtWebEngineCore import QWebEngineUrlScheme
 from PySide6.QtCore import (
+    QDir,
+    QDirIterator,
     Qt,
     Property,
     QPropertyAnimation,
@@ -73,8 +75,33 @@ class EditPreview(QWidget):
         # Set initial sizes after adding to layout
         self.splitter.setSizes([300, 300])
 
+
+    def _get_css_resources(self) -> str:
+        """Generate CSS link tags for all CSS files in resources
+
+        If the file:
+
+        ./static/static.qrc
+
+        picked up the static css asset, then it will be included.
+
+        """
+        css_links = []
+        it = QDirIterator(
+            ":/css", QDir.Filter.Files, QDirIterator.IteratorFlag.Subdirectories
+        )
+        while it.hasNext():
+            file_path = it.next()
+            css_links.append(f'<link rel="stylesheet" href="qrc{file_path}">')
+
+        # If needed to debug
+        # print(css_links)
+        # sys.exit()
+
+        return "\n".join(css_links)
+
     def _apply_html_template(self, html: str) -> str:
-        css_includes = ""  # self._get_css_resources()
+        css_includes = self._get_css_resources()
         return f"""<!DOCTYPE html>
         <html>
         <head>
