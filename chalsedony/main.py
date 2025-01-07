@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+import os
 import sys
+from pathlib import Path
 from styles import QSS_STYLE
 from PySide6.QtWidgets import (
     QApplication,
@@ -24,6 +26,9 @@ def is_system_dark_mode() -> bool:
 
 @app.command()
 def main(
+    database: Path = Path(
+        os.path.expanduser("~/.config/joplin-desktop/database.sqlite")
+    ),
     dark_mode: Optional[bool] = None,
 ) -> None:
     """
@@ -31,6 +36,7 @@ def main(
 
     Args:
         dark_mode: Force dark mode on/off. If None, use system preference
+        database: Path to the database file.
     """
     app = QApplication(sys.argv)
 
@@ -48,7 +54,7 @@ def main(
     # Apply the modern style sheet
     app.setStyleSheet(QSS_STYLE)
 
-    window = MainWindow()
+    window = MainWindow(database)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     window.show()
     sys.exit(app.exec())

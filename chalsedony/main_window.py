@@ -1,5 +1,8 @@
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction, QPalette
+import sqlite3
+from sqlite3 import Connection
+from pathlib import Path
 from note_view import NoteView
 from note_model import (
     NoteModel,
@@ -48,7 +51,7 @@ class MainWindow(QMainWindow):
     current_scale: float = 1.0  # Track current scale factor
     refresh = Signal()
 
-    def __init__(self) -> None:
+    def __init__(self, database: Path) -> None:
         super().__init__()
         app = QApplication.instance()
         if app is None:
@@ -58,6 +61,9 @@ class MainWindow(QMainWindow):
         assert isinstance(app, QApplication)
         style = app.style()
         assert isinstance(style, QStyle)
+
+        # Connect to the database
+        self.db_connection: Connection = sqlite3.connect(database)
 
         # Initialize palettes
         self.default_palette = style.standardPalette()
@@ -84,8 +90,8 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
 
         # Initialize model and view
-        self.note_model = NoteModel()
-        self.note_view = NoteView(self, model=self.note_model)
+        self.note_model = NoteModel(self.db_connection)
+        self.note_view = NoteView(parent=self, model=self.note_model)
 
         # Connect signals to the view
         # Ask the model to refresh the data (which will emit a signal to refresh the view)

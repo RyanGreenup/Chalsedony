@@ -1,4 +1,5 @@
 from datetime import datetime
+from sqlite3 import Connection
 from pathlib import Path
 from typing import Dict, List, Optional
 from api_client import NoteAPI, TagAPI, TreeTagWithNotes, TreeNote
@@ -48,12 +49,13 @@ def attach_notes_to_tags(
 class NoteModel(QObject):
     refreshed = Signal()  # Notify view to refresh
 
-    def __init__(self) -> None:
+    def __init__(self, db_connection: Connection) -> None:
         super().__init__()
         self._root_folders: List[TreeTagWithNotes] = []
         base_url = API_URL
         self.note_api = NoteAPI(base_url)
         self.tag_api = TagAPI(base_url)
+        self.db_connection = db_connection
         self._load_from_remote()
 
     def fetch_and_attach_notes_to_tags(

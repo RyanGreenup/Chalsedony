@@ -25,11 +25,9 @@ class NoteView(QWidget):
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
     DEFAULT_SIDEBAR_WIDTH = 200  # Default sidebar width
 
-    def __init__(
-        self, parent: QWidget | None = None, model: NoteModel | None = None
-    ) -> None:
+    def __init__(self, model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.model = model or NoteModel()
+        self.model = model
         self.current_note_id: int | None = None
         self._editor_maximized = False  # Track editor maximization state
         self._left_animation: QPropertyAnimation | None = None
