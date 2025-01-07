@@ -169,6 +169,10 @@ class NoteTree(QTreeWidget):
 
         event.acceptProposedAction()
 
+    # AI! If the user attempts to:
+    # 1. Drag a folder to a note
+    # 2. Drag a note to a note
+    # Send a message to the status bar indicating that the operation is not allowed.
     def dropEvent(self, event: QDropEvent) -> None:
         """Handle drop event to move folders"""
         if not self._dragged_item:
@@ -231,6 +235,7 @@ class NoteTree(QTreeWidget):
         # Reset dragged item
         self._dragged_item = None
 
+    # AI: Use this method to send a message to the status bar
     def send_status_message(self, message: str) -> None:
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
@@ -246,4 +251,3 @@ class NoteTree(QTreeWidget):
                 return True
         return False
 
-    # Create a method to send a message to the status bar AI!
