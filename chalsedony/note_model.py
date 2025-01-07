@@ -43,6 +43,7 @@ class NoteModel(QObject):
         """Create a new note under the specified folder"""
         print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
+    # AI! Fix this code so it represents folders in a nested tree
     def get_note_tree_structure(self) -> Dict[str, FolderTreeItem]:
         """Get the folder/note tree structure from the database
 

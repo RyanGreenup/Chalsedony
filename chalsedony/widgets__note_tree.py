@@ -19,6 +19,7 @@ class NoteTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
+    # AI: Ensure this function is consistent with the return structure of the method so that directories are correctly represented with nesting
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model"""
         self.clear()
