@@ -244,7 +244,6 @@ class NoteModel(QObject):
         cursor.execute(query, params)
         self.db_connection.commit()
 
-    # AI: The method to update a folder is defined here
     def update_folder(
         self,
         folder_id: str,
