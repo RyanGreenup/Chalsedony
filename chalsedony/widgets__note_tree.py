@@ -16,7 +16,7 @@ class NoteTree(QTreeWidget):
     note_created = Signal(int)
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
-    # AI: Create a signal to move a note to a different parent folder
+    note_moved = Signal(str, str)  # (note_id, new_parent_folder_id)
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -141,8 +141,21 @@ class NoteTree(QTreeWidget):
         self._dragged_item = self.currentItem()
         if self._dragged_item:
             event.acceptProposedAction()
-        else:
-            event.ignore()
+        elif dragged_type == "note":
+            # Remove the dragged note from its current position
+            parent = self._dragged_item.parent()
+            if parent:
+                parent.removeChild(self._dragged_item)
+            else:
+                self.takeTopLevelItem(self.indexOfTopLevelItem(self._dragged_item))
+
+            # Add the note to the target folder
+            target_item.addChild(self._dragged_item)
+            target_item.setExpanded(True)
+
+            # Emit signal to update model
+            self.note_moved.emit(dragged_id, target_id)
+            event.acceptProposedAction()
 
     def dragMoveEvent(self, event: QDragMoveEvent) -> None:
         """Handle drag move event with hover highlighting"""
@@ -191,8 +204,12 @@ class NoteTree(QTreeWidget):
         dragged_type, dragged_id = self._dragged_item.data(0, Qt.ItemDataRole.UserRole)
         target_type, target_id = target_item.data(0, Qt.ItemDataRole.UserRole)
 
-        # Only allow moving folders onto other folders
-        if dragged_type == "folder" and target_type == "folder":
+        # Handle both folder and note moves
+        if target_type != "folder":
+            event.ignore()
+            return
+
+        if dragged_type == "folder":
             # Remove the dragged item from its current position
             parent = self._dragged_item.parent()
             if parent:
