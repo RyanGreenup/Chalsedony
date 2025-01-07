@@ -55,7 +55,7 @@ class NoteTree(QTreeWidget):
         # Expand all folders by default
         self.expandAll()
 
-    # Add a context menu item to show the note id AI!
+    # Add a context menu item to show the note id as a label in the context menu AI!
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action"""
         item = self.itemAt(position)
