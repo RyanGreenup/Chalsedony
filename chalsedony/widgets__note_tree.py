@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu
+from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu, QApplication
 from note_model import NoteModel
 import yaml
 
@@ -62,11 +62,10 @@ class NoteTree(QTreeWidget):
 
         menu = QMenu()
         
-        # Add ID display as disabled menu item
-        # When the user clicks on this item the id should be copied to the clipboard AI!
+        # Add ID display as clickable menu item that copies to clipboard
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
-        id_action = QAction(f"{item_type.capitalize()} ID: {item_id}", self)
-        id_action.setEnabled(False)  # Make it non-clickable
+        id_action = QAction(f"Copy {item_type.capitalize()} ID: {item_id}", self)
+        id_action.triggered.connect(lambda: self.copy_to_clipboard(str(item_id)))
         menu.addAction(id_action)
         
         # Add separator
@@ -78,6 +77,11 @@ class NoteTree(QTreeWidget):
         menu.addAction(create_action)
 
         menu.exec(self.viewport().mapToGlobal(position))
+
+    def copy_to_clipboard(self, text: str) -> None:
+        """Copy text to the system clipboard"""
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text)
 
     def create_note(self, clicked_item: QTreeWidgetItem) -> None:
         """Create a new note under the selected folder"""
