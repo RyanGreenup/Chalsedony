@@ -141,10 +141,12 @@ class NoteModel(QObject):
         """
         cursor = self.db_connection.cursor()
         cursor.execute("""
-            SELECT id, title FROM notes_fts
+            SELECT id, title, 
+                   length(title) - length(replace(lower(title), lower(?), '')) AS relevance
+            FROM notes_fts
             WHERE notes_fts MATCH ?
-            ORDER BY bm25(notes_fts)
-        """, (query,))
+            ORDER BY relevance DESC
+        """, (query, query))
         
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
