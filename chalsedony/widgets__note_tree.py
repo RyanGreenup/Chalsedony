@@ -19,7 +19,6 @@ class NoteTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
-    # AI: Ensure this function is consistent with the return structure of the method so that directories are correctly represented with nesting
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model"""
         self.clear()
@@ -55,14 +54,24 @@ class NoteTree(QTreeWidget):
         # Expand all folders by default
         self.expandAll()
 
-    # Add a context menu item to show the note id as a label in the context menu AI!
     def show_context_menu(self, position: QPoint) -> None:
-        """Show context menu with create action"""
+        """Show context menu with create action and ID display"""
         item = self.itemAt(position)
         if not item:
             return
 
         menu = QMenu()
+        
+        # Add ID display as disabled menu item
+        item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
+        id_action = QAction(f"{item_type.capitalize()} ID: {item_id}", self)
+        id_action.setEnabled(False)  # Make it non-clickable
+        menu.addAction(id_action)
+        
+        # Add separator
+        menu.addSeparator()
+        
+        # Add Create Note action
         create_action = QAction("Create Note", self)
         create_action.triggered.connect(lambda: self.create_note(item))
         menu.addAction(create_action)
