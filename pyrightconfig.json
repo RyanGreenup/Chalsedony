@@ -1,0 +1,16 @@
+{
+     "exclude": [
+         "chalsedony/test_typesense_api.py",
+         "./chalsedony/static_resources_rc.py",
+         "./chalsedony/katex_fonts_rc.py",
+         "./chalsedony/katex_resources_rc.py",
+         "chalsedony/static/katex/src/"
+     ],
+
+     "type": {
+       "moduleName": ["ignored.module"]
+     }
+   }
+
+
+

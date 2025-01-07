@@ -19,6 +19,7 @@ import static_resources_rc  # pyright: ignore # noqa
 import katex_resources_rc  # pyright: ignore   # noqa
 import katex_fonts_rc  # pyright: ignore # noqa
 
+
 # Register custom schemes for the Web Engine Preview
 def register_scheme(
     scheme_name: str,

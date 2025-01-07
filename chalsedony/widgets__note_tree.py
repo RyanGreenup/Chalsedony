@@ -2,7 +2,6 @@ from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu
 from note_model import NoteModel, TreeTagWithNotes
-from api_client import NoteAPI, TagAPI, Note, TreeTagWithNotes, TreeNote
 
 
 class NoteTree(QTreeWidget):

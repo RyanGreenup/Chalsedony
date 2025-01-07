@@ -162,7 +162,7 @@ class NoteView(QWidget):
             self.current_note_id = item_id
             note = self.model.find_note_by_id(item_id)
             if note:
-                self.content_area.editor.setPlainText(note.content)
+                self.content_area.editor.setPlainText(note.content or "")
         else:
             self.current_note_id = None
             self.content_area.editor.clear()

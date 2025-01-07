@@ -1,11 +1,11 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-from api_client import NoteAPI, TagAPI, Note, TreeTagWithNotes, TreeNote
+from api_client import NoteAPI, TagAPI, TreeTagWithNotes, TreeNote
+
+__all__ = ["NoteModel", "TreeTagWithNotes", "TreeNote"]
 
 from PySide6.QtCore import QObject, Signal
-from pydantic import BaseModel
-import yaml
 
 NOTES_FILE = Path("/tmp/notes.yml")
 API_URL = "http://eir:37242"  # TODO inherit from cli
@@ -45,8 +45,6 @@ def attach_notes_to_tags(
             attach_notes_to_tags(tag.children, note_map)
 
 
-
-
 class NoteModel(QObject):
     refreshed = Signal()  # Notify view to refresh
 
@@ -58,8 +56,8 @@ class NoteModel(QObject):
         self.tag_api = TagAPI(base_url)
         self._load_from_remote()
 
-    def fetch_and_attach_notes_to_tags(self,
-        note_api: NoteAPI, tag_api: TagAPI
+    def fetch_and_attach_notes_to_tags(
+        self, note_api: NoteAPI, tag_api: TagAPI
     ) -> List[TreeTagWithNotes]:
         # Fetch tags tree
         self.tag_tree = tag_api.get_tags_tree()
@@ -81,6 +79,7 @@ class NoteModel(QObject):
 
         # Attach notes to tags
         attach_notes_to_tags(self.tag_tree, self.note_map)
+        return self.tag_tree
 
     def _load_from_remote(self) -> None:
         """Load data from YAML file if it exists"""
@@ -125,7 +124,6 @@ class NoteModel(QObject):
         """Find a note by its ID in the entire tree"""
         return self.note_map.get(note_id)
 
-
     def get_folder_path(self, folder_id: int) -> List[TreeTagWithNotes]:
         """Get the path from root to the specified folder"""
 
@@ -146,9 +144,9 @@ class NoteModel(QObject):
         path = find_path(self._root_folders, folder_id, [])
         return path if path else []
 
-    def get_all_notes(self) -> List[Note]:
+    def get_all_notes(self) -> List[TreeNote]:
         """Get all notes from all folders"""
-        notes: List[Note] = []
+        notes: List[TreeNote] = []
 
         def collect_notes(folders: List[TreeTagWithNotes]) -> None:
             for folder in folders:
@@ -201,14 +199,23 @@ class NoteModel(QObject):
         # Save to disk
         self._save_to_file()
 
+    def _save_to_file(self) -> None:
+        """Save the current state to file"""
+        # TODO: Implement actual file saving logic
+        pass
+
     def create_note(self, parent_folder_id: int) -> None:
         """Create a new note under the specified folder"""
         parent_folder = self.find_folder_by_id(parent_folder_id)
         if parent_folder:
-            new_note = Note(
+            new_note = TreeNote(
                 id=self._get_next_note_id(),
                 title="New Note",
                 content="",
+                tags=[],
+                children=[],
+                created_at=datetime.now(),
+                modified_at=datetime.now(),
             )
             parent_folder.notes.append(new_note)
             self._save_to_file()

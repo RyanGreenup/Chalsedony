@@ -631,10 +631,11 @@ class NoteAPI(API):
             for note in trail:
                 note["title"] = note["title"].rstrip("\r\n")
 
-        return {
+        breadcrumbs_dict: dict[int, list[NoteWithoutContent]] = {
             int(note_id): [NoteWithoutContent.model_validate(note) for note in trail]
             for note_id, trail in breadcrumbs.items()
         }
+        return breadcrumbs_dict
 
     def get_note_path(self, note_id: int, separator: str = "/") -> str:
         """
@@ -1238,7 +1239,8 @@ class AssetAPI(API):
                 response = requests.post(f"{self.base_url}/assets", files=files)
         else:
             # Handle file-like object
-            files = {"file": file_path}
+            filename = file_path.name if hasattr(file_path, "name") else "file"
+            files = {"file": (filename, file_path)}  # type: dict[str, tuple[str, BinaryIO]]
             response = requests.post(f"{self.base_url}/assets", files=files)
 
         response.raise_for_status()
