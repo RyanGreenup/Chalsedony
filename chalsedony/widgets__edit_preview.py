@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QSplitter,
 )
+from PySide6.QtWebEngineCore import QWebEngineUrlScheme
 from PySide6.QtCore import (
     Qt,
     Property,
@@ -13,6 +14,27 @@ from PySide6.QtCore import (
 from PySide6.QtWebEngineWidgets import QWebEngineView
 import markdown
 from markdown.extensions.wikilinks import WikiLinkExtension
+
+import static_resources_rc  # pyright: ignore # noqa
+import katex_resources_rc  # pyright: ignore   # noqa
+import katex_fonts_rc  # pyright: ignore # noqa
+
+# Register custom schemes for the Web Engine Preview
+def register_scheme(
+    scheme_name: str,
+    scheme_flags: QWebEngineUrlScheme.Flag = (
+        QWebEngineUrlScheme.Flag.LocalAccessAllowed
+        | QWebEngineUrlScheme.Flag.CorsEnabled
+    ),
+) -> None:
+    scheme = QWebEngineUrlScheme(scheme_name.encode())
+    scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
+    scheme.setFlags(scheme_flags)
+    QWebEngineUrlScheme.registerScheme(scheme)
+
+
+register_scheme("note")
+register_scheme("qrc")
 
 
 class EditPreview(QWidget):
