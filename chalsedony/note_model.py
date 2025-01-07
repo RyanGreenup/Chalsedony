@@ -46,6 +46,7 @@ class NoteModel(QObject):
         columns = [col[0] for col in cursor.description]
         return [Note(**dict(zip(columns, row))) for row in cursor.fetchall()]
 
+    # Implement a method to update the database as the content changes AI!
     def on_note_content_changed(self, note_id: str, content: str) -> None:
         """Handle note content changes from view"""
         print("TODO Implement on note_content_changed 98032983298")
@@ -169,6 +170,7 @@ class NoteModel(QObject):
         """
         return self.find_note_by_id(result.id)
 
+    # AI: The following method can be used to update content in the database
     def update_note(self, note_id: str, *, title: Optional[str] = None, body: Optional[str] = None, parent_id: Optional[str] = None) -> None:
         """Update specific fields of a note
 
