@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QSplitter,
     QTabWidget,
     QListWidget,
+    QListWidgetItem,
     QLineEdit,
 )
 from PySide6.QtCore import (
@@ -57,12 +58,14 @@ class NoteView(QWidget):
             # Use full text search
             results = self.model.search_notes(search_query)
             for result in results:
-                self.search_sidebar.addItem(result.title)
+                item = self.search_sidebar.addItem(result.title)
+                item.setData(Qt.ItemDataRole.UserRole, result.id)
         else:
             # Show all notes
             notes = self.model.get_all_notes()
             for note in notes:
-                self.search_sidebar.addItem(note.title)
+                item = self.search_sidebar.addItem(note.title)
+                item.setData(Qt.ItemDataRole.UserRole, note.id)
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -101,7 +104,7 @@ class NoteView(QWidget):
         search_layout.addWidget(self.search_input)
 
         # List view
-        self.search_sidebar = QListWidget()
+        self.search_sidebar = NoteListWidget()
         search_layout.addWidget(self.search_sidebar)
 
         search_tab.setLayout(search_layout)
@@ -254,12 +257,10 @@ class NoteView(QWidget):
         if not selected:
             return
 
-        # Get the note title and find the corresponding note
-        title = selected[0].text()
-        notes = self.model.get_all_notes()
-        note = next((n for n in notes if n.title == title), None)
-        if note:
-            self._handle_note_selection("note", note.id)
+        # Get the note ID directly from the item data
+        note_id = selected[0].data(Qt.ItemDataRole.UserRole)
+        if note_id:
+            self._handle_note_selection("note", note_id)
 
     def _handle_note_selection(self, item_type: str, item_id: str) -> None:
         """Common handler for note selection from either tree or list"""
@@ -382,3 +383,13 @@ class NoteView(QWidget):
     def equal_split_editor(self) -> None:
         """Split editor and preview panels equally in the content area"""
         self.content_area.equal_split()
+
+class NoteListWidget(QListWidget):
+    def __init__(self):
+        super().__init__()
+        
+    def addItem(self, text: str) -> QListWidgetItem:
+        """Override addItem to return the created item"""
+        item = QListWidgetItem(text)
+        super().addItem(item)
+        return item
