@@ -28,9 +28,11 @@ class NoteModel(QObject):
             return Note(**row)
         return None
 
-    # Implement this AI!
     def get_all_notes(self) -> List[Note]:
         """Get all notes from all folders"""
+        cursor = self.db_connection.cursor()
+        cursor.execute("SELECT * FROM notes")
+        return [Note(**row) for row in cursor.fetchall()]
 
     def on_note_content_changed(self, note_id: int, content: str) -> None:
         """Handle note content changes from view"""
