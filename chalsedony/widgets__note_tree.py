@@ -94,13 +94,13 @@ class NoteTree(QTreeWidget):
 
     def create_note(self, clicked_item: QTreeWidgetItem) -> None:
         """Create a new note under the selected folder"""
-        if clicked_item.data(0, Qt.ItemDataRole.UserRole)[0] == "folder":
-            # Emit a signal to create a new note
-            if parent_folder_id := clicked_item.data(0, Qt.ItemDataRole.UserRole)[1]:
-                if isinstance(parent_folder_id, int):
-                    self.note_created.emit(parent_folder_id)
-            else:
-                print("Parent folder ID is not an integer")
-            # The Model will trigger the view to update by emitting a signal
-        else:
-            print("Cannot create a note under a note")
+        print("TODO implement this")
+
+    # AI! Create a method that can update the following fields of a note:
+    # 
+    # - title
+    # - body
+    # - parent_id
+    # 
+    # These should be optional fields and be modified if not specified.
+
