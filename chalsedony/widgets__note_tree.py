@@ -115,4 +115,4 @@ class NoteTree(QTreeWidget):
 #  }
 # 
 # 
-# We'll need to implement the get_note_tree_structure() method in the note model next. Would you like me to help with that?
+# We'll need to implement the get_note_tree_structure() method in the note model.
