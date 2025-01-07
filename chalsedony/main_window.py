@@ -302,6 +302,7 @@ class MainWindow(QMainWindow):
         dialog = SettingsDialog(self)
         dialog.exec()
 
+    # TODO ensure this works when multiple tabs are implemented
     def save_note(self) -> None:
         """Trigger note save with title update from heading"""
         self.save_note_signal.emit()
