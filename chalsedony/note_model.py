@@ -18,10 +18,10 @@ class NoteModel(QObject):
         base_url = API_URL
         self.db_connection = db_connection
 
-    # TODO
-    # def find_note_by_id(self, note_id: int) -> Optional[Note]:
-    #     """Find a note by its ID in the entire tree"""
-    #     pass
+    # Implement this AI!
+    def find_note_by_id(self, note_id: int) -> Optional[Note]:
+        """Find a note by its ID in the entire tree"""
+      
 
     # TODO
     # def get_all_notes(self) -> List[Note]:
@@ -45,7 +45,6 @@ class NoteModel(QObject):
 
 
 
-# Implement the method to get the tree data  AI!
     def get_note_tree_structure(self) -> Dict[str, dict]:
         """Get the folder/note tree structure from the database
         
