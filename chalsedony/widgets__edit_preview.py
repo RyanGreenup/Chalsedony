@@ -76,7 +76,6 @@ class EditPreview(QWidget):
         # Set initial sizes after adding to layout
         self.splitter.setSizes([300, 300])
 
-
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
 

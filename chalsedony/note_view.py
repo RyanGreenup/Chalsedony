@@ -1,5 +1,4 @@
 from PySide6.QtWidgets import (
-    QMainWindow,
     QWidget,
     QHBoxLayout,
     QVBoxLayout,
@@ -129,6 +128,7 @@ class NoteView(QWidget):
         """Connect UI signals to handlers"""
         parent = self.parent()
         from main_window import MainWindow
+
         if isinstance(parent, MainWindow):
             parent.style_changed.connect(self.content_area.apply_dark_theme)
         # Internal Signals
@@ -147,7 +147,9 @@ class NoteView(QWidget):
 
         # Connect search and list selection
         self.search_input.textChanged.connect(self._on_search_text_changed)
-        self.search_sidebar.itemSelectionChanged.connect(self._on_list_selection_changed)
+        self.search_sidebar.itemSelectionChanged.connect(
+            self._on_list_selection_changed
+        )
 
     def _on_note_created(self, folder_id: int) -> None:
         try:

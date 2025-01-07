@@ -1,16 +1,16 @@
+from PySide6.QtCore import QObject, Signal
 from sqlite3 import Connection
 from pathlib import Path
-from typing import Dict, List, Optional, TypedDict, NamedTuple
+from typing import Dict, List, Optional, NamedTuple
 from db_api import Note, Folder, FolderTreeItem
+
 
 class NoteSearchResult(NamedTuple):
     """Represents a search result containing note ID and title"""
+
     id: int
     title: str
-from pydantic import BaseModel
 
-
-from PySide6.QtCore import QObject, Signal
 
 NOTES_FILE = Path("/tmp/notes.yml")
 API_URL = "http://eir:37242"  # TODO inherit from cli
@@ -40,7 +40,7 @@ class NoteModel(QObject):
         """Get all notes from all folders"""
         cursor = self.db_connection.cursor()
         cursor.execute("SELECT * FROM notes")
-        
+
         # Convert tuple rows to dictionaries using column names
         columns = [col[0] for col in cursor.description]
         return [Note(**dict(zip(columns, row))) for row in cursor.fetchall()]
@@ -78,7 +78,9 @@ class NoteModel(QObject):
 
         """
         cursor = self.db_connection.cursor()
-        cursor.row_factory = lambda cursor, row: {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
+        cursor.row_factory = lambda cursor, row: {
+            col[0]: row[idx] for idx, col in enumerate(cursor.description)
+        }
 
         # Get all folders
         cursor.execute("SELECT * FROM folders")
@@ -96,7 +98,7 @@ class NoteModel(QObject):
                 folder=Folder(**row),
                 parent_id=parent_id,
                 notes=[],
-                children=[]
+                children=[],
             )
 
         # Get all notes and organize them under their folders with multiple ordering criteria
@@ -132,30 +134,33 @@ class NoteModel(QObject):
 
     def search_notes(self, query: str) -> List[NoteSearchResult]:
         """Perform full text search on notes
-        
+
         Args:
             query: The search query string
-            
+
         Returns:
             List of NoteSearchResult containing note IDs and titles
         """
         cursor = self.db_connection.cursor()
-        cursor.execute("""
-            SELECT id, title, 
+        cursor.execute(
+            """
+            SELECT id, title,
                    length(title) - length(replace(lower(title), lower(?), '')) AS relevance
             FROM notes_fts
             WHERE notes_fts MATCH ?
             ORDER BY relevance DESC
-        """, (query, query))
-        
+        """,
+            (query, query),
+        )
+
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
     def get_note_from_search_result(self, result: NoteSearchResult) -> Optional[Note]:
         """Get full note details from a search result
-        
+
         Args:
             result: The NoteSearchResult to get full details for
-            
+
         Returns:
             The full Note object if found, None otherwise
         """

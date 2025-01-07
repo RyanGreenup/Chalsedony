@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from decimal import Decimal
-from typing import Dict, List, Optional, TypedDict
+from typing import List, Optional
 
 
 class Note(BaseModel):
@@ -59,4 +59,4 @@ class FolderTreeItem(BaseModel):
     folder: Folder
     parent_id: Optional[str]
     notes: List[Note]
-    children: List['FolderTreeItem'] = []
+    children: List["FolderTreeItem"] = []
