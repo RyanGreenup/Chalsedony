@@ -31,23 +31,23 @@ class NoteTree(QTreeWidget):
 
         # First pass: Create all folder items
         for folder_id, folder_data in tree_data.items():
-            if folder_data["type"] == "folder":
+            if folder_data.type == "folder":
                 folder_item = QTreeWidgetItem(self)
-                folder_item.setText(0, folder_data["folder"].title)
+                folder_item.setText(0, folder_data.folder.title)
                 folder_item.setData(0, Qt.ItemDataRole.UserRole, ("folder", folder_id))
                 folder_items[folder_id] = folder_item
 
                 # If it has a parent, add it under the parent
                 if (
-                    folder_data["parent_id"]
-                    and folder_data["parent_id"] in folder_items
+                    folder_data.parent_id
+                    and folder_data.parent_id in folder_items
                 ):
-                    folder_items[folder_data["parent_id"]].addChild(folder_item)
+                    folder_items[folder_data.parent_id].addChild(folder_item)
 
         # Second pass: Add notes under their folders
         for folder_id, folder_data in tree_data.items():
-            if folder_data["type"] == "folder":
-                for note in folder_data["notes"]:
+            if folder_data.type == "folder":
+                for note in folder_data.notes:
                     note_item = QTreeWidgetItem(folder_items[folder_id])
                     note_item.setText(0, note.title)
                     note_item.setData(0, Qt.ItemDataRole.UserRole, ("note", note.id))
