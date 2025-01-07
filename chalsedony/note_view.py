@@ -148,7 +148,7 @@ class NoteView(QWidget):
         self.model.refreshed.connect(self._refresh)
         # Tree
         self.tree_widget.folder_rename_requested.connect(self.update_folder_title)
-        # AI: Connect that signal here
+        self.tree_widget.folder_moved.connect(self.update_folder_parent)
 
         # Connect search and list selection
         self.search_input.textChanged.connect(self._on_search_text_changed)
@@ -171,7 +171,6 @@ class NoteView(QWidget):
         """Update a folder's title and refresh the view"""
         self.model.update_folder(folder_id, title=new_title)
 
-    # AI: Use this function to handle folder renames
     def update_folder_parent(self, folder_id: str, new_parent_id: str) -> None:
         """Update a folder's parent ID and refresh the view"""
         self.model.update_folder(folder_id, parent_id=new_parent_id)
