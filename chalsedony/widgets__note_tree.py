@@ -95,4 +95,3 @@ class NoteTree(QTreeWidget):
     def create_note(self, clicked_item: QTreeWidgetItem) -> None:
         """Create a new note under the selected folder"""
         print("TODO implement this")
-

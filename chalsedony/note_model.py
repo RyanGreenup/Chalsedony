@@ -219,7 +219,7 @@ class NoteModel(QObject):
 
         # Add updated_time
         updates.append("updated_time = ?")
-        params.append(int(time.time()))
+        params.append(str(int(time.time())))  # Convert timestamp to string
 
         # Add note_id last for WHERE clause
         params.append(note_id)
