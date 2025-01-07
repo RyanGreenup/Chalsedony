@@ -16,6 +16,7 @@ class NoteTree(QTreeWidget):
     note_created = Signal(int)
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
+    # AI: Create a signal to move a note to a different parent folder
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -84,6 +85,7 @@ class NoteTree(QTreeWidget):
 
         # Collapse all folders by default
         self.collapseAll()
+
 
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""

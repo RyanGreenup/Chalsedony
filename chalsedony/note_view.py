@@ -149,6 +149,7 @@ class NoteView(QWidget):
         # Tree
         self.tree_widget.folder_rename_requested.connect(self.update_folder_title)
         self.tree_widget.folder_moved.connect(self.update_folder_parent)
+        # Connect the signal to the update_note_folder method AI!
 
         # Connect search and list selection
         self.search_input.textChanged.connect(self._on_search_text_changed)
