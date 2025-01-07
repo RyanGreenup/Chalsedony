@@ -1,13 +1,20 @@
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu, QApplication
+from PySide6.QtWidgets import (
+    QTreeWidget,
+    QTreeWidgetItem,
+    QWidget,
+    QMenu,
+    QApplication,
+    QInputDialog,
+)
 from note_model import NoteModel
 from db_api import FolderTreeItem
 
 
 class NoteTree(QTreeWidget):
     note_created = Signal(int)
-    # AI: Create a signal to request a folder rename here
+    folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -87,7 +94,26 @@ class NoteTree(QTreeWidget):
         create_action.triggered.connect(lambda: self.create_note(item))
         menu.addAction(create_action)
 
+        # Add Rename action for folders
+        if item_type == "folder":
+            rename_action = QAction("Rename Folder", self)
+            rename_action.triggered.connect(lambda: self.request_folder_rename(item))
+            menu.addAction(rename_action)
+
         menu.exec(self.viewport().mapToGlobal(position))
+
+    def request_folder_rename(self, item: QTreeWidgetItem) -> None:
+        """Handle folder rename request"""
+        item_type, folder_id = item.data(0, Qt.ItemDataRole.UserRole)
+        if item_type == "folder":
+            new_title, ok = QInputDialog.getText(
+                self,
+                "Rename Folder",
+                "Enter new folder name:",
+                text=item.text(0)
+            )
+            if ok and new_title:
+                self.folder_rename_requested.emit(folder_id, new_title)
 
     def copy_to_clipboard(self, text: str) -> None:
         """Copy text to the system clipboard"""
