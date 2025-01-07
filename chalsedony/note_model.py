@@ -65,11 +65,8 @@ class NoteModel(QObject):
             if parent_id == "":
                 parent_id = None
             elif parent_id is not None:
-                try:
-                    # Convert UUID string to integer hash if needed
-                    parent_id = hash(parent_id)
-                except (ValueError, TypeError):
-                    parent_id = None
+                # Keep parent_id as string
+                parent_id = str(parent_id)
                 
             folders[row["id"]] = FolderTreeItem(
                 type="folder",
