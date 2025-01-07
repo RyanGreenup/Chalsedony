@@ -84,6 +84,7 @@ class NoteModel(QObject):
         """Create a new note under the specified folder"""
         print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
+    # Improve this so folders are always sorted by title AI!
     def get_note_tree_structure(
         self, order_by: str = "order"
     ) -> Dict[str, FolderTreeItem]:
@@ -283,3 +284,5 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
         cursor.execute(query, params)
         self.db_connection.commit()
+
+        self.refreshed.emit()
