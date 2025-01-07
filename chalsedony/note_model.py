@@ -167,3 +167,12 @@ class NoteModel(QObject):
             The full Note object if found, None otherwise
         """
         return self.find_note_by_id(result.id)
+
+    # AI! Create a method that can update the following fields of a note:
+    # 
+    # - title
+    # - body
+    # - parent_id
+    # 
+    # These should be optional fields and be modified if not specified.
+
