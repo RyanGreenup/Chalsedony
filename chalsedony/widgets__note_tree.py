@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu, QApplication
 from note_model import NoteModel
+from db_api import FolderTreeItem
 
 
 class NoteTree(QTreeWidget):
@@ -28,8 +29,15 @@ class NoteTree(QTreeWidget):
         # Create a dict to store folder items for quick lookup
         folder_items = {}
 
-        def add_folder_to_tree(parent_widget, folder_data):
-            """Recursively add folders and their contents to the tree"""
+        def add_folder_to_tree(
+            parent_widget: QTreeWidget | QTreeWidgetItem, folder_data: FolderTreeItem
+        ) -> None:
+            """Recursively add folders and their contents to the tree
+
+            Args:
+                parent_widget: The parent widget to add items to (either the main tree or a folder item)
+                folder_data: The folder data structure containing folder info and child items
+            """
             folder_item = QTreeWidgetItem(parent_widget)
             folder_item.setText(0, folder_data.folder.title)
             folder_item.setData(
