@@ -194,8 +194,12 @@ class NoteTree(QTreeWidget):
         dragged_type, dragged_id = self._dragged_item.data(0, Qt.ItemDataRole.UserRole)
         target_type, target_id = target_item.data(0, Qt.ItemDataRole.UserRole)
 
-        # Handle both folder and note moves
+        # Handle invalid operations
         if target_type != "folder":
+            if dragged_type == "folder" and target_type == "note":
+                self.send_status_message("Cannot drop folders onto notes")
+            elif dragged_type == "note" and target_type == "note":
+                self.send_status_message("Cannot drop notes onto other notes")
             event.ignore()
             return
 
@@ -235,7 +239,6 @@ class NoteTree(QTreeWidget):
         # Reset dragged item
         self._dragged_item = None
 
-    # AI: Use this method to send a message to the status bar
     def send_status_message(self, message: str) -> None:
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
