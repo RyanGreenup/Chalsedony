@@ -160,6 +160,26 @@ class NoteModel(QObject):
                 if folder_data.parent_id in folders:
                     folders[folder_data.parent_id].children.append(folder_data)
 
+        # Sort folders and their children by title
+        def sort_folders(folder_dict):
+            # Convert dict to list of tuples and sort by folder title
+            sorted_folders = sorted(
+                folder_dict.items(),
+                key=lambda x: x[1].folder.title.lower()
+            )
+            # Convert back to dict while maintaining order
+            return dict(sorted_folders)
+
+        # Sort root folders
+        root_folders = sort_folders(root_folders)
+
+        # Sort children of each folder
+        for folder_data in folders.values():
+            if folder_data.children:
+                folder_data.children.sort(
+                    key=lambda x: x.folder.title.lower()
+                )
+
         return root_folders
 
     def refresh(self) -> None:
