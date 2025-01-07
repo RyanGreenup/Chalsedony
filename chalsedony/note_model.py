@@ -28,9 +28,9 @@ class NoteModel(QObject):
             return Note(**row)
         return None
 
-    # TODO
-    # def get_all_notes(self) -> List[Note]:
-    #     """Get all notes from all folders"""
+    # Implement this AI!
+    def get_all_notes(self) -> List[Note]:
+        """Get all notes from all folders"""
 
     def on_note_content_changed(self, note_id: int, content: str) -> None:
         """Handle note content changes from view"""
