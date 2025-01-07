@@ -167,6 +167,8 @@ class NoteView(QWidget):
                 update_title_from_heading=True,
             )
 
+    # Create a method to update the folder a note is in AI!
+
     def update_folder_title(self, folder_id: str, new_title: str) -> None:
         """Update a folder's title and refresh the view"""
         self.model.update_folder(folder_id, title=new_title)

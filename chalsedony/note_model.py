@@ -226,6 +226,7 @@ class NoteModel(QObject):
         """
         return self.find_note_by_id(result.id)
 
+    # AI: Use this method
     def update_note(
         self,
         note_id: str,
@@ -312,3 +313,4 @@ class NoteModel(QObject):
         self.db_connection.commit()
 
         self.refreshed.emit()
+
