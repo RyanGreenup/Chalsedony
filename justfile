@@ -1,10 +1,10 @@
 check:
-    ruff format draftsmith/*.py
-    ruff check draftsmith --fix
-    pyright draftsmith
-    ruff format draftsmith/*.py
-    mypy --strict draftsmith
-    # vulture draftsmith/*.py
+    ruff format chalsedony/*.py
+    ruff check chalsedony --fix
+    pyright chalsedony
+    ruff format chalsedony/*.py
+    mypy --strict chalsedony
+    # vulture chalsedony/*.py
 
 run:
-    python draftsmith/main.py --no-dark-mode
+    python chalsedony/main.py --no-dark-mode

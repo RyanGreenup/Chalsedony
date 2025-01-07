@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "draftsmith"
+name = "chalsedony"
 version = "0.1.0"
-description = "A GUI for the Draftsmith Notetaking tool"
+description = "A GUI for the Chalsedony Notetaking tool"
 authors = ["ryan <exogenesis@protonmail.com>"]
 license = "GPL"
 readme = "README.md"
@@ -20,4 +20,4 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 duckdb-browser = "main:app"
 
-packages = [{include = "*", from="draftsmith"}]
+packages = [{include = "*", from="chalsedony"}]

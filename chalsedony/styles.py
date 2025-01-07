@@ -70,12 +70,12 @@ QTreeView::branch:!has-children:!has-siblings:adjoins-item {
 
 QTreeView::branch:has-children:!has-siblings:closed,
 QTreeView::branch:closed:has-children:has-siblings {
-    image: url(draftsmith/icons/chevron-right.svg);
+    image: url(chalsedony/icons/chevron-right.svg);
 }
 
 QTreeView::branch:open:has-children:!has-siblings,
 QTreeView::branch:open:has-children:has-siblings {
-    image: url(draftsmith/icons/chevron-down.svg);
+    image: url(chalsedony/icons/chevron-down.svg);
 }
 
 """

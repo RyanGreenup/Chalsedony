@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
         self.create_tool_bar()
         self.create_status_bar()
 
-        self.setWindowTitle("Draftsmith")
+        self.setWindowTitle("Chalsedony")
         self.setGeometry(100, 100, 800, 600)
 
         # Initialize model and view
@@ -286,7 +286,7 @@ class MainWindow(QMainWindow):
 
     def show_about_dialog(self) -> None:
         QMessageBox.about(
-            self, "About Draftsmith", "Draftsmith\nVersion 0.1.0\n\nA notetaking tool."
+            self, "About Chalsedony", "Chalsedony\nVersion 0.1.0\n\nA notetaking tool."
         )
 
     def show_command_palette(self) -> None:
