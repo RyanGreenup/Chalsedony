@@ -32,7 +32,7 @@ class NoteTree(QTreeWidget):
         for folder_id, folder_data in tree_data.items():
             if folder_data["type"] == "folder":
                 folder_item = QTreeWidgetItem(self)
-                folder_item.setText(0, folder_data["title"])
+                folder_item.setText(0, folder_data["folder"].title)
                 folder_item.setData(0, Qt.ItemDataRole.UserRole, ("folder", folder_id))
                 folder_items[folder_id] = folder_item
 
@@ -48,7 +48,7 @@ class NoteTree(QTreeWidget):
             if folder_data["type"] == "folder":
                 for note in folder_data["notes"]:
                     note_item = QTreeWidgetItem(folder_items[folder_id])
-                    note_item.setText(0, note["title"])
+                    note_item.setText(0, note.title)
                     note_item.setData(0, Qt.ItemDataRole.UserRole, ("note", note["id"]))
 
         # Expand all folders by default
