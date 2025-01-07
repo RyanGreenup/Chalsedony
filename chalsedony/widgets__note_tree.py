@@ -141,21 +141,6 @@ class NoteTree(QTreeWidget):
         self._dragged_item = self.currentItem()
         if self._dragged_item:
             event.acceptProposedAction()
-        elif dragged_type == "note":
-            # Remove the dragged note from its current position
-            parent = self._dragged_item.parent()
-            if parent:
-                parent.removeChild(self._dragged_item)
-            else:
-                self.takeTopLevelItem(self.indexOfTopLevelItem(self._dragged_item))
-
-            # Add the note to the target folder
-            target_item.addChild(self._dragged_item)
-            target_item.setExpanded(True)
-
-            # Emit signal to update model
-            self.note_moved.emit(dragged_id, target_id)
-            event.acceptProposedAction()
 
     def dragMoveEvent(self, event: QDragMoveEvent) -> None:
         """Handle drag move event with hover highlighting"""
