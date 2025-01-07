@@ -1,8 +1,9 @@
+import sys
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QMenu
 from note_model import NoteModel
-
+import yaml
 
 class NoteTree(QTreeWidget):
     note_created = Signal(int)
