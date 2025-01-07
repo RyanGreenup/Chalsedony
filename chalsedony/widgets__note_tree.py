@@ -63,6 +63,7 @@ class NoteTree(QTreeWidget):
         menu = QMenu()
         
         # Add ID display as disabled menu item
+        # When the user clicks on this item the id should be copied to the clipboard AI!
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
         id_action = QAction(f"{item_type.capitalize()} ID: {item_id}", self)
         id_action.setEnabled(False)  # Make it non-clickable
