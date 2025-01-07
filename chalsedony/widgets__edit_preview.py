@@ -63,8 +63,9 @@ class EditPreview(QWidget):
         self.preview.setStyleSheet("background: transparent;")
         self.preview.page().setBackgroundColor(Qt.GlobalColor.transparent)
 
-        # Connect the edit widget to update preview
+        # Connect the edit widget to update preview and scroll
         self.editor.textChanged.connect(self.update_preview_local)
+        self.editor.verticalScrollBar().valueChanged.connect(self._sync_preview_scroll)
 
         self.splitter.addWidget(self.editor)
         self.splitter.addWidget(self.preview)
@@ -208,7 +209,20 @@ class EditPreview(QWidget):
         """Split editor and preview equally"""
         self._animate_splitter(0.5)
 
+    def _sync_preview_scroll(self) -> None:
+        """Synchronize the preview scroll position with the editor"""
+        scroll_fraction = self.editor.verticalScrollFraction()
+        js = f"window.scrollTo(0, document.documentElement.scrollHeight * {scroll_fraction});"
+        self.preview.page().runJavaScript(js)
+
 
 class MDTextEdit(QTextEdit):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+
+    def verticalScrollFraction(self) -> float:
+        """Return the current vertical scroll position as a fraction (0-1)"""
+        scrollbar = self.verticalScrollBar()
+        if scrollbar.maximum() == 0:
+            return 0
+        return scrollbar.value() / scrollbar.maximum()
