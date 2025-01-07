@@ -215,6 +215,11 @@ class EditPreview(QWidget):
         js = f"window.scrollTo(0, document.documentElement.scrollHeight * {scroll_fraction});"
         self.preview.page().runJavaScript(js)
 
+    def apply_dark_theme(self, dark_mode: bool) -> None:
+        self.preview.settings().setAttribute(
+            self.preview.settings().WebAttribute.ForceDarkMode, dark_mode
+        )
+
 
 class MDTextEdit(QTextEdit):
     def __init__(self, parent: QWidget | None = None) -> None:

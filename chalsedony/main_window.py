@@ -49,6 +49,7 @@ class MainWindow(QMainWindow):
     menu_actions: Dict[str, QAction]
     base_font_size: float = 10.0  # Store original size
     current_scale: float = 1.0  # Track current scale factor
+    style_changed = Signal(bool)  # Emits True for dark mode, False for light mode
     refresh = Signal()
 
     def __init__(self, database: Path) -> None:
@@ -109,11 +110,13 @@ class MainWindow(QMainWindow):
                     app.setPalette(self.palettes["dark"])
                     app.setProperty("darkMode", True)
                     app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
+                    self.style_changed.emit(True)
                 else:
                     # Switch to light mode
                     app.setPalette(self.palettes["light"])
                     app.setProperty("darkMode", False)
                     app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
+                    self.style_changed.emit(False)
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
