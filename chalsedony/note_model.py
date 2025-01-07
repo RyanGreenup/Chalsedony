@@ -35,7 +35,10 @@ class NoteModel(QObject):
         """Get all notes from all folders"""
         cursor = self.db_connection.cursor()
         cursor.execute("SELECT * FROM notes")
-        return [Note(**row) for row in cursor.fetchall()]
+        
+        # Convert tuple rows to dictionaries using column names
+        columns = [col[0] for col in cursor.description]
+        return [Note(**dict(zip(columns, row))) for row in cursor.fetchall()]
 
     def on_note_content_changed(self, note_id: int, content: str) -> None:
         """Handle note content changes from view"""
