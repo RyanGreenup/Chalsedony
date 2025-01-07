@@ -45,8 +45,12 @@ class NoteModel(QObject):
         """Create a new note under the specified folder"""
         print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
-    def get_note_tree_structure(self) -> Dict[str, FolderTreeItem]:
+    def get_note_tree_structure(self, order_by="order") -> Dict[str, FolderTreeItem]:
         """Get the folder/note tree structure from the database
+
+        params:
+            order_by: The order in which to sort the notes. Default is "order" which
+                      is the user custom order. Other options are "created_time", "updated_time", "title"
 
         Returns:
             A dictionary where keys are folder IDs and values are FolderTreeItem objects containing:
@@ -62,7 +66,7 @@ class NoteModel(QObject):
               between joplin and this GUI, If you want the notes gone, just empty the rubbish bin.
 
         Future work
-            - Toggle ordering betwwen Order field, modified, created, alphabetically
+            - Toggle ordering between Order field, modified, created, alphabetically
 
         """
         cursor = self.db_connection.cursor()
@@ -87,9 +91,15 @@ class NoteModel(QObject):
                 children=[]
             )
 
-        # Get all notes and organize them under their folders, ordered by the order field
-        # Improve this to next order by alphabetically, modified, created AI!
-        cursor.execute("SELECT * FROM notes ORDER BY \"order\" ASC")
+        # Get all notes and organize them under their folders with multiple ordering criteria
+        cursor.execute(f"""
+            SELECT * FROM notes
+            ORDER BY
+                "{order_by}" ASC,
+                title COLLATE NOCASE ASC,
+                updated_time DESC,
+                created_time DESC
+        """)
         for note_row in cursor.fetchall():
             folder_id = note_row["parent_id"]
             if folder_id in folders:
