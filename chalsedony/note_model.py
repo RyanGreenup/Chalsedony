@@ -25,7 +25,10 @@ class NoteModel(QObject):
         row = cursor.fetchone()
 
         if row:
-            return Note(**row)
+            # Convert tuple to dictionary using cursor description
+            columns = [col[0] for col in cursor.description]
+            row_dict = dict(zip(columns, row))
+            return Note(**row_dict)
         return None
 
     def get_all_notes(self) -> List[Note]:
