@@ -177,6 +177,17 @@ class NoteTree(QTreeWidget):
             if dragged_id == target_id or self._is_child_of(dragged_item, target_item):
                 return
 
+            # Remove the dragged item from its current position
+            parent = dragged_item.parent()
+            if parent:
+                parent.removeChild(dragged_item)
+            else:
+                self.takeTopLevelItem(self.indexOfTopLevelItem(dragged_item))
+
+            # Add the dragged item to the target folder
+            target_item.addChild(dragged_item)
+            target_item.setExpanded(True)  # Expand to show the moved item
+
             # Emit signal to update model
             self.folder_moved.emit(dragged_id, target_id)
             event.accept()
