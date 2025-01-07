@@ -4,6 +4,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QFrame,
     QSplitter,
+    QTabWidget,
+    QListWidget,
 )
 from PySide6.QtCore import (
     Qt,
@@ -38,6 +40,14 @@ class NoteView(QWidget):
 
     def _populate_ui(self) -> None:
         self.tree_widget.populate_tree()
+        self._populate_notes_list()
+        
+    def _populate_notes_list(self) -> None:
+        """Populate the all notes list view"""
+        self.notes_list.clear()
+        notes = self.model.get_all_notes()
+        for note in notes:
+            self.notes_list.addItem(note.title)
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -50,16 +60,25 @@ class NoteView(QWidget):
         self.main_splitter.setHandleWidth(15)  # Increase grab area
         main_layout.addWidget(self.main_splitter)
 
-        # Left sidebar
+        # Left sidebar with tabs
         self.left_sidebar = QFrame()
         self.left_sidebar.setObjectName("leftSidebar")
         self.left_sidebar.setFrameShape(QFrame.Shape.StyledPanel)
         left_layout = QVBoxLayout()
         left_layout.setContentsMargins(0, 0, 0, 0)
-        # TODO should I instantiate the widgets earlier?
-        # then simply add them in the layout here?
+        
+        # Create tab widget
+        self.left_tabs = QTabWidget()
+        
+        # First tab - Tree view
         self.tree_widget = NoteTree(self.model)
-        left_layout.addWidget(self.tree_widget)
+        self.left_tabs.addTab(self.tree_widget, "Folders")
+        
+        # Second tab - List view
+        self.notes_list = QListWidget()
+        self.left_tabs.addTab(self.notes_list, "All Notes")
+        
+        left_layout.addWidget(self.left_tabs)
         self.left_sidebar.setLayout(left_layout)
 
         # Main content area
@@ -97,6 +116,9 @@ class NoteView(QWidget):
         # Receive signals
         # Receive signals from Model
         self.model.refreshed.connect(self._refresh)
+        
+        # Connect list selection
+        self.notes_list.itemSelectionChanged.connect(self._on_list_selection_changed)
 
     def _on_note_created(self, folder_id: int) -> None:
         try:
@@ -147,7 +169,23 @@ class NoteView(QWidget):
 
         item = items[0]
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
+        self._handle_note_selection(item_type, item_id)
 
+    def _on_list_selection_changed(self) -> None:
+        """Handle selection from the all notes list"""
+        selected = self.notes_list.selectedItems()
+        if not selected:
+            return
+            
+        # Get the note title and find the corresponding note
+        title = selected[0].text()
+        notes = self.model.get_all_notes()
+        note = next((n for n in notes if n.title == title), None)
+        if note:
+            self._handle_note_selection("note", note.id)
+
+    def _handle_note_selection(self, item_type: str, item_id: int) -> None:
+        """Common handler for note selection from either tree or list"""
         if item_type == "note":
             self.current_note_id = item_id
             note = self.model.find_note_by_id(item_id)
