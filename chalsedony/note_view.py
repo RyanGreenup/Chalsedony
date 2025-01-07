@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QSplitter,
     QTabWidget,
     QListWidget,
+    QLineEdit,
 )
 from PySide6.QtCore import (
     Qt,
@@ -42,12 +43,20 @@ class NoteView(QWidget):
         self.tree_widget.populate_tree()
         self._populate_notes_list()
         
-    def _populate_notes_list(self) -> None:
-        """Populate the all notes list view"""
+    def _populate_notes_list(self, search_query: str = "") -> None:
+        """Populate the all notes list view with optional search filtering"""
         self.search_sidebar.clear()
-        notes = self.model.get_all_notes()
-        for note in notes:
-            self.search_sidebar.addItem(note.title)
+        
+        if search_query:
+            # Use full text search
+            results = self.model.search_notes(search_query)
+            for result in results:
+                self.search_sidebar.addItem(result.title)
+        else:
+            # Show all notes
+            notes = self.model.get_all_notes()
+            for note in notes:
+                self.search_sidebar.addItem(note.title)
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -74,9 +83,23 @@ class NoteView(QWidget):
         self.tree_widget = NoteTree(self.model)
         self.left_tabs.addTab(self.tree_widget, "Folders")
         
-        # Second tab - List view
+        # Second tab - Search and List view
+        search_tab = QWidget()
+        search_layout = QVBoxLayout()
+        search_layout.setContentsMargins(0, 0, 0, 0)
+        search_layout.setSpacing(5)
+        
+        # Search bar
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Search notes...")
+        search_layout.addWidget(self.search_input)
+        
+        # List view
         self.search_sidebar = QListWidget()
-        self.left_tabs.addTab(self.search_sidebar, "All Notes")
+        search_layout.addWidget(self.search_sidebar)
+        
+        search_tab.setLayout(search_layout)
+        self.left_tabs.addTab(search_tab, "All Notes")
         
         left_layout.addWidget(self.left_tabs)
         self.left_sidebar.setLayout(left_layout)
@@ -117,7 +140,8 @@ class NoteView(QWidget):
         # Receive signals from Model
         self.model.refreshed.connect(self._refresh)
         
-        # Connect list selection
+        # Connect search and list selection
+        self.search_input.textChanged.connect(self._on_search_text_changed)
         self.search_sidebar.itemSelectionChanged.connect(self._on_list_selection_changed)
 
     def _on_note_created(self, folder_id: int) -> None:
@@ -170,6 +194,10 @@ class NoteView(QWidget):
         item = items[0]
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
         self._handle_note_selection(item_type, item_id)
+
+    def _on_search_text_changed(self, text: str) -> None:
+        """Handle search text changes"""
+        self._populate_notes_list(text)
 
     def _on_list_selection_changed(self) -> None:
         """Handle selection from the all notes list"""
