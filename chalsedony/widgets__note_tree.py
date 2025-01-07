@@ -27,6 +27,8 @@ class NoteTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
+    
+    # Improve this so all items are collapsed by default AI!
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model"""
         self.clear()
@@ -71,7 +73,6 @@ class NoteTree(QTreeWidget):
         # Expand all folders by default
         self.expandAll()
 
-    # Add a context menu to rename a note AI!
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
