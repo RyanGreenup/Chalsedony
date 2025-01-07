@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from decimal import Decimal
 
 
-# AI: The note model is defined here
 class Note(BaseModel):
     id: str
     parent_id: str = ""
@@ -36,7 +35,6 @@ class Note(BaseModel):
     deleted_time: int = 0
 
 
-# AI: The Folder model is defined here
 class Folder(BaseModel):
     id: str
     title: str = ""
@@ -54,4 +52,3 @@ class Folder(BaseModel):
     user_data: str = ""
     deleted_time: int = 0
 
-# AI: Define the model here

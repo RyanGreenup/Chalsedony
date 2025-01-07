@@ -1,8 +1,7 @@
 from sqlite3 import Connection
 from pathlib import Path
 from typing import Dict, List, Optional
-# AI: Import the model from db_api here
-from db_api import Note
+from db_api import Note, Folder
 
 from PySide6.QtCore import QObject, Signal
 
@@ -54,14 +53,14 @@ class NoteModel(QObject):
             - notes: list of notes in this folder
         """
         cursor = self.db_connection.cursor()
+        cursor.row_factory = lambda cursor, row: {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
 
         # Get all folders
         cursor.execute("SELECT * FROM folders")
         folders = {
             row["id"]: {
                 "type": "folder",
-                "title": row["title"],
-                "parent_id": row["parent_id"],
+                "folder": Folder(**row),
                 "notes": [],
             }
             for row in cursor.fetchall()
@@ -72,9 +71,7 @@ class NoteModel(QObject):
         for note_row in cursor.fetchall():
             folder_id = note_row["parent_id"]
             if folder_id in folders:
-                folders[folder_id]["notes"].append(
-                    {"id": note_row["id"], "title": note_row["title"]}
-                )
+                folders[folder_id]["notes"].append(Note(**note_row))
 
         return folders
 
