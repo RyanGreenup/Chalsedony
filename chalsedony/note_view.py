@@ -20,7 +20,6 @@ from widgets__edit_preview import EditPreview
 
 class NoteView(QWidget):
     note_content_changed = Signal(int, str)  # (note_id, content)
-    note_saved = Signal(int, str)  # (note_id)
 
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
     DEFAULT_SIDEBAR_WIDTH = 200  # Default sidebar width
@@ -91,7 +90,6 @@ class NoteView(QWidget):
         # Emit Signals
         # Emit signals to Model
         self.content_area.editor.textChanged.connect(self._on_editor_text_changed)
-        self.note_saved.connect(self.model.save)
         self.tree_widget.note_created.connect(
             lambda folder_id: self._on_note_created(folder_id)
         )
@@ -130,12 +128,6 @@ class NoteView(QWidget):
             # Restore original animation state
             self.tree_widget.setAnimated(is_animated)
 
-    def save(self) -> None:
-        """Emit a signal to save the current note"""
-        if id := self.current_note_id:
-            # Save the note
-            self.note_saved.emit(id, self.content_area.editor.toPlainText())
-
     def _on_editor_text_changed(self) -> None:
         """
         Handle the text changed signal from the editor
@@ -160,7 +152,7 @@ class NoteView(QWidget):
             self.current_note_id = item_id
             note = self.model.find_note_by_id(item_id)
             if note:
-                self.content_area.editor.setPlainText(note.content or "")
+                self.content_area.editor.setPlainText(note.body or "")
         else:
             self.current_note_id = None
             self.content_area.editor.clear()
