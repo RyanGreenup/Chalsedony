@@ -10,18 +10,6 @@ NOTES_FILE = Path("/tmp/notes.yml")
 API_URL = "http://eir:37242"  # TODO inherit from cli
 
 
-# OK, so what we need to do here is take the `TreeTagWithNotes` and use it as the model
-# It will have no content by default, when the user requests it, check for None and fetch it.
-# The model will keep a copy of the TreeTagWithNotes in memory and update it when the user modifies it
-# the model will attempt to mirror the api representation of the TreeTagWithNotes on the server as closely as possible
-# A refresh signal will tell the view to update its representation of the in-memory model
-# If this receives a refresh signal, it will pull down the latest data from the server and send a refresh signal to the view
-# This means the content in memory would be lost and need to be pulled again for each one.
-
-
-
-
-
 class NoteModel(QObject):
     refreshed = Signal()  # Notify view to refresh
 
