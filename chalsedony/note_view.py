@@ -44,10 +44,10 @@ class NoteView(QWidget):
         
     def _populate_notes_list(self) -> None:
         """Populate the all notes list view"""
-        self.notes_list.clear()
+        self.search_sidebar.clear()
         notes = self.model.get_all_notes()
         for note in notes:
-            self.notes_list.addItem(note.title)
+            self.search_sidebar.addItem(note.title)
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -75,8 +75,8 @@ class NoteView(QWidget):
         self.left_tabs.addTab(self.tree_widget, "Folders")
         
         # Second tab - List view
-        self.notes_list = QListWidget()
-        self.left_tabs.addTab(self.notes_list, "All Notes")
+        self.search_sidebar = QListWidget()
+        self.left_tabs.addTab(self.search_sidebar, "All Notes")
         
         left_layout.addWidget(self.left_tabs)
         self.left_sidebar.setLayout(left_layout)
@@ -118,7 +118,7 @@ class NoteView(QWidget):
         self.model.refreshed.connect(self._refresh)
         
         # Connect list selection
-        self.notes_list.itemSelectionChanged.connect(self._on_list_selection_changed)
+        self.search_sidebar.itemSelectionChanged.connect(self._on_list_selection_changed)
 
     def _on_note_created(self, folder_id: int) -> None:
         try:
@@ -173,7 +173,7 @@ class NoteView(QWidget):
 
     def _on_list_selection_changed(self) -> None:
         """Handle selection from the all notes list"""
-        selected = self.notes_list.selectedItems()
+        selected = self.search_sidebar.selectedItems()
         if not selected:
             return
             
