@@ -1,0 +1,44 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>js/asciinema-player.min.js</file>
+        <file>js/auto-render.min.js</file>
+        <file>js/controllers</file>
+        <file>js/csrf-helper.js</file>
+        <file>js/dataTables.js</file>
+        <file>js/jquery.min.js</file>
+        <file>js/katex.min.js</file>
+        <file>js/keyboard-shortcuts.js</file>
+        <file>js/notes-dnd.js</file>
+        <file>js/service-worker.js</file>
+        <file>js/tags-dnd.js</file>
+        <file>js/theme-controller.js</file>
+        <file>js/wait_for_css.js</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>css/fonts.css</file>
+        <file>css/admonitions.css</file>
+        <file>css/markdown.css</file>
+        <file>css/tree.css</file>
+        <file>css/deflist.css</file>
+        <file>css/notes-dnd.css</file>
+        <file>css/asciinema-player.css</file>
+        <file>css/katex.css</file>
+        <file>css/current_page.css</file>
+        <file>css/my-details.css</file>
+        <file>css/text_edit.css</file>
+        <file>css/katex.min.css</file>
+        <file>css/vector.css</file>
+        <file>css/dnd.css</file>
+        <file>css/text-edit.css</file>
+        <file>css/tabs.css</file>
+        <file>css/dataTables.dataTables.min.css</file>
+        <file>css/figures.css</file>
+        <file>css/thumbnails.css</file>
+        <file>css/tailwind.css</file>
+        <file>css/code.css</file>
+        <file>css/tasklist.css</file>
+    </qresource>
+</RCC>
+
+
