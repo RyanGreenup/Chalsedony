@@ -23,6 +23,7 @@ from widgets__edit_preview import EditPreview
 
 class NoteView(QWidget):
     note_content_changed = Signal(int, str)  # (note_id, content)
+    # AI: Create the signal here
 
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
     DEFAULT_SIDEBAR_WIDTH = 200  # Default sidebar width
@@ -38,6 +39,8 @@ class NoteView(QWidget):
         self.setup_ui()
         self._populate_ui()
         self._connect_signals()
+
+    # Create a method to send a message to the status bar AI!
 
     def _populate_ui(self) -> None:
         self.tree_widget.populate_tree()

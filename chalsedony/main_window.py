@@ -372,3 +372,8 @@ class MainWindow(QMainWindow):
         status_bar = QStatusBar()
         self.setStatusBar(status_bar)
         status_bar.showMessage("Ready")
+
+    # AI: Create a method to set a message in the status bar
+
+    # AI: Create a method to connect signals
+    # AI: Listen for a status_bar_message signal from the view
