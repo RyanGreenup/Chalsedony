@@ -192,6 +192,9 @@ class NoteView(QWidget):
         is_animated = self.tree_widget.isAnimated()
         self.tree_widget.setAnimated(False)
 
+        # TODO When the user moves items in the tree they will be lost using this treeStateHandler
+        # This needs to be rconsidered so that the items in the tree widget are folded based on their id
+        # For now, we'll hold off on this until the underlying data is more stable
         try:
             tree_state_handler = TreeStateHandler(self.tree_widget)
             tree_state_handler.save_state()

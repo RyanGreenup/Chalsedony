@@ -190,7 +190,7 @@ class NoteModel(QObject):
 
     def refresh(self) -> None:
         """Refresh the model"""
-        print("TODO implement this")
+        self.refreshed.emit()
 
     def search_notes(self, query: str) -> List[NoteSearchResult]:
         """Perform full text search on notes

@@ -21,6 +21,7 @@ class NoteTree(QTreeWidget):
         super().__init__(parent)
         self.note_model = note_model
         self._hover_item: QTreeWidgetItem | None = None
+        self._dragged_item: QTreeWidgetItem | None = None
         self.setup_ui()
 
     def setup_ui(self) -> None:
@@ -34,9 +35,11 @@ class NoteTree(QTreeWidget):
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
         self.setDragDropMode(QTreeWidget.DragDropMode.InternalMove)
+        self.setSelectionMode(QTreeWidget.SelectionMode.SingleSelection)
 
         # Initialize hover tracking
         self._hover_item = None
+        self._dragged_item = None
 
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model"""
@@ -133,12 +136,27 @@ class NoteTree(QTreeWidget):
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         """Handle drag enter event"""
-        event.accept()
+        self._dragged_item = self.currentItem()
+        if self._dragged_item:
+            event.acceptProposedAction()
+        else:
+            event.ignore()
 
     def dragMoveEvent(self, event: QDragMoveEvent) -> None:
         """Handle drag move event with hover highlighting"""
+        if not self._dragged_item:
+            event.ignore()
+            return
+
         # Get item under mouse
         item = self.itemAt(event.position().toPoint())
+
+        # Only allow dropping on folders
+        if item:
+            item_type, _ = item.data(0, Qt.ItemDataRole.UserRole)
+            if item_type != "folder":
+                event.ignore()
+                return
 
         # Update hover highlight
         if item != self._hover_item:
@@ -148,51 +166,50 @@ class NoteTree(QTreeWidget):
                 item.setBackground(0, self.palette().highlight())
             self._hover_item = item
 
-        event.accept()
+        event.acceptProposedAction()
 
     def dropEvent(self, event: QDropEvent) -> None:
         """Handle drop event to move folders"""
+        if not self._dragged_item:
+            event.ignore()
+            return
+
         # Clear hover highlight
         if self._hover_item:
             self._hover_item.setBackground(0, self.palette().base())
             self._hover_item = None
 
-        # Get the dragged item
-        dragged_item = self.currentItem()
-        if not dragged_item:
-            return
-
         # Get the target item under the mouse
         target_item = self.itemAt(event.position().toPoint())
         if not target_item:
+            event.ignore()
             return
 
         # Get item types and IDs
-        dragged_type, dragged_id = dragged_item.data(0, Qt.ItemDataRole.UserRole)
+        dragged_type, dragged_id = self._dragged_item.data(0, Qt.ItemDataRole.UserRole)
         target_type, target_id = target_item.data(0, Qt.ItemDataRole.UserRole)
 
         # Only allow moving folders onto other folders
         if dragged_type == "folder" and target_type == "folder":
-            # Prevent moving a folder into itself or its own children
-            if dragged_id == target_id or self._is_child_of(dragged_item, target_item):
-                return
-
             # Remove the dragged item from its current position
-            parent = dragged_item.parent()
+            parent = self._dragged_item.parent()
             if parent:
-                parent.removeChild(dragged_item)
+                parent.removeChild(self._dragged_item)
             else:
-                self.takeTopLevelItem(self.indexOfTopLevelItem(dragged_item))
+                self.takeTopLevelItem(self.indexOfTopLevelItem(self._dragged_item))
 
             # Add the dragged item to the target folder
-            target_item.addChild(dragged_item)
+            target_item.addChild(self._dragged_item)
             target_item.setExpanded(True)  # Expand to show the moved item
 
             # Emit signal to update model
             self.folder_moved.emit(dragged_id, target_id)
-            event.accept()
+            event.acceptProposedAction()
         else:
             event.ignore()
+
+        # Reset dragged item
+        self._dragged_item = None
 
     def _is_child_of(
         self, child_item: QTreeWidgetItem, parent_item: QTreeWidgetItem
