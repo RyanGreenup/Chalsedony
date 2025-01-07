@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from decimal import Decimal
 
 
-# AI: The Note model is defined here
 class Note(BaseModel):
     id: str
     parent_id: str = ""

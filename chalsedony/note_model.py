@@ -46,5 +46,36 @@ class NoteModel(QObject):
 
 
 # Implement the method to get the tree data  AI!
-    def get_note_tree_structure():
+    def get_note_tree_structure(self) -> Dict[str, dict]:
+        """Get the folder/note tree structure from the database
+        
+        Returns:
+            A dictionary where keys are folder IDs and values are folder data including:
+            - type: "folder"
+            - title: folder title
+            - parent_id: parent folder ID or None
+            - notes: list of notes in this folder
+        """
+        cursor = self.db_connection.cursor()
+        
+        # Get all folders
+        cursor.execute("SELECT * FROM folders")
+        folders = {row['id']: {
+            'type': 'folder',
+            'title': row['title'],
+            'parent_id': row['parent_id'],
+            'notes': []
+        } for row in cursor.fetchall()}
+        
+        # Get all notes and organize them under their folders
+        cursor.execute("SELECT * FROM notes")
+        for note_row in cursor.fetchall():
+            folder_id = note_row['parent_id']
+            if folder_id in folders:
+                folders[folder_id]['notes'].append({
+                    'id': note_row['id'],
+                    'title': note_row['title']
+                })
+        
+        return folders
 
