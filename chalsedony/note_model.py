@@ -244,4 +244,42 @@ class NoteModel(QObject):
         cursor.execute(query, params)
         self.db_connection.commit()
 
-    # Write a method that can update the title and parent_id of a folder AI!
+    def update_folder(
+        self,
+        folder_id: str,
+        *,
+        title: Optional[str] = None,
+        parent_id: Optional[str] = None,
+    ) -> None:
+        """Update specific fields of a folder
+
+        Args:
+            folder_id: ID of the folder to update
+            title: New title (optional)
+            parent_id: New parent folder ID (optional)
+        """
+        updates = []
+        params = []
+
+        if title is not None:
+            updates.append("title = ?")
+            params.append(title)
+        if parent_id is not None:
+            updates.append("parent_id = ?")
+            params.append(parent_id)
+
+        if not updates:
+            return
+
+        # Add updated_time
+        updates.append("updated_time = ?")
+        params.append(str(int(time.time())))  # Convert timestamp to string
+
+        # Add folder_id last for WHERE clause
+        params.append(folder_id)
+
+        query = f"UPDATE folders SET {', '.join(updates)} WHERE id = ?"
+
+        cursor = self.db_connection.cursor()
+        cursor.execute(query, params)
+        self.db_connection.commit()
