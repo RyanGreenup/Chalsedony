@@ -1,14 +1,9 @@
 from sqlite3 import Connection
 from pathlib import Path
 from typing import Dict, List, Optional, TypedDict
-from db_api import Note, Folder
+from db_api import Note, Folder, FolderTreeItem
 from pydantic import BaseModel
 
-class FolderTreeItem(BaseModel):
-    type: str
-    folder: Folder
-    parent_id: Optional[int]
-    notes: List[Note]
 
 from PySide6.QtCore import QObject, Signal
 
