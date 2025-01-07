@@ -164,6 +164,8 @@ class NoteView(QWidget):
                 update_title_from_heading=True,
             )
 
+    # Create a handler to change a folder title and another method to change the folders parent, These should both request a refresh AI!
+
     def _on_note_created(self, folder_id: int) -> None:
         try:
             self.model.create_note(folder_id)
