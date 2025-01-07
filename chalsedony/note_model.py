@@ -18,10 +18,15 @@ class NoteModel(QObject):
         base_url = API_URL
         self.db_connection = db_connection
 
-    # Implement this AI!
     def find_note_by_id(self, note_id: int) -> Optional[Note]:
         """Find a note by its ID in the entire tree"""
-      
+        cursor = self.db_connection.cursor()
+        cursor.execute("SELECT * FROM notes WHERE id = ?", (note_id,))
+        row = cursor.fetchone()
+        
+        if row:
+            return Note(**row)
+        return None
 
     # TODO
     # def get_all_notes(self) -> List[Note]:
