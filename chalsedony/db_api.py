@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from decimal import Decimal
+from typing import Dict, List, Optional, TypedDict
 
 
 class Note(BaseModel):
@@ -52,3 +53,9 @@ class Folder(BaseModel):
     user_data: str = ""
     deleted_time: int = 0
 
+
+class FolderTreeItem(BaseModel):
+    type: str
+    folder: Folder
+    parent_id: Optional[str]
+    notes: List[Note]
