@@ -1,6 +1,7 @@
 from sqlite3 import Connection
 from pathlib import Path
 from typing import Dict, List, Optional
+# AI: Import the model from db_api here
 from db_api import Note
 
 from PySide6.QtCore import QObject, Signal
@@ -41,6 +42,7 @@ class NoteModel(QObject):
         """Create a new note under the specified folder"""
         print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
+    # Fix this to instead return a pydantic dictionary AI!
     def get_note_tree_structure(self) -> Dict[str, dict]:
         """Get the folder/note tree structure from the database
 
