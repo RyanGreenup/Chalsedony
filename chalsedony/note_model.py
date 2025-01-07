@@ -39,13 +39,13 @@ class NoteModel(QObject):
 
     def on_note_content_changed(self, note_id: int, content: str) -> None:
         """Handle note content changes from view"""
-        print(f"Note content changed for note ID {note_id}")
-        print(f"New content: {content}")
+        print("TODO Implement on note_content_changed 98032983298")
 
     def create_note(self, parent_folder_id: int) -> None:
         """Create a new note under the specified folder"""
         print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
+    # Improve this function so the notes underneat the folders can be ordered by there fields, use SQL to implement the ordering AI!
     def get_note_tree_structure(self) -> Dict[str, FolderTreeItem]:
         """Get the folder/note tree structure from the database
 
@@ -58,7 +58,12 @@ class NoteModel(QObject):
             - children: list of child FolderTreeItems (added)
 
         Implementation Notes:
-            Jop
+            - Joplin marks notes as rubbish in a separate table, we don't consider that
+              Either the note is deleted or it's not, so there may be a discrepancy in the number of notes
+              between joplin and this GUI, If you want the notes gone, just empty the rubbish bin.
+
+        Future work
+            - Toggle ordering betwwen Order field, modified, created, alphabetically
 
         """
         cursor = self.db_connection.cursor()
@@ -74,7 +79,7 @@ class NoteModel(QObject):
                 parent_id = None
             elif parent_id is not None:
                 parent_id = str(parent_id)
-                
+
             folders[row["id"]] = FolderTreeItem(
                 type="folder",
                 folder=Folder(**row),

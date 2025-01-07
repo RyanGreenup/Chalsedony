@@ -6,9 +6,12 @@ from typing import Dict, List, Optional, TypedDict
 class Note(BaseModel):
     id: str
     parent_id: str = ""
+    # AI: This field should be an option too
     title: str = ""
     body: str = ""
+    # AI: This field should be an option too
     created_time: int
+    # AI: This field should be an option too
     updated_time: int
     is_conflict: int = 0
     latitude: Decimal = Decimal(0)
@@ -22,8 +25,11 @@ class Note(BaseModel):
     source: str = ""
     source_application: str = ""
     application_data: str = ""
+    # AI: THis field implements a custom order
     order: Decimal = Decimal(0)
+    # AI: This field should be an option too
     user_created_time: int = 0
+    # AI: This field should be an option too
     user_updated_time: int = 0
     encryption_cipher_text: str = ""
     encryption_applied: int = 0
