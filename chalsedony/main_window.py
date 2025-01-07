@@ -101,6 +101,9 @@ class MainWindow(QMainWindow):
 
         # Set the view as the central widget
         self.setCentralWidget(self.note_view)
+        
+        # Connect signals
+        self._connect_signals()
 
     def toggle_style(self) -> None:
         """Toggle between light and dark mode"""
@@ -373,7 +376,11 @@ class MainWindow(QMainWindow):
         self.setStatusBar(status_bar)
         status_bar.showMessage("Ready")
 
-    # AI: Create a method to set a message in the status bar
+    def set_status_message(self, message: str) -> None:
+        """Set a message in the status bar"""
+        self.statusBar().showMessage(message)
 
-    # AI: Create a method to connect signals
-    # AI: Listen for a status_bar_message signal from the view
+    def _connect_signals(self) -> None:
+        """Connect signals from child widgets"""
+        if self.note_view:
+            self.note_view.status_bar_message.connect(self.set_status_message)
