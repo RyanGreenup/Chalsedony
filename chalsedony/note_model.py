@@ -61,6 +61,7 @@ class NoteModel(QObject):
             row["id"]: {
                 "type": "folder",
                 "folder": Folder(**row),
+                "parent_id": row["parent_id"],
                 "notes": [],
             }
             for row in cursor.fetchall()
