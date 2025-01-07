@@ -60,6 +60,3 @@ class FolderTreeItem(BaseModel):
     parent_id: Optional[str]
     notes: List[Note]
     children: List["FolderTreeItem"] = []
-
-
-

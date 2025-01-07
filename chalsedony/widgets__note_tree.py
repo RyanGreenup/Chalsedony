@@ -27,8 +27,6 @@ class NoteTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
-    
-    # Improve this so all items are collapsed by default AI!
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model"""
         self.clear()
@@ -108,10 +106,7 @@ class NoteTree(QTreeWidget):
         item_type, folder_id = item.data(0, Qt.ItemDataRole.UserRole)
         if item_type == "folder":
             new_title, ok = QInputDialog.getText(
-                self,
-                "Rename Folder",
-                "Enter new folder name:",
-                text=item.text(0)
+                self, "Rename Folder", "Enter new folder name:", text=item.text(0)
             )
             if ok and new_title:
                 self.folder_rename_requested.emit(folder_id, new_title)

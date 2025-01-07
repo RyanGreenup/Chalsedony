@@ -84,7 +84,6 @@ class NoteModel(QObject):
         """Create a new note under the specified folder"""
         print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
-    # Improve this so folders are always sorted by title AI!
     def get_note_tree_structure(
         self, order_by: str = "order"
     ) -> Dict[str, FolderTreeItem]:
@@ -161,11 +160,20 @@ class NoteModel(QObject):
                     folders[folder_data.parent_id].children.append(folder_data)
 
         # Sort folders and their children by title
-        def sort_folders(folder_dict):
+        def sort_folders(
+            folder_dict: Dict[str, FolderTreeItem],
+        ) -> Dict[str, FolderTreeItem]:
+            """Sort folders by title in case-insensitive alphabetical order
+
+            Args:
+                folder_dict: Dictionary of folder IDs to FolderTreeItems
+
+            Returns:
+                Dictionary with folders sorted by title
+            """
             # Convert dict to list of tuples and sort by folder title
             sorted_folders = sorted(
-                folder_dict.items(),
-                key=lambda x: x[1].folder.title.lower()
+                folder_dict.items(), key=lambda x: x[1].folder.title.lower()
             )
             # Convert back to dict while maintaining order
             return dict(sorted_folders)
@@ -176,9 +184,7 @@ class NoteModel(QObject):
         # Sort children of each folder
         for folder_data in folders.values():
             if folder_data.children:
-                folder_data.children.sort(
-                    key=lambda x: x.folder.title.lower()
-                )
+                folder_data.children.sort(key=lambda x: x.folder.title.lower())
 
         return root_folders
 

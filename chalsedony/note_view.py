@@ -147,6 +147,8 @@ class NoteView(QWidget):
         # Receive signals
         # Receive signals from Model
         self.model.refreshed.connect(self._refresh)
+        # Tree
+        self.tree_widget.folder_rename_requested.connect(self.update_folder_title)
 
         # Connect search and list selection
         self.search_input.textChanged.connect(self._on_search_text_changed)
@@ -168,7 +170,6 @@ class NoteView(QWidget):
     def update_folder_title(self, folder_id: str, new_title: str) -> None:
         """Update a folder's title and refresh the view"""
         self.model.update_folder(folder_id, title=new_title)
-        self.refreshed.emit()
 
     def update_folder_parent(self, folder_id: str, new_parent_id: str) -> None:
         """Update a folder's parent ID and refresh the view"""
@@ -200,6 +201,9 @@ class NoteView(QWidget):
 
             # Restore the fold state
             tree_state_handler.restore_state(self.tree_widget)
+
+            # TODO Attempt to focus the last item based on the note id or folder id respectively
+            # This could be a bit slow, walking through the tree, look at this later
         finally:
             # Restore original animation state
             self.tree_widget.setAnimated(is_animated)
