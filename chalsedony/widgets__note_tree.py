@@ -15,6 +15,7 @@ from db_api import FolderTreeItem
 class NoteTree(QTreeWidget):
     note_created = Signal(int)
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
+    # Create a signal when a folder is moved under another parent AI!
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
