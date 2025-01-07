@@ -1,7 +1,12 @@
 from sqlite3 import Connection
 from pathlib import Path
-from typing import Dict, List, Optional, TypedDict
+from typing import Dict, List, Optional, TypedDict, NamedTuple
 from db_api import Note, Folder, FolderTreeItem
+
+class NoteSearchResult(NamedTuple):
+    """Represents a search result containing note ID and title"""
+    id: int
+    title: str
 from pydantic import BaseModel
 
 
@@ -124,3 +129,32 @@ class NoteModel(QObject):
     def refresh(self) -> None:
         """Refresh the model"""
         print("TODO implement this")
+
+    def search_notes(self, query: str) -> List[NoteSearchResult]:
+        """Perform full text search on notes
+        
+        Args:
+            query: The search query string
+            
+        Returns:
+            List of NoteSearchResult containing note IDs and titles
+        """
+        cursor = self.db_connection.cursor()
+        cursor.execute("""
+            SELECT id, title FROM notes_fts
+            WHERE notes_fts MATCH ?
+            ORDER BY rank
+        """, (query,))
+        
+        return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
+
+    def get_note_from_search_result(self, result: NoteSearchResult) -> Optional[Note]:
+        """Get full note details from a search result
+        
+        Args:
+            result: The NoteSearchResult to get full details for
+            
+        Returns:
+            The full Note object if found, None otherwise
+        """
+        return self.find_note_by_id(result.id)
