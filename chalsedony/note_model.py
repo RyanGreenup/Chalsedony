@@ -100,9 +100,6 @@ class NoteModel(QObject):
         """Load data from JSON-like structure into the model"""
         self._root_folders = tags
 
-    def get_root_folders(self) -> List[TreeTagWithNotes]:
-        """Return all root level folders"""
-        return self._root_folders
 
     def find_folder_by_id(self, folder_id: int) -> Optional[TreeTagWithNotes]:
         """Find a folder by its ID in the entire tree"""
@@ -235,3 +232,9 @@ class NoteModel(QObject):
         """Get the next available note ID"""
         all_notes = self.get_all_notes()
         return max(note.id for note in all_notes) + 1 if all_notes else 1
+
+
+
+# Implement the method to get the tree data AI!
+    def get_note_tree_structure():
+

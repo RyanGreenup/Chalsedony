@@ -23,6 +23,7 @@ class NoteTree(QTreeWidget):
         self.clear()
         
         # Get the tree structure from the model
+        # AI: The get_note_tree_structure() is used here to get the tree data from the model
         tree_data = self.note_model.get_note_tree_structure()
         
         # Create a dict to store folder items for quick lookup
@@ -77,3 +78,41 @@ class NoteTree(QTreeWidget):
             # The Model will trigger the view to update by emitting a signal
         else:
             print("Cannot create a note under a note")
+
+
+
+# AI:
+# This implementation:
+# 
+#  1 Uses a two-pass approach for better performance:
+#     • First pass creates all folder items and stores them in a dict for O(1) lookup
+#     • Second pass adds notes under their respective folders
+#  2 Uses QTreeWidgetItem's setData to store metadata:
+#     • For folders: ('folder', folder_id)
+#     • For notes: ('note', note_id)
+#  3 Handles nested folder structure by checking parent_id
+#  4 Expands all folders by default for better UX
+# 
+# The implementation assumes the note model's get_note_tree_structure() will return a dictionary like:
+# 
+# 
+#  {
+#      "folder_id_1": {
+#          "type": "folder",
+#          "title": "Folder 1",
+#          "parent_id": None,  # or another folder ID
+#          "notes": [
+#              {"id": "note_id_1", "title": "Note 1"},
+#              {"id": "note_id_2", "title": "Note 2"}
+#          ]
+#      },
+#      "folder_id_2": {
+#          "type": "folder",
+#          "title": "Folder 2",
+#          "parent_id": "folder_id_1",
+#          "notes": []
+#      }
+#  }
+# 
+# 
+# We'll need to implement the get_note_tree_structure() method in the note model next. Would you like me to help with that?

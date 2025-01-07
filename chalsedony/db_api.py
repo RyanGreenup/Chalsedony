@@ -1,13 +1,8 @@
-from typing import Optional, BinaryIO, Literal, List
-from pydantic import BaseModel, Field
-from datetime import datetime
-from pathlib import Path
+from pydantic import BaseModel
 from decimal import Decimal
-from enum import Enum
-import requests
-from urllib.parse import quote
 
 
+# AI: The Note model is defined here
 class Note(BaseModel):
     id: str
     parent_id: str = ""
@@ -41,6 +36,7 @@ class Note(BaseModel):
     deleted_time: int = 0
 
 
+# The Folder model is defined here
 class Folder(BaseModel):
     id: str
     title: str = ""
@@ -57,5 +53,3 @@ class Folder(BaseModel):
     icon: str = ""
     user_data: str = ""
     deleted_time: int = 0
-
-
