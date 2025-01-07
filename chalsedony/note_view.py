@@ -40,8 +40,8 @@ class NoteView(QWidget):
         self._populate_ui()
         self._connect_signals()
 
-    # Create a method to send a message to the status bar AI!
 
+    # AI: Use this method send a message to the status bar
     def send_status_message(self, message: str) -> None:
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
@@ -157,6 +157,7 @@ class NoteView(QWidget):
         self.tree_widget.folder_rename_requested.connect(self.update_folder_title)
         self.tree_widget.folder_moved.connect(self.update_folder_parent)
         self.tree_widget.note_moved.connect(self.update_note_folder)
+        # AI: Connect the status bar message signal to the send_status_message method
 
         # Connect search and list selection
         self.search_input.textChanged.connect(self._on_search_text_changed)

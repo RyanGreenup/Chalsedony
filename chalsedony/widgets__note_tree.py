@@ -17,6 +17,7 @@ class NoteTree(QTreeWidget):
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
     note_moved = Signal(str, str)  # (note_id, new_parent_folder_id)
+    # AI: Create a signal to send a message to the status bar
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -240,3 +241,5 @@ class NoteTree(QTreeWidget):
             if current == parent_item:
                 return True
         return False
+
+    # Create a method to send a message to the status bar AI!
