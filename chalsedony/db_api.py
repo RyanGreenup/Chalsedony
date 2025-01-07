@@ -59,3 +59,4 @@ class FolderTreeItem(BaseModel):
     folder: Folder
     parent_id: Optional[str]
     notes: List[Note]
+    children: List['FolderTreeItem'] = []
