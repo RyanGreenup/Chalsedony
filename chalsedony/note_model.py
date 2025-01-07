@@ -88,6 +88,7 @@ class NoteModel(QObject):
             )
 
         # Get all notes and organize them under their folders, ordered by the order field
+        # Improve this to next order by alphabetically, modified, created AI!
         cursor.execute("SELECT * FROM notes ORDER BY \"order\" ASC")
         for note_row in cursor.fetchall():
             folder_id = note_row["parent_id"]
