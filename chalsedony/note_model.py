@@ -1,3 +1,4 @@
+import time
 from PySide6.QtCore import QObject, Signal
 from sqlite3 import Connection
 from pathlib import Path
@@ -168,11 +169,41 @@ class NoteModel(QObject):
         """
         return self.find_note_by_id(result.id)
 
-    # AI! Create a method that can update the following fields of a note:
-    # 
-    # - title
-    # - body
-    # - parent_id
-    # 
-    # These should be optional fields and be modified if not specified.
+    def update_note(self, note_id: str, *, title: Optional[str] = None, body: Optional[str] = None, parent_id: Optional[str] = None) -> None:
+        """Update specific fields of a note
+
+        Args:
+            note_id: ID of the note to update
+            title: New title (optional)
+            body: New body content (optional)
+            parent_id: New parent folder ID (optional)
+        """
+        updates = []
+        params = []
+        
+        if title is not None:
+            updates.append("title = ?")
+            params.append(title)
+        if body is not None:
+            updates.append("body = ?")
+            params.append(body)
+        if parent_id is not None:
+            updates.append("parent_id = ?")
+            params.append(parent_id)
+            
+        if not updates:
+            return
+            
+        # Add updated_time
+        updates.append("updated_time = ?")
+        params.append(int(time.time()))
+        
+        # Add note_id last for WHERE clause
+        params.append(note_id)
+        
+        query = f"UPDATE notes SET {', '.join(updates)} WHERE id = ?"
+        
+        cursor = self.db_connection.cursor()
+        cursor.execute(query, params)
+        self.db_connection.commit()
 
