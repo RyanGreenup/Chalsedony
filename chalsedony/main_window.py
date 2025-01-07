@@ -51,6 +51,7 @@ class MainWindow(QMainWindow):
     current_scale: float = 1.0  # Track current scale factor
     style_changed = Signal(bool)  # Emits True for dark mode, False for light mode
     refresh = Signal()
+    save_note_signal = Signal()  # Signal to trigger note save
 
     def __init__(self, database: Path) -> None:
         super().__init__()
@@ -141,6 +142,12 @@ class MainWindow(QMainWindow):
                             text="&Refresh",
                             handler="refresh",
                         ),
+                        MenuAction(
+                            id="save_note",
+                            text="&Save Note",
+                            handler="save_note",
+                            shortcut="Ctrl+S",
+                        ),
                     ],
                 ),
                 MenuStructure(
@@ -221,6 +228,8 @@ class MainWindow(QMainWindow):
             ]
         )
 
+    # Add a method to save the current note by emitting a signal
+
     def zoom(self, factor: float) -> None:
         """Change the UI scale by the given factor.
 
@@ -292,6 +301,10 @@ class MainWindow(QMainWindow):
         """Show the settings dialog"""
         dialog = SettingsDialog(self)
         dialog.exec()
+
+    def save_note(self) -> None:
+        """Trigger note save with title update from heading"""
+        self.save_note_signal.emit()
 
     def show_about_dialog(self) -> None:
         QMessageBox.about(

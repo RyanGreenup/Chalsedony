@@ -129,7 +129,9 @@ class NoteView(QWidget):
         parent = self.parent()
         from main_window import MainWindow
 
+        # Connect save signal from parent window
         if isinstance(parent, MainWindow):
+            parent.save_note_signal.connect(self.save_current_note)
             parent.style_changed.connect(self.content_area.apply_dark_theme)
         # Internal Signals
         self.tree_widget.itemSelectionChanged.connect(self._on_tree_selection_changed)
@@ -150,6 +152,17 @@ class NoteView(QWidget):
         self.search_sidebar.itemSelectionChanged.connect(
             self._on_list_selection_changed
         )
+
+    def save_current_note(self) -> None:
+        """Save the current note with title update from heading"""
+        if self.current_note_id:
+            content = self.content_area.editor.toPlainText()
+            self.model.save_note(
+                self.current_note_id,
+                content,
+                refresh=True,
+                update_title_from_heading=True,
+            )
 
     def _on_note_created(self, folder_id: int) -> None:
         try:

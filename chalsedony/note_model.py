@@ -1,5 +1,6 @@
 import time
 from PySide6.QtCore import QObject, Signal
+from utils__get_first_markdown_heading import get_markdown_heading
 from sqlite3 import Connection
 from pathlib import Path
 from typing import Dict, List, Optional, NamedTuple
@@ -55,14 +56,27 @@ class NoteModel(QObject):
         """
         self.save_note(note_id, content)
 
-    def save_note(self, note_id: str, content: str, refresh: bool = False) -> None:
+    def save_note(
+        self,
+        note_id: str,
+        content: str,
+        refresh: bool = False,
+        update_title_from_heading: bool = False,
+    ) -> None:
         """
         Write the content to the given note id
+
         Args:
             note_id: ID of the note being updated
             content: New content for the note
+            refresh: Whether to emit refresh signal
+            update_title_from_heading: Whether to update title from first markdown heading
         """
-        self.update_note(note_id, body=content)
+        title = None
+        if update_title_from_heading:
+            title = get_markdown_heading(content)
+
+        self.update_note(note_id, body=content, title=title)
         if refresh:
             self.refreshed.emit()
 
