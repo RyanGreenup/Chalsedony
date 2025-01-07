@@ -45,7 +45,6 @@ class NoteModel(QObject):
         """Create a new note under the specified folder"""
         print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
-    # Improve this function so the notes underneat the folders can be ordered by there fields, use SQL to implement the ordering AI!
     def get_note_tree_structure(self) -> Dict[str, FolderTreeItem]:
         """Get the folder/note tree structure from the database
 
@@ -88,8 +87,8 @@ class NoteModel(QObject):
                 children=[]
             )
 
-        # Get all notes and organize them under their folders
-        cursor.execute("SELECT * FROM notes")
+        # Get all notes and organize them under their folders, ordered by the order field
+        cursor.execute("SELECT * FROM notes ORDER BY order ASC")
         for note_row in cursor.fetchall():
             folder_id = note_row["parent_id"]
             if folder_id in folders:
