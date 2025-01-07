@@ -43,7 +43,6 @@ class NoteModel(QObject):
         """Create a new note under the specified folder"""
         print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
-    # Create a pydantic model for the folder/note tree structure and return that structure instead of a dictionary AI!
     def get_note_tree_structure(self) -> Dict[str, FolderTreeItem]:
         """Get the folder/note tree structure from the database
 
@@ -74,7 +73,7 @@ class NoteModel(QObject):
         for note_row in cursor.fetchall():
             folder_id = note_row["parent_id"]
             if folder_id in folders:
-                folders[folder_id]["notes"].append(Note(**note_row))
+                folders[folder_id].notes.append(Note(**note_row))
 
         return folders
 
