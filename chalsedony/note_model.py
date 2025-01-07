@@ -243,3 +243,5 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
         cursor.execute(query, params)
         self.db_connection.commit()
+
+    # Write a method that can update the title and parent_id of a folder AI!
