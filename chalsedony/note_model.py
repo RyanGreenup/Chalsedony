@@ -53,6 +53,7 @@ class NoteModel(QObject):
             - folder: Folder model instance
             - parent_id: parent folder ID or None
             - notes: list of Note model instances in this folder
+            - children: list of child FolderTreeItems (added)
         """
         cursor = self.db_connection.cursor()
         cursor.row_factory = lambda cursor, row: {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
@@ -66,14 +67,14 @@ class NoteModel(QObject):
             if parent_id == "":
                 parent_id = None
             elif parent_id is not None:
-                # Keep parent_id as string
                 parent_id = str(parent_id)
                 
             folders[row["id"]] = FolderTreeItem(
                 type="folder",
                 folder=Folder(**row),
                 parent_id=parent_id,
-                notes=[]
+                notes=[],
+                children=[]
             )
 
         # Get all notes and organize them under their folders
@@ -83,7 +84,18 @@ class NoteModel(QObject):
             if folder_id in folders:
                 folders[folder_id].notes.append(Note(**note_row))
 
-        return folders
+        # Build hierarchical structure
+        root_folders = {}
+        for folder_id, folder_data in folders.items():
+            if folder_data.parent_id is None:
+                # This is a root folder
+                root_folders[folder_id] = folder_data
+            else:
+                # This is a child folder - add it to its parent's children
+                if folder_data.parent_id in folders:
+                    folders[folder_data.parent_id].children.append(folder_data)
+
+        return root_folders
 
     def refresh(self) -> None:
         """Refresh the model"""

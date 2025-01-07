@@ -30,28 +30,27 @@ class NoteTree(QTreeWidget):
         # Create a dict to store folder items for quick lookup
         folder_items = {}
 
-        # First pass: Create all folder items
+        def add_folder_to_tree(parent_widget, folder_data):
+            """Recursively add folders and their contents to the tree"""
+            folder_item = QTreeWidgetItem(parent_widget)
+            folder_item.setText(0, folder_data.folder.title)
+            folder_item.setData(0, Qt.ItemDataRole.UserRole, ("folder", folder_data.folder.id))
+            folder_items[folder_data.folder.id] = folder_item
+
+            # Add notes for this folder
+            for note in folder_data.notes:
+                note_item = QTreeWidgetItem(folder_item)
+                note_item.setText(0, note.title)
+                note_item.setData(0, Qt.ItemDataRole.UserRole, ("note", note.id))
+
+            # Recursively add child folders
+            for child_folder in folder_data.children:
+                add_folder_to_tree(folder_item, child_folder)
+
+        # Add all root folders and their children recursively
         for folder_id, folder_data in tree_data.items():
             if folder_data.type == "folder":
-                folder_item = QTreeWidgetItem(self)
-                folder_item.setText(0, folder_data.folder.title)
-                folder_item.setData(0, Qt.ItemDataRole.UserRole, ("folder", folder_id))
-                folder_items[folder_id] = folder_item
-
-                # If it has a parent, add it under the parent
-                if (
-                    folder_data.parent_id
-                    and folder_data.parent_id in folder_items
-                ):
-                    folder_items[folder_data.parent_id].addChild(folder_item)
-
-        # Second pass: Add notes under their folders
-        for folder_id, folder_data in tree_data.items():
-            if folder_data.type == "folder":
-                for note in folder_data.notes:
-                    note_item = QTreeWidgetItem(folder_items[folder_id])
-                    note_item.setText(0, note.title)
-                    note_item.setData(0, Qt.ItemDataRole.UserRole, ("note", note.id))
+                add_folder_to_tree(self, folder_data)
 
         # Expand all folders by default
         self.expandAll()
