@@ -58,15 +58,19 @@ class NoteModel(QObject):
 
         # Get all folders
         cursor.execute("SELECT * FROM folders")
-        folders = {
-            row["id"]: FolderTreeItem(
+        folders = {}
+        for row in cursor.fetchall():
+            # Convert empty string parent_id to None
+            parent_id = row["parent_id"]
+            if parent_id == "":
+                parent_id = None
+                
+            folders[row["id"]] = FolderTreeItem(
                 type="folder",
                 folder=Folder(**row),
-                parent_id=row["parent_id"],
+                parent_id=parent_id,
                 notes=[]
             )
-            for row in cursor.fetchall()
-        }
 
         # Get all notes and organize them under their folders
         cursor.execute("SELECT * FROM notes")
