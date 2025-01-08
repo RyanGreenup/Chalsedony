@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QLineEdit,
 )
+from db_api import NoteSearchResult
 from PySide6.QtCore import (
     Qt,
     Signal,
@@ -365,11 +366,13 @@ class NoteView(QWidget):
             # Use full text search
             results = self.model.search_notes(search_query)
             for result in results:
+                # AI: This will need to be updated
                 self.search_sidebar.add_text_item(result.title, result.id)
         else:
             # Show all notes
             notes = self.model.get_all_notes()
             for note in notes:
+                # AI: This will also need to be updated
                 self.search_sidebar.add_text_item(note.title, note.id)
 
     def _on_list_selection_changed(self) -> None:
@@ -392,7 +395,7 @@ class NoteListWidget(QListWidget):
     def __init__(self):
         super().__init__()
 
-    # AI: If the items are added to the list like this
+    # This method should use that named tuple `NoteSearchResult` as a parameter AI!
     def add_text_item(self, text: str, item_id: str) -> QListWidgetItem:
         """Add a new text item to the list with associated ID and return the created item"""
         item = QListWidgetItem(text)
