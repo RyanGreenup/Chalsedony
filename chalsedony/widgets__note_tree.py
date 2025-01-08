@@ -175,9 +175,6 @@ class NoteTreeWidget(KbdTreeWidget):
         expanded_items = []
         
         def collect_expanded(item: QTreeWidgetItem | None = None):
-            # Start with top level items if no item provided
-
-            # If this is an expanded item, add it
             if item and item.isExpanded():
                 expanded_items.append(self.create_tree_item_data(item))
                 
@@ -188,6 +185,8 @@ class NoteTreeWidget(KbdTreeWidget):
         
         collect_expanded()
         return expanded_items
+
+    # Write a method to collapse all items in the tree and then expand the items that were unfolded. Make sure to use the tree_items attribute to look up the widget items for performance reasons. AI!
 
 
 class NoteTree(NoteTreeWidget):
