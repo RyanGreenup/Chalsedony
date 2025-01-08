@@ -22,6 +22,13 @@ from note_model import NoteModel
 from db_api import FolderTreeItem, ItemType
 
 
+class TreeItemData(NamedTuple):
+    """Represents data stored in a tree widget item"""
+
+    type: ItemType
+    id: str
+
+
 class TreeWidgetItem(QTreeWidgetItem):
     """Custom QTreeWidgetItem that properly types the UserRole data"""
 
@@ -77,12 +84,6 @@ class TreeItems:
         item_id = self._make_id(tree_item)
         return self.items[item_id]
 
-
-class TreeItemData(NamedTuple):
-    """Represents data stored in a tree widget item"""
-
-    type: ItemType
-    id: str
 
 class NoteTreeWidget(KbdTreeWidget):
     """
