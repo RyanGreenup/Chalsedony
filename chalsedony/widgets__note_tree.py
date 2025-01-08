@@ -132,7 +132,6 @@ class NoteTree(NoteTreeWidget):
         self._hover_item = None
         self._dragged_item = None
 
-    # Create a method to add an item to the tree and store it in the tree_items attribute, refactor this code accordingly, that way tracking the widget of an ID is automatically done and DRY AI!
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model.
 
