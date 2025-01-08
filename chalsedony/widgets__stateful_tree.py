@@ -28,13 +28,15 @@ class TreeWidgetItem(QTreeWidgetItem):
     def setData(self, column: int, role: int, value: TreeItemData) -> None:
         super().setData(column, role, value)
 
-    def get_id(self) -> str:
-        """Get the ID of the item"""
-        return self.data(0, Qt.ItemDataRole.UserRole).id
+    @property
+    def item_data(self) -> TreeItemData:
+        """Get the TreeItemData directly"""
+        return self.data(0, Qt.ItemDataRole.UserRole)
 
-    def get_type(self) -> ItemType:
-        """Get the type of the item"""
-        return self.data(0, Qt.ItemDataRole.UserRole).type
+    @item_data.setter 
+    def item_data(self, value: TreeItemData) -> None:
+        """Set the TreeItemData directly"""
+        self.setData(0, Qt.ItemDataRole.UserRole, value)
 
 
 class TreeItems:
@@ -44,31 +46,17 @@ class TreeItems:
         self.items: Dict[str, TreeWidgetItem] = {}
 
     @staticmethod
-    def _make_id(item: TreeItemData) -> str:
-        """Create a unique ID for an item based on its type and text"""
-        return f"{item.type}-{item.id}"
+    def _make_key(item_data: TreeItemData) -> str:
+        """Create a unique key for an item"""
+        return f"{item_data.type}-{item_data.id}"
 
     def add_item(self, item: TreeWidgetItem) -> None:
-        """Add an item to the dict
+        """Add an item to the dict"""
+        self.items[self._make_key(item.item_data)] = item
 
-        Args:
-            item: The tree widget item to store
-        """
-        tree_item_data = TreeItemData(type=item.get_type(), id=item.get_id())
-        id = self._make_id(tree_item_data)
-        self.items[id] = item
-
-    def get_item(self, tree_item: TreeItemData) -> TreeWidgetItem:
-        """Get an item from the dict
-
-        Args:
-            item_id: The ID of the item to retrieve
-
-        Returns:
-            The corresponding TreeWidgetItem
-        """
-        item_id = self._make_id(tree_item)
-        return self.items[item_id]
+    def get_item(self, item_data: TreeItemData) -> TreeWidgetItem:
+        """Get an item from the dict"""
+        return self.items[self._make_key(item_data)]
 
 
 class TreeState(TypedDict):
@@ -112,32 +100,17 @@ class StatefulTree(QTreeWidget):
         item_type: ItemType,
         item_id: str,
     ) -> TreeWidgetItem:
-        """Create an item for the tree with proper type safety and store it in tree_items
-
-        Args:
-            parent: The parent widget/item to add to
-            title: The display text for the item
-            item_type: The type of item (FOLDER or NOTE)
-            item_id: The unique ID for the item
-
-        Returns:
-            The created TreeWidgetItem
-        """
+        """Create and store a tree item"""
         item = TreeWidgetItem(parent)
         item.setText(0, title)
-        item.setData(
-            0,
-            Qt.ItemDataRole.UserRole,
-            TreeItemData(type=item_type, id=item_id),
-        )
+        item.item_data = TreeItemData(type=item_type, id=item_id)
         self.tree_items.add_item(item)
         return item
 
     @staticmethod
-    def create_tree_item_data(item: QTreeWidgetItem | TreeWidgetItem) -> TreeItemData:
-        # Cast the item to TreeWidgetItem to access our custom methods
-        typed_item = cast(TreeWidgetItem, item)
-        return TreeItemData(type=typed_item.get_type(), id=typed_item.get_id())
+    def create_tree_item_data(item: QTreeWidgetItem) -> TreeItemData:
+        """Get TreeItemData from any tree item"""
+        return cast(TreeWidgetItem, item).item_data
 
     def get_selected_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all selected items in the tree
@@ -168,39 +141,20 @@ class StatefulTree(QTreeWidget):
         collect_expanded()
         return expanded_items
 
-    def collapse_and_restore_expanded(self) -> None:
-        """Collapses all items in the tree and then restores previously expanded items"""
-        state: TreeState = {
-            "expanded_items": self.get_expanded_items_data(),
-            "selected_items": [],
-        }
-        self.restore_state(state)
-
     def export_state(self) -> TreeState:
-        """Export the current state of the tree
-
-        Returns:
-            Dictionary containing selected and expanded items
-        """
+        """Export the current state of the tree"""
         return {
             "selected_items": self.get_selected_items_data(),
             "expanded_items": self.get_expanded_items_data(),
         }
 
     def restore_state(self, state: TreeState) -> None:
-        """Restore a previously exported tree state
-
-        Args:
-            state: Dictionary containing selected and expanded items to restore
-        """
-        # First restore expanded state
+        """Restore a previously exported tree state"""
         self.collapseAll()
-        for item_data in state["expanded_items"]:
-            item = self.tree_items.get_item(item_data)
-            item.setExpanded(True)
-
-        # Then restore selection
         self.clearSelection()
+        
+        for item_data in state["expanded_items"]:
+            self.tree_items.get_item(item_data).setExpanded(True)
+            
         for item_data in state["selected_items"]:
-            item = self.tree_items.get_item(item_data)
-            item.setSelected(True)
+            self.tree_items.get_item(item_data).setSelected(True)
