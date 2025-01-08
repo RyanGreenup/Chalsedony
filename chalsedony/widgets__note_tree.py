@@ -44,7 +44,6 @@ class TreeWidgetItem(QTreeWidgetItem):
 class NoteTreeWidget(KbdTreeWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-
         self.tree_items = TreeItems()
 
     def _create_and_store_tree_item(
