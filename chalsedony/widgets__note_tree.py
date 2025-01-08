@@ -145,8 +145,10 @@ class StatefulTree(QTreeWidget):
         return item
 
     @staticmethod
-    def create_tree_item_data(item: TreeWidgetItem) -> TreeItemData:
-        return TreeItemData(type=item.get_type(), id=item.get_id())
+    def create_tree_item_data(item: QTreeWidgetItem | TreeWidgetItem) -> TreeItemData:
+        # Cast the item to TreeWidgetItem to access our custom methods
+        typed_item = cast(TreeWidgetItem, item)
+        return TreeItemData(type=typed_item.get_type(), id=typed_item.get_id())
 
     def get_selected_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all selected items in the tree
@@ -179,7 +181,10 @@ class StatefulTree(QTreeWidget):
 
     def collapse_and_restore_expanded(self) -> None:
         """Collapses all items in the tree and then restores previously expanded items"""
-        state = {"expanded_items": self.get_expanded_items_data(), "selected_items": []}
+        state: TreeState = {
+            "expanded_items": self.get_expanded_items_data(),
+            "selected_items": []
+        }
         self.restore_state(state)
 
     def export_state(self) -> TreeState:
