@@ -27,8 +27,8 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self.note_model = note_model
         self._hover_item: QTreeWidgetItem | None = None
         self._dragged_item: QTreeWidgetItem | None = None
+        self._cut_items: list[QTreeWidgetItem] = []
         self.setup_ui()
-        # AI: Create an attribute to store cut items
 
     def setup_ui(self) -> None:
         self.setAnimated(True)
@@ -117,11 +117,23 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             rename_action.triggered.connect(lambda: self.request_folder_rename(item))
             menu.addAction(rename_action)
 
-        menu.exec(self.viewport().mapToGlobal(position))
+        # Add Cut action
+        cut_action = QAction("Cut", self)
+        cut_action.triggered.connect(self.cut_selected_items)
+        menu.addAction(cut_action)
 
-        # AI: Create a context menu to cut selected items, write the appropriate method to handle this
-        # AI: Create a context menu to clear the cut selection, write the appropaite method to handle this
-        # Create a context menu to paste the cut selection which should call the move method, write the appropriate method to handle this, the method should ensure that the past target is a folder AI!
+        # Add Paste action if we have cut items
+        if self._cut_items:
+            paste_action = QAction("Paste", self)
+            paste_action.triggered.connect(lambda: self.paste_items(item))
+            menu.addAction(paste_action)
+
+            # Add Clear Cut action
+            clear_cut_action = QAction("Clear Cut", self)
+            clear_cut_action.triggered.connect(self.clear_cut_items)
+            menu.addAction(clear_cut_action)
+
+        menu.exec(self.viewport().mapToGlobal(position))
 
 
 
@@ -167,6 +179,40 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             if current == parent_item:
                 return True
         return False
+
+    def cut_selected_items(self) -> None:
+        """Store the currently selected items for cutting"""
+        self._cut_items = self.selectedItems()
+        for item in self._cut_items:
+            item.setBackground(0, self.palette().highlight())
+
+    def clear_cut_items(self) -> None:
+        """Clear the cut items selection"""
+        for item in self._cut_items:
+            item.setBackground(0, self.palette().base())
+        self._cut_items.clear()
+
+    def paste_items(self, target_item: QTreeWidgetItem) -> None:
+        """Paste cut items to the target folder"""
+        if not target_item:
+            return
+
+        # Verify target is a folder
+        target_data: TreeItemData = target_item.data(0, Qt.ItemDataRole.UserRole)
+        if target_data.type != ItemType.FOLDER:
+            self.send_status_message("Can only paste into folders")
+            return
+
+        # Move each cut item to the target folder
+        for item in self._cut_items:
+            item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+            if item_data.type == ItemType.FOLDER:
+                self.folder_moved.emit(item_data.id, target_data.id)
+            elif item_data.type == ItemType.NOTE:
+                self.note_moved.emit(item_data.id, target_data.id)
+
+        # Clear cut items after paste
+        self.clear_cut_items()
 
 
 class DragDropHandler:
