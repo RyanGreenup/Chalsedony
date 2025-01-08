@@ -231,20 +231,7 @@ class NoteView(QWidget):
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
         self._handle_note_selection(item_type, item_id)
 
-    def _on_search_text_changed(self, text: str) -> None:
-        """Handle search text changes"""
-        self._populate_notes_list(text)
 
-    def _on_list_selection_changed(self) -> None:
-        """Handle selection from the all notes list"""
-        selected = self.search_sidebar.selectedItems()
-        if not selected:
-            return
-
-        # Get the note ID directly from the item data
-        note_id = selected[0].data(Qt.ItemDataRole.UserRole)
-        if note_id:
-            self._handle_note_selection("note", note_id)
 
     def _handle_note_selection(self, item_type: str, item_id: str) -> None:
         """Common handler for note selection from either tree or list"""
@@ -369,6 +356,7 @@ class NoteView(QWidget):
         self.content_area.equal_split()
 
 
+    # AI: And th elist is populated here
     def _populate_notes_list(self, search_query: str = "") -> None:
         """Populate the all notes list view with optional search filtering"""
         self.search_sidebar.clear()
@@ -386,10 +374,27 @@ class NoteView(QWidget):
                 item = self.search_sidebar.add_text_item(note.title)
                 item.setData(Qt.ItemDataRole.UserRole, note.id)
 
+    def _on_list_selection_changed(self) -> None:
+        """Handle selection from the all notes list"""
+        selected = self.search_sidebar.selectedItems()
+        if not selected:
+            return
+
+        # Get the note ID directly from the item data
+        # How does this get the ID, explain it in logical sequance by looking at all the code so developers can understand AI?
+        note_id = selected[0].data(Qt.ItemDataRole.UserRole)
+        if note_id:
+            self._handle_note_selection("note", note_id)
+
+    def _on_search_text_changed(self, text: str) -> None:
+        """Handle search text changes"""
+        self._populate_notes_list(text)
+
 class NoteListWidget(QListWidget):
     def __init__(self):
         super().__init__()
 
+    # AI: If the items are added to the list like this
     def add_text_item(self, text: str) -> QListWidgetItem:
         """Add a new text item to the list and return the created item"""
         item = QListWidgetItem(text)
