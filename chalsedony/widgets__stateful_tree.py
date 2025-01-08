@@ -7,6 +7,7 @@ from typing import NamedTuple
 from PySide6.QtWidgets import (
     QTreeWidget,
     QWidget,
+    QApplication,
 )
 from db_api import ItemType
 
@@ -138,11 +139,13 @@ class StatefulTree(QTreeWidget):
         self.collapseAll()
         self.clearSelection()
 
+        # Restore expanded state first
         for item_data in state["expanded_items"]:
             self.tree_items.get_item(item_data).setExpanded(True)
 
-        # If this loop is commented out the drag and drop works correctly 
-        # If this loop is included items are deleted from the tree when they are dropped
-        # Reason through the code and see if you can figure out why this is happening AI!
-        for item_data in state["selected_items"]:
-            self.tree_items.get_item(item_data).setSelected(True)
+        # Restore selection state after all other tree modifications are complete
+        # This prevents interference with drag/drop operations
+        QApplication.instance().postEvent(self, 
+            lambda: [self.tree_items.get_item(item_data).setSelected(True) 
+                    for item_data in state["selected_items"]]
+        )
