@@ -39,6 +39,8 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         # Initialize drag and drop handler
         self.drag_drop_handler = DragDropHandler(self)
 
+
+    # Improve this so folders are always above notes AI!
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model."""
         self.clear()
