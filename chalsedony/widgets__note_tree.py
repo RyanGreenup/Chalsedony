@@ -45,14 +45,14 @@ class NoteTreeWidget(KbdTreeWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
-    def _create_tree_item(
+    def _create_and_store_tree_item(
         self,
         parent: QTreeWidget | QTreeWidgetItem,
         title: str,
         item_type: ItemType,
         item_id: str,
     ) -> TreeWidgetItem:
-        """Create an item for the tree with proper type safety
+        """Create an item for the tree with proper type safety and store it in tree_items
 
         Args:
             parent: The parent widget/item to add to
@@ -70,10 +70,10 @@ class NoteTreeWidget(KbdTreeWidget):
             Qt.ItemDataRole.UserRole,
             TreeItemData(type=item_type, id=item_id),
         )
+        self.tree_items.add_item(item)
         return item
 
 
-# AI: This class is a wrapper over a hashmap to store widgets and ids
 class TreeItems:
     """Wrapper class to store and access tree items with O(1) lookup"""
 
@@ -157,23 +157,19 @@ class NoteTree(NoteTreeWidget):
                 parent_widget: The parent widget to add items to (either the main tree or a folder item)
                 folder_data: The folder data structure containing folder info and child items
             """
-            folder_item = self._create_tree_item(
+            folder_item = self._create_and_store_tree_item(
                 parent_widget,
                 folder_data.folder.title,
                 ItemType.FOLDER,
                 folder_data.folder.id,
             )
-            # AI: the item is added here
             folder_items[folder_data.folder.id] = folder_item
-            self.tree_items.add_item(folder_item)
 
             # Add notes for this folder
             for note in folder_data.notes:
-                note_item = self._create_tree_item(
+                note_item = self._create_and_store_tree_item(
                     folder_item, note.title, ItemType.NOTE, note.id
                 )
-                # AI: And also here
-                self.tree_items.add_item(note_item)
 
             # Recursively add child folders
             for child_folder in folder_data.children:
