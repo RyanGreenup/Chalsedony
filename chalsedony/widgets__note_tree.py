@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem
-from typing import Dict, List, cast
+from typing import Dict, List, cast, TypedDict
 from widgets__kbd_widgets import KbdTreeWidget
 from typing import List, Optional, NamedTuple
 
@@ -199,7 +199,39 @@ class NoteTreeWidget(KbdTreeWidget):
             item = self.tree_items.get_item(item_data)
             item.setExpanded(True)
 
-    # Write a method to export the state of the tree as a typed dictionary and another metod to set the state from that dictionary AI!
+    class TreeState(TypedDict):
+        """Type for tree widget state"""
+        selected_items: List[TreeItemData]
+        expanded_items: List[TreeItemData]
+
+    def export_state(self) -> TreeState:
+        """Export the current state of the tree
+        
+        Returns:
+            Dictionary containing selected and expanded items
+        """
+        return {
+            'selected_items': self.get_selected_items_data(),
+            'expanded_items': self.get_expanded_items_data()
+        }
+
+    def restore_state(self, state: TreeState) -> None:
+        """Restore a previously exported tree state
+        
+        Args:
+            state: Dictionary containing selected and expanded items to restore
+        """
+        # First restore expanded state
+        self.collapseAll()
+        for item_data in state['expanded_items']:
+            item = self.tree_items.get_item(item_data)
+            item.setExpanded(True)
+            
+        # Then restore selection
+        self.clearSelection()
+        for item_data in state['selected_items']:
+            item = self.tree_items.get_item(item_data)
+            item.setSelected(True)
 
 
 class NoteTree(NoteTreeWidget):
