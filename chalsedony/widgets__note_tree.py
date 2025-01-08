@@ -84,9 +84,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             for note in folder_data.notes:
                 # NOTE must use this method to create items so they are stored and the tree state can be tracked.
                 # This maintains a hashmap of items and is more performant.
-                self.create_tree_item(
-                    folder_item, note.title, ItemType.NOTE, note.id
-                )
+                self.create_tree_item(folder_item, note.title, ItemType.NOTE, note.id)
 
             # Recursively add child folders
             for child_folder in folder_data.children:
@@ -189,6 +187,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
         event.acceptProposedAction()
 
+    # Ensure this method does not modify the tree in any way, it should be dumb and merely emit signals, the tree should be left as is AI!
     def dropEvent(self, event: QDropEvent) -> None:
         """Handle drop event to move folders"""
         if not self._dragged_item:
