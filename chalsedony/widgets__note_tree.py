@@ -212,6 +212,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
         # Handle invalid operations
         if target_data.type != ItemType.FOLDER:
+            # Modify this to use a match statement AI!
             if (
                 dragged_data.type == ItemType.FOLDER
                 and target_data.type == ItemType.NOTE
