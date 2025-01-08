@@ -74,16 +74,29 @@ class NoteTreeWidget(KbdTreeWidget):
 
 
 # AI: This class is a wrapper over a hashmap to store widgets and ids
-class TreeItems():
+class TreeItems:
+    """Wrapper class to store and access tree items with O(1) lookup"""
+    
     def __init__(self) -> None:
         self.items: Dict[str, TreeWidgetItem] = {}
 
     def add_item(self, item: TreeWidgetItem) -> None:
-        """Add an item to the dict"""
+        """Add an item to the dict
+        
+        Args:
+            item: The tree widget item to store
+        """
         self.items[item.get_id()] = item
 
     def get_item(self, item_id: str) -> TreeWidgetItem:
-        """Get an item from the dict"""
+        """Get an item from the dict
+        
+        Args:
+            item_id: The ID of the item to retrieve
+            
+        Returns:
+            The corresponding TreeWidgetItem
+        """
         return self.items[item_id]
 
 class NoteTree(NoteTreeWidget):
@@ -119,10 +132,13 @@ class NoteTree(NoteTreeWidget):
         self._hover_item = None
         self._dragged_item = None
 
-    # When the tree is populated, store the items in the tree_items attribute so the user can access them with O(1) lookup AI!
     def populate_tree(self) -> None:
-        """Populate the tree widget with folders and notes from the model"""
+        """Populate the tree widget with folders and notes from the model.
+        
+        Also stores all items in the tree_items attribute for O(1) lookup.
+        """
         self.clear()
+        self.tree_items = TreeItems()  # Reset the items storage
 
         # Get the tree structure from the model
         tree_data = self.note_model.get_note_tree_structure()
@@ -146,10 +162,12 @@ class NoteTree(NoteTreeWidget):
                 folder_data.folder.id,
             )
             folder_items[folder_data.folder.id] = folder_item
+            self.tree_items.add_item(folder_item)
 
             # Add notes for this folder
             for note in folder_data.notes:
-                self._create_tree_item(folder_item, note.title, ItemType.NOTE, note.id)
+                note_item = self._create_tree_item(folder_item, note.title, ItemType.NOTE, note.id)
+                self.tree_items.add_item(note_item)
 
             # Recursively add child folders
             for child_folder in folder_data.children:
