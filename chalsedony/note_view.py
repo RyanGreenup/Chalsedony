@@ -230,7 +230,7 @@ class NoteView(QWidget):
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
         self._handle_note_selection(item_type, item_id)
 
-    # TODO item_type sho
+    # Create an enum for item_type that can be a "note" or "folder" AI!
     def _handle_note_selection(self, item_type: str, item_id: str) -> None:
         """Common handler for note selection from either tree or list"""
         # Disconnect textChanged signal to prevent update loop
