@@ -70,12 +70,15 @@ class NoteSearchResult(NamedTuple):
     title: str
 
 
+class ItemType(Enum):
+    """Enum representing types of items in the note tree"""
+    NOTE = "note"
+    FOLDER = "folder"
+
 class TreeItemData(NamedTuple):
     """Represents data stored in a tree widget item"""
     type: ItemType
     id: str
-
-class ItemType(Enum):
     """Enum representing types of items in the note tree"""
 
     NOTE = "note"

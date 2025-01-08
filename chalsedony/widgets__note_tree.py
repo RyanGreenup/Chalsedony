@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
 )
 from note_model import NoteModel
-from db_api import FolderTreeItem, ItemType
+from db_api import FolderTreeItem, ItemType, TreeItemData
 
 
 class NoteTree(QTreeWidget):
@@ -99,9 +99,9 @@ class NoteTree(QTreeWidget):
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
         item_type_enum = item_data.type
         id_action = QAction(
-            f"Copy {item_type_enum.name.capitalize()} ID: {item_id}", self
+            f"Copy {item_type_enum.name.capitalize()} ID: {item_data.id}", self
         )
-        id_action.triggered.connect(lambda: self.copy_to_clipboard(str(item_id)))
+        id_action.triggered.connect(lambda: self.copy_to_clipboard(str(item_data.id)))
         menu.addAction(id_action)
 
         # Add separator
@@ -128,7 +128,7 @@ class NoteTree(QTreeWidget):
                 self, "Rename Folder", "Enter new folder name:", text=item.text(0)
             )
             if ok and new_title:
-                self.folder_rename_requested.emit(folder_id, new_title)
+                self.folder_rename_requested.emit(item_data.id, new_title)
 
     def copy_to_clipboard(self, text: str) -> None:
         """Copy text to the system clipboard"""
