@@ -186,7 +186,18 @@ class NoteTreeWidget(KbdTreeWidget):
         collect_expanded()
         return expanded_items
 
-    # Write a method to collapse all items in the tree and then expand the items that were unfolded. Make sure to use the tree_items attribute to look up the widget items for performance reasons. AI!
+    def collapse_and_restore_expanded(self) -> None:
+        """Collapses all items in the tree and then restores previously expanded items"""
+        # Store currently expanded items before collapsing
+        expanded_items_data = self.get_expanded_items_data()
+        
+        # Collapse all items
+        self.collapseAll()
+        
+        # Re-expand the previously expanded items
+        for item_data in expanded_items_data:
+            item = self.tree_items.get_item(item_data)
+            item.setExpanded(True)
 
 
 class NoteTree(NoteTreeWidget):
