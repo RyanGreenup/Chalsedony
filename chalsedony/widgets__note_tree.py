@@ -105,17 +105,6 @@ class NoteTreeWidget(KbdTreeWidget):
         # Reset the stored hashmap
         self.tree_items = TreeItems()
 
-    def get_selected_item_data(self) -> List[TreeItemData]:
-        """Get IDs of all selected items"""
-        selected_items = self.selectedItems()
-        ids = [None] * len(selected_items)
-        for i, item in enumerate(selected_items):
-            assert isinstance(
-                item, TreeWidgetItem
-            ), "The NoteTreeWidget should only contain TreeWidgetItems"
-            ids[i] = TreeItemData(type=item.get_type(), id=item.get_id())
-
-        return ids
 
     def _create_and_store_tree_item(
         self,
@@ -145,16 +134,33 @@ class NoteTreeWidget(KbdTreeWidget):
         self.tree_items.add_item(item)
         return item
 
-    def set_current_item(self, item_data: TreeItemData) -> None:
-        """Select an item in the tree by its ID"""
-        item = self.tree_items.get_item(item_data)
-        self.setCurrentItem(item)
+    @staticmethod
+    def create_tree_item_data(item: QTreeWidgetItem | TreeWidgetItem) -> TreeItemData:
+        assert isinstance(item, TreeWidgetItem), "NoteTreeWidget should only contain TreeWidgetItem"
+        return TreeItemData(type=item.get_type(), id=item.get_id())
+
+    def get_selected_item_data(self) -> List[TreeItemData]:
+        """Get IDs of all selected items"""
+
+        return [self.create_tree_item_data(item) for item in self.selectedItems()]
 
     def set_selected_items(self, item_data: List[TreeItemData]) -> None:
         """Select items in the tree by their IDs"""
         for item_datum in item_data:
             item = self.tree_items.get_item(item_datum)
             item.setSelected(True)
+
+    def get_current_item(self) -> TreeItemData:
+        """Select an item in the tree by its ID"""
+        current_item = self.currentItem()
+        assert isinstance(current_item, TreeWidgetItem), "NoteTreeWidget should only contain TreeWidgetItem"
+        return self.create_tree_item_data(current_item)
+
+    def set_current_item(self, item_data: TreeItemData) -> None:
+        """Select an item in the tree by its ID"""
+        item = self.tree_items.get_item(item_data)
+        self.setCurrentItem(item)
+
 
 
 class NoteTree(NoteTreeWidget):
