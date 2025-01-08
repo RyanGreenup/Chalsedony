@@ -40,7 +40,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self.drag_drop_handler = DragDropHandler(self)
 
 
-    # Improve this so folders are always above notes, Change nothing else in terms of the behaviour simply adjust the ordering of the items AI!
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model."""
         self.clear()
@@ -91,6 +90,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         # Collapse all folders by default
         self.collapseAll()
 
+    # Add a context menu to move a folder to the root AI!
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
