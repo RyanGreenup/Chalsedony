@@ -50,22 +50,6 @@ class NoteView(QWidget):
         self.tree_widget.populate_tree()
         self._populate_notes_list()
 
-    def _populate_notes_list(self, search_query: str = "") -> None:
-        """Populate the all notes list view with optional search filtering"""
-        self.search_sidebar.clear()
-
-        if search_query:
-            # Use full text search
-            results = self.model.search_notes(search_query)
-            for result in results:
-                item = self.search_sidebar.addItem(result.title)
-                item.setData(Qt.ItemDataRole.UserRole, result.id)
-        else:
-            # Show all notes
-            notes = self.model.get_all_notes()
-            for note in notes:
-                item = self.search_sidebar.addItem(note.title)
-                item.setData(Qt.ItemDataRole.UserRole, note.id)
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -384,9 +368,35 @@ class NoteView(QWidget):
         """Split editor and preview panels equally in the content area"""
         self.content_area.equal_split()
 
+
+    def _populate_notes_list(self, search_query: str = "") -> None:
+        """Populate the all notes list view with optional search filtering"""
+        self.search_sidebar.clear()
+
+        if search_query:
+            # Use full text search
+            results = self.model.search_notes(search_query)
+            for result in results:
+                item = self.search_sidebar.addItem(result.title)
+                item.setData(Qt.ItemDataRole.UserRole, result.id)
+        else:
+            # Show all notes
+            notes = self.model.get_all_notes()
+            for note in notes:
+                item = self.search_sidebar.addItem(note.title)
+                item.setData(Qt.ItemDataRole.UserRole, note.id)
+
 class NoteListWidget(QListWidget):
     def __init__(self):
         super().__init__()
+
+
+# Resolve this error AI!
+# Diagnostics:
+# Pyright: Method "addItem" overrides class "QListWidget" in an incompatible manner
+#   Parameter 2 name mismatch: base parameter is named "item", override parameter is named "text"
+#   Return type mismatch: base method returns type "None", override returns type "QListWidgetItem"
+#     "QListWidgetItem" is not assignable to "None" [reportIncompatibleMethodOverride]
         
     def addItem(self, text: str) -> QListWidgetItem:
         """Override addItem to return the created item"""
