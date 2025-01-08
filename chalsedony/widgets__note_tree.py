@@ -28,6 +28,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self._hover_item: QTreeWidgetItem | None = None
         self._dragged_item: QTreeWidgetItem | None = None
         self.setup_ui()
+        # AI: Create an attribute to store cut items
 
     def setup_ui(self) -> None:
         self.setAnimated(True)
@@ -117,6 +118,12 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             menu.addAction(rename_action)
 
         menu.exec(self.viewport().mapToGlobal(position))
+
+        # AI: Create a context menu to cut selected items, write the appropriate method to handle this
+        # AI: Create a context menu to clear the cut selection, write the appropaite method to handle this
+        # Create a context menu to paste the cut selection which should call the move method, write the appropriate method to handle this, the method should ensure that the past target is a folder AI!
+
+
 
     def request_folder_rename(self, item: QTreeWidgetItem) -> None:
         """Handle folder rename request"""
