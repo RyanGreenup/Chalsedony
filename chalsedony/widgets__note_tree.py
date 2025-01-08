@@ -1,4 +1,14 @@
 from PySide6.QtCore import Qt, QPoint, Signal
+from PySide6.QtWidgets import QTreeWidgetItem
+from typing import cast
+
+
+class TreeWidgetItem(QTreeWidgetItem):
+    """Custom QTreeWidgetItem that properly types the UserRole data"""
+    
+    def data(self, column: int, role: int) -> TreeItemData:
+        """Override data method to return properly typed TreeItemData"""
+        return cast(TreeItemData, super().data(column, role))
 from PySide6.QtGui import QAction, QDragEnterEvent, QDragMoveEvent, QDropEvent
 from PySide6.QtWidgets import (
     QTreeWidget,
@@ -62,8 +72,7 @@ class NoteTree(QTreeWidget):
                 parent_widget: The parent widget to add items to (either the main tree or a folder item)
                 folder_data: The folder data structure containing folder info and child items
             """
-            # Create a custom class that inherits from QTreeWidgetItem that annotates the UserRole data as a TreeItemData so the user knows what type of data is stored AI!
-            folder_item = QTreeWidgetItem(parent_widget)
+            folder_item = TreeWidgetItem(parent_widget)
             folder_item.setText(0, folder_data.folder.title)
             folder_item.setData(
                 0,
@@ -74,7 +83,7 @@ class NoteTree(QTreeWidget):
 
             # Add notes for this folder
             for note in folder_data.notes:
-                note_item = QTreeWidgetItem(folder_item)
+                note_item = TreeWidgetItem(folder_item)
                 note_item.setText(0, note.title)
                 note_item.setData(
                     0,
