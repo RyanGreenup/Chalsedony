@@ -166,6 +166,8 @@ class NoteTreeWidget(KbdTreeWidget):
             item = self.tree_items.get_item(item_data)
             item.setSelected(True)
 
+    # Write a method to get all items in the tree that are expanded AI!
+
 
 class NoteTree(NoteTreeWidget):
     note_created = Signal(int)
