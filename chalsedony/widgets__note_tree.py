@@ -133,6 +133,7 @@ class NoteTree(NoteTreeWidget):
         self._hover_item = None
         self._dragged_item = None
 
+    # Create a method to add an item to the tree and store it in the tree_items attribute, refactor this code accordingly, that way tracking the widget of an ID is automatically done and DRY AI!
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model.
 
@@ -162,6 +163,7 @@ class NoteTree(NoteTreeWidget):
                 ItemType.FOLDER,
                 folder_data.folder.id,
             )
+            # AI: the item is added here
             folder_items[folder_data.folder.id] = folder_item
             self.tree_items.add_item(folder_item)
 
@@ -170,6 +172,7 @@ class NoteTree(NoteTreeWidget):
                 note_item = self._create_tree_item(
                     folder_item, note.title, ItemType.NOTE, note.id
                 )
+                # AI: And also here
                 self.tree_items.add_item(note_item)
 
             # Recursively add child folders
