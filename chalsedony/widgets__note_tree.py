@@ -252,13 +252,21 @@ class DragDropHandler:
         # Handle valid moves
         match dragged_data.type:
             case ItemType.FOLDER:
-                self.tree_widget.folder_moved.emit(dragged_data.id, target_data.id)
+                self._move_folder(dragged_data.id, target_data.id)
                 event.acceptProposedAction()
             case ItemType.NOTE:
-                self.tree_widget.note_moved.emit(dragged_data.id, target_data.id)
+                self._move_note(dragged_data.id, target_data.id)
                 event.acceptProposedAction()
             case _:
                 event.ignore()
 
         # Reset dragged item
         self._dragged_item = None
+
+    def _move_folder(self, folder_id: str, new_parent_id: str) -> None:
+        """Move a folder to a new parent folder"""
+        self.tree_widget.folder_moved.emit(folder_id, new_parent_id)
+
+    def _move_note(self, note_id: str, new_parent_folder_id: str) -> None:
+        """Move a note to a new parent folder"""
+        self.tree_widget.note_moved.emit(note_id, new_parent_folder_id)
