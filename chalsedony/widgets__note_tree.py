@@ -1,26 +1,43 @@
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem
-from typing import cast
+from typing import List, cast
 from db_api import TreeItemData
 
 
-class TreeWidgetItem(QTreeWidgetItem):
-    """Custom QTreeWidgetItem that properly types the UserRole data"""
-    
-    def data(self, column: int, role: int) -> TreeItemData:
-        """Override data method to return properly typed TreeItemData"""
-        return cast(TreeItemData, super().data(column, role))
 from PySide6.QtGui import QAction, QDragEnterEvent, QDragMoveEvent, QDropEvent
 from PySide6.QtWidgets import (
     QTreeWidget,
-    QTreeWidgetItem,
     QWidget,
     QMenu,
     QApplication,
     QInputDialog,
 )
 from note_model import NoteModel
-from db_api import FolderTreeItem, ItemType, TreeItemData
+from db_api import FolderTreeItem, ItemType
+
+
+class TreeWidgetItem(QTreeWidgetItem):
+    """Custom QTreeWidgetItem that properly types the UserRole data"""
+
+    def data(self, column: int, role: int) -> TreeItemData:
+        """Override data method to return properly typed TreeItemData"""
+        return cast(TreeItemData, super().data(column, role))
+
+    def setData(self, column: int, role: int, value: TreeItemData) -> None:
+        super().setData(column, role, value)
+
+    def get_id(self) -> str:
+        """Get the ID of the item"""
+        return self.data(0, Qt.ItemDataRole.UserRole).id
+
+    def get_type(self) -> ItemType:
+        """Get the type of the item"""
+        return self.data(0, Qt.ItemDataRole.UserRole).type
+
+class KbdTreeWidget(QTreeWidget):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+
 
 
 class NoteTree(QTreeWidget):
@@ -73,6 +90,7 @@ class NoteTree(QTreeWidget):
                 parent_widget: The parent widget to add items to (either the main tree or a folder item)
                 folder_data: The folder data structure containing folder info and child items
             """
+            # Create a method that can add an item to the tree and just call that method here, this insures the data is always the correct type AI!
             folder_item = TreeWidgetItem(parent_widget)
             folder_item.setText(0, folder_data.folder.title)
             folder_item.setData(
