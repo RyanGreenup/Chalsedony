@@ -226,32 +226,10 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             return
 
         if dragged_data.type == ItemType.FOLDER:
-            # Remove the dragged item from its current position
-            parent = self._dragged_item.parent()
-            if parent:
-                parent.removeChild(self._dragged_item)
-            else:
-                self.takeTopLevelItem(self.indexOfTopLevelItem(self._dragged_item))
-
-            # Add the dragged item to the target folder
-            target_item.addChild(self._dragged_item)
-            target_item.setExpanded(True)  # Expand to show the moved item
-
             # Emit signal to update model
             self.folder_moved.emit(dragged_data.id, target_data.id)
             event.acceptProposedAction()
         elif dragged_data.type == ItemType.NOTE:
-            # Remove the dragged note from its current position
-            parent = self._dragged_item.parent()
-            if parent:
-                parent.removeChild(self._dragged_item)
-            else:
-                self.takeTopLevelItem(self.indexOfTopLevelItem(self._dragged_item))
-
-            # Add the note to the target folder
-            target_item.addChild(self._dragged_item)
-            target_item.setExpanded(True)
-
             # Emit signal to update model
             self.note_moved.emit(dragged_data.id, target_data.id)
             event.acceptProposedAction()
