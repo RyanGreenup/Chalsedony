@@ -2,7 +2,13 @@ from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem, QStyle
 from widgets__kbd_widgets import KbdTreeWidget
 
-from PySide6.QtGui import QAction, QDragEnterEvent, QDragMoveEvent, QDropEvent, QKeyEvent
+from PySide6.QtGui import (
+    QAction,
+    QDragEnterEvent,
+    QDragMoveEvent,
+    QDropEvent,
+    QKeyEvent,
+)
 from PySide6.QtWidgets import (
     QTreeWidget,
     QWidget,
@@ -38,7 +44,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
         # Initialize drag and drop handler
         self.drag_drop_handler = DragDropHandler(self)
-
 
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model."""
@@ -76,7 +81,9 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
             # Add notes after folders
             for note in folder_data.notes:
-                note_item = self.create_tree_item(folder_item, note.title, ItemType.NOTE, note.id)
+                note_item = self.create_tree_item(
+                    folder_item, note.title, ItemType.NOTE, note.id
+                )
                 # Move note items to the bottom of their parent folder
                 folder_item.removeChild(note_item)
                 folder_item.addChild(note_item)
@@ -90,7 +97,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         # Collapse all folders by default
         self.collapseAll()
 
-    # Add a context menu to move a folder to the root AI!
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)

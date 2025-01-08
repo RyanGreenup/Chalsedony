@@ -279,7 +279,7 @@ class NoteModel(QObject):
 
     def set_folder_to_root(self, folder_id: str) -> None:
         """Move a folder to the root of the folder tree
-        
+
         Args:
             folder_id: ID of the folder to move to root
         """
