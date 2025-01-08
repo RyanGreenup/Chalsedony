@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem
 from typing import cast
+from db_api import TreeItemData
 
 
 class TreeWidgetItem(QTreeWidgetItem):
