@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem
 from typing import cast
 from db_api import TreeItemData
+from widgets__kbd_widgets import KbdTreeWidget
 
 
 from PySide6.QtGui import (
@@ -9,7 +10,6 @@ from PySide6.QtGui import (
     QDragEnterEvent,
     QDragMoveEvent,
     QDropEvent,
-    QKeyEvent,
 )
 from PySide6.QtWidgets import (
     QTreeWidget,
@@ -41,7 +41,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         return self.data(0, Qt.ItemDataRole.UserRole).type
 
 
-class KbdTreeWidget(QTreeWidget):
+class NoteTreeWidget(KbdTreeWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
@@ -72,36 +72,8 @@ class KbdTreeWidget(QTreeWidget):
         )
         return item
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        """Handle key press events for custom keybindings"""
-        current = self.currentItem()
-        if not current:
-            super().keyPressEvent(event)
-            return
 
-        match event.key():
-            case Qt.Key.Key_J:
-                # Move to next item
-                if next_item := self.itemBelow(current):
-                    self.setCurrentItem(next_item)
-            case Qt.Key.Key_K:
-                # Move to previous item
-                if prev_item := self.itemAbove(current):
-                    self.setCurrentItem(prev_item)
-            case Qt.Key.Key_H if current.isExpanded():
-                # Collapse current folder
-                current.setExpanded(False)
-            case Qt.Key.Key_L if not current.isExpanded():
-                # Expand current folder
-                current.setExpanded(True)
-            case Qt.Key.Key_Space:
-                # Toggle fold state
-                current.setExpanded(not current.isExpanded())
-            case _:
-                super().keyPressEvent(event)
-
-
-class NoteTree(KbdTreeWidget):
+class NoteTree(NoteTreeWidget):
     note_created = Signal(int)
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)

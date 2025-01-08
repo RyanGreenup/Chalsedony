@@ -63,12 +63,12 @@ class SearchSidebar(QWidget):
             # Use full text search
             results = self.model.search_notes(search_query)
             for result in results:
-                self.search_sidebar_list.add_text_item(result)
+                self.search_sidebar_list.add_item(result)
         else:
             # Show all notes
             notes = self.model.get_all_notes()
             for note in notes:
-                self.search_sidebar_list.add_text_item(note)
+                self.search_sidebar_list.add_item(note)
 
 
 class NoteListWidget(KbdListWidget):
@@ -101,7 +101,7 @@ class NoteListWidget(KbdListWidget):
         clipboard = QApplication.clipboard()
         clipboard.setText(text)
 
-    def add_text_item(self, search_result: NoteSearchResult) -> QListWidgetItem:
+    def add_item(self, search_result: NoteSearchResult) -> QListWidgetItem:
         """Add a new text item to the list using NoteSearchResult and return the created item"""
         item = QListWidgetItem(search_result.title)
         item.setData(Qt.ItemDataRole.UserRole, search_result.id)
