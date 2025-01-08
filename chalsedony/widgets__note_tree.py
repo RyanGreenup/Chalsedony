@@ -87,7 +87,6 @@ class NoteTree(QTreeWidget):
         # Collapse all folders by default
         self.collapseAll()
 
-
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
@@ -253,4 +252,3 @@ class NoteTree(QTreeWidget):
             if current == parent_item:
                 return True
         return False
-
