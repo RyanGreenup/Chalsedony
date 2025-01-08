@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem
 from widgets__kbd_widgets import KbdTreeWidget
 
-from PySide6.QtGui import QAction, QDragEnterEvent, QDragMoveEvent, QDropEvent
+from PySide6.QtGui import QAction, QDragEnterEvent, QDragMoveEvent, QDropEvent, QKeyEvent
 from PySide6.QtWidgets import (
     QTreeWidget,
     QWidget,
@@ -154,7 +154,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         """Create a new note under the selected folder"""
         print("TODO implement this")
 
-    def keyPressEvent(self, event) -> None:
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard shortcuts for cut/paste operations"""
         if self.currentItem():
             match event.key():
@@ -207,8 +207,11 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
     def clear_cut_items(self) -> None:
         """Clear the cut items selection"""
-        for item in self._cut_items:
-            item.setBackground(0, self.palette().base())
+        try:
+            for item in self._cut_items:
+                item.setBackground(0, self.palette().base())
+        except RuntimeError:
+            pass  # Ignore errors when items are already removed
         self._cut_items.clear()
 
     def paste_items(self, target_item: QTreeWidgetItem) -> None:
@@ -231,7 +234,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 self.note_moved.emit(item_data.id, target_data.id)
 
         # Clear cut items after paste
-        self._cut_items.clear()
+        self.clear_cut_items()
 
 
 class DragDropHandler:
