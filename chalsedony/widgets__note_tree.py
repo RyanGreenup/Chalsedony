@@ -72,7 +72,6 @@ class TreeItems:
         id = self._make_id(tree_item_data)
         self.items[id] = item
 
-    # AI: This can be used to get the associated item widget with that data
     def get_item(self, tree_item: TreeItemData) -> TreeWidgetItem:
         """Get an item from the dict
 
@@ -114,7 +113,6 @@ class NoteTreeWidget(KbdTreeWidget):
         self.tree_items = TreeItems()
 
 
-    # AI: Users of this class will use this to create items that will definitely be stored in the tree
     def _create_and_store_tree_item(
         self,
         parent: QTreeWidget | QTreeWidgetItem,
@@ -143,13 +141,11 @@ class NoteTreeWidget(KbdTreeWidget):
         self.tree_items.add_item(item)
         return item
 
-    # AI This method is used to get the data of an item in the tree
     @staticmethod
     def create_tree_item_data(item: QTreeWidgetItem | TreeWidgetItem) -> TreeItemData:
         assert isinstance(item, TreeWidgetItem), "NoteTreeWidget should only contain TreeWidgetItem"
         return TreeItemData(type=item.get_type(), id=item.get_id())
 
-    # AI: THis gets the selected items data
     def get_selected_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all selected items in the tree
         
@@ -159,7 +155,16 @@ class NoteTreeWidget(KbdTreeWidget):
         selected_items = self.selectedItems()
         return [self.create_tree_item_data(item) for item in selected_items]
 
-    # Write a method to set the selected items AI!
+    def set_selected_items(self, items_data: List[TreeItemData]) -> None:
+        """Set the selected items in the tree based on TreeItemData
+        
+        Args:
+            items_data: List of TreeItemData for items to select
+        """
+        self.clearSelection()
+        for item_data in items_data:
+            item = self.tree_items.get_item(item_data)
+            item.setSelected(True)
 
 
 class NoteTree(NoteTreeWidget):
