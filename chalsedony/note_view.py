@@ -93,8 +93,8 @@ class NoteView(QWidget):
         search_layout.addWidget(self.search_input)
 
         # List view
-        self.search_sidebar = NoteListWidget()
-        search_layout.addWidget(self.search_sidebar)
+        self.search_sidebar_list = NoteListWidget()
+        search_layout.addWidget(self.search_sidebar_list)
 
         search_tab.setLayout(search_layout)
         self.left_tabs.addTab(search_tab, "All Notes")
@@ -152,7 +152,7 @@ class NoteView(QWidget):
 
         # Connect search and list selection
         self.search_input.textChanged.connect(self._on_search_text_changed)
-        self.search_sidebar.itemSelectionChanged.connect(
+        self.search_sidebar_list.itemSelectionChanged.connect(
             self._on_list_selection_changed
         )
 
@@ -361,22 +361,22 @@ class NoteView(QWidget):
 
     def _populate_notes_list(self, search_query: str = "") -> None:
         """Populate the all notes list view with optional search filtering"""
-        self.search_sidebar.clear()
+        self.search_sidebar_list.clear()
 
         if search_query:
             # Use full text search
             results = self.model.search_notes(search_query)
             for result in results:
-                self.search_sidebar.add_text_item(result)
+                self.search_sidebar_list.add_text_item(result)
         else:
             # Show all notes
             notes = self.model.get_all_notes()
             for note in notes:
-                self.search_sidebar.add_text_item(note)
+                self.search_sidebar_list.add_text_item(note)
 
     def _on_list_selection_changed(self) -> None:
         """Handle selection from the all notes list"""
-        selected = self.search_sidebar.selectedItems()
+        selected = self.search_sidebar_list.selectedItems()
         if not selected:
             return
 
