@@ -167,11 +167,6 @@ class NoteTree(QTreeWidget):
             self._hover_item = item
 
         event.acceptProposedAction()
-
-    # AI! If the user attempts to:
-    # 1. Drag a folder to a note
-    # 2. Drag a note to a note
-    # Send a message to the status bar indicating that the operation is not allowed.
     def dropEvent(self, event: QDropEvent) -> None:
         """Handle drop event to move folders"""
         if not self._dragged_item:
