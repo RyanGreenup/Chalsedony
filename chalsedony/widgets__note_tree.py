@@ -112,7 +112,6 @@ class NoteTreeWidget(KbdTreeWidget):
         self.tree_items = TreeItems()
 
 
-    # AI: Users of this class will use this to create items that will definitely be stored in the tree
     def _create_and_store_tree_item(
         self,
         parent: QTreeWidget | QTreeWidgetItem,
@@ -141,15 +140,19 @@ class NoteTreeWidget(KbdTreeWidget):
         self.tree_items.add_item(item)
         return item
 
-    # AI This method is used to get the data of an item in the tree
     @staticmethod
     def create_tree_item_data(item: QTreeWidgetItem | TreeWidgetItem) -> TreeItemData:
         assert isinstance(item, TreeWidgetItem), "NoteTreeWidget should only contain TreeWidgetItem"
         return TreeItemData(type=item.get_type(), id=item.get_id())
 
-    #  Write a method to get all the selected items in the tree as a list of TreeItemData AI!
-
-
+    def get_selected_items_data(self) -> List[TreeItemData]:
+        """Get TreeItemData for all selected items in the tree
+        
+        Returns:
+            List of TreeItemData for each selected item
+        """
+        selected_items = self.selectedItems()
+        return [self.create_tree_item_data(item) for item in selected_items]
 
 
 class NoteTree(NoteTreeWidget):
