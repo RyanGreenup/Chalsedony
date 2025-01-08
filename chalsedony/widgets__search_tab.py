@@ -1,7 +1,6 @@
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QApplication,
-    QListWidget,
     QListWidgetItem,
     QMenu,
     QWidget,
@@ -12,6 +11,7 @@ from PySide6.QtCore import QPoint, Signal, Qt
 
 from note_model import NoteModel
 from db_api import NoteSearchResult
+from widgets__kbd_widgets import KbdListWidget
 
 
 class SearchSidebar(QWidget):
@@ -71,7 +71,7 @@ class SearchSidebar(QWidget):
                 self.search_sidebar_list.add_text_item(note)
 
 
-class NoteListWidget(QListWidget):
+class NoteListWidget(KbdListWidget):
     def __init__(self) -> None:
         super().__init__()
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
