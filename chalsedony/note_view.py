@@ -20,7 +20,7 @@ from note_model import NoteModel
 from utils__tree_handler import TreeStateHandler
 from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
-from widgets__search_tab import SearchTab
+from widgets__search_tab import SearchSidebar
 
 
 class NoteView(QWidget):
@@ -76,7 +76,7 @@ class NoteView(QWidget):
         self.left_tabs.addTab(self.tree_widget, "Folders")
 
         # Second tab - Search and List view
-        self.search_tab = SearchTab(model=self.model)
+        self.search_tab = SearchSidebar(model=self.model)
         self.left_tabs.addTab(self.search_tab, "All Notes")
 
         left_layout.addWidget(self.left_tabs)

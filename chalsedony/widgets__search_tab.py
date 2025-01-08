@@ -14,7 +14,7 @@ from note_model import NoteModel
 from db_api import NoteSearchResult
 
 
-class SearchTab(QWidget):
+class SearchSidebar(QWidget):
     search_text_changed = Signal(str)  # Emits search query text
     note_selected = Signal(str)  # Emits selected note ID
 
