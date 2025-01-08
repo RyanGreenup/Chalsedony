@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QEvent
 from PySide6.QtWidgets import QTreeWidgetItem
 from typing import Dict, List, cast, TypedDict
 from typing import NamedTuple
@@ -9,6 +9,14 @@ from PySide6.QtWidgets import (
     QWidget,
     QApplication,
 )
+
+
+class DeferredSelectionEvent(QEvent):
+    """Custom event for deferred selection restoration"""
+    
+    def __init__(self, item_data_list: List[TreeItemData]) -> None:
+        super().__init__(QEvent.Type.User)
+        self.item_data_list = item_data_list
 from db_api import ItemType
 
 
@@ -143,9 +151,15 @@ class StatefulTree(QTreeWidget):
         for item_data in state["expanded_items"]:
             self.tree_items.get_item(item_data).setExpanded(True)
 
-        # Restore selection state after all other tree modifications are complete
-        # This prevents interference with drag/drop operations
-        QApplication.instance().postEvent(self, 
-            lambda: [self.tree_items.get_item(item_data).setSelected(True) 
-                    for item_data in state["selected_items"]]
-        )
+        # Create and post custom event for deferred selection
+        event = DeferredSelectionEvent(state["selected_items"])
+        QApplication.instance().postEvent(self, event)
+
+    def event(self, event: QEvent) -> bool:
+        """Handle custom events"""
+        if isinstance(event, DeferredSelectionEvent):
+            # Handle our deferred selection event
+            for item_data in event.item_data_list:
+                self.tree_items.get_item(item_data).setSelected(True)
+            return True
+        return super().event(event)
