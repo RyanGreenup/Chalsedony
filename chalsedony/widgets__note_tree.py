@@ -193,7 +193,7 @@ class NoteTree(NoteTreeWidget):
 
             # Add notes for this folder
             for note in folder_data.notes:
-                note_item = self._create_and_store_tree_item(
+                self._create_and_store_tree_item(
                     folder_item, note.title, ItemType.NOTE, note.id
                 )
 
