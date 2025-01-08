@@ -1,4 +1,3 @@
-from enum import Enum, auto
 from PySide6.QtWidgets import (
     QWidget,
     QHBoxLayout,
@@ -12,7 +11,7 @@ from PySide6.QtWidgets import (
 )
 
 
-from db_api import NoteSearchResult
+from db_api import NoteSearchResult, ItemType
 from PySide6.QtCore import (
     Qt,
     Signal,
@@ -24,13 +23,6 @@ from note_model import NoteModel
 from utils__tree_handler import TreeStateHandler
 from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
-
-
-class ItemType(Enum):
-    """Enum representing types of items in the note tree"""
-
-    NOTE = auto()
-    FOLDER = auto()
 
 
 class NoteView(QWidget):

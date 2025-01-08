@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from enum import Enum, auto
 from decimal import Decimal
 from typing import List, Optional, NamedTuple
 
@@ -67,3 +68,10 @@ class NoteSearchResult(NamedTuple):
 
     id: str
     title: str
+
+
+class ItemType(Enum):
+    """Enum representing types of items in the note tree"""
+
+    NOTE = auto()
+    FOLDER = auto()
