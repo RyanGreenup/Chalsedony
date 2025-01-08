@@ -167,7 +167,7 @@ class StatefulTree(QTreeWidget):
         """
         expanded_items = []
 
-        def collect_expanded(item: QTreeWidgetItem | None = None):
+        def collect_expanded(item: QTreeWidgetItem | None = None) -> None:
             if item and item.isExpanded():
                 expanded_items.append(self.create_tree_item_data(item))
 
@@ -183,7 +183,7 @@ class StatefulTree(QTreeWidget):
         """Collapses all items in the tree and then restores previously expanded items"""
         state: TreeState = {
             "expanded_items": self.get_expanded_items_data(),
-            "selected_items": []
+            "selected_items": [],
         }
         self.restore_state(state)
 

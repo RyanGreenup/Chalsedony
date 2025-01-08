@@ -17,7 +17,6 @@ from PySide6.QtCore import (
     QEasingCurve,
 )
 from note_model import NoteModel
-from utils__tree_handler import TreeStateHandler
 from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
 from widgets__search_tab import SearchSidebar
@@ -180,14 +179,13 @@ class NoteView(QWidget):
         # This needs to be rconsidered so that the items in the tree widget are folded based on their id
         # For now, we'll hold off on this until the underlying data is more stable
         try:
-            tree_state_handler = TreeStateHandler(self.tree_widget)
-            tree_state_handler.save_state()
+            tree_state = self.tree_widget.export_state()
 
             # Populate the UI
             self._populate_ui()
 
             # Restore the fold state
-            tree_state_handler.restore_state(self.tree_widget)
+            self.tree_widget.restore_state(tree_state)
 
             # TODO Attempt to focus the last item based on the note id or folder id respectively
             # This could be a bit slow, walking through the tree, look at this later
