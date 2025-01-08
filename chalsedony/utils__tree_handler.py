@@ -82,8 +82,6 @@ class TreeStateHandler:
         return item
 
 
-
-
 class NoteTreeStateHandler:
     def __init__(self, tree_widget: NoteTreeWidget) -> None:
         self.tree_widget = tree_widget
@@ -93,7 +91,9 @@ class NoteTreeStateHandler:
     def save_state(self) -> None:
         """Save the current selection and fold states using item IDs"""
         self.selected_ids = self._get_selected_ids()
-        self.fold_state = self._get_tree_fold_state(self.tree_widget.invisibleRootItem())
+        self.fold_state = self._get_tree_fold_state(
+            self.tree_widget.invisibleRootItem()
+        )
 
     def restore_state(self, tree_widget: NoteTreeWidget | None = None) -> None:
         """Restore the saved selection and fold states"""
@@ -105,18 +105,18 @@ class NoteTreeStateHandler:
     def _get_tree_fold_state(self, parent: QTreeWidgetItem) -> Dict[str, bool]:
         """Get fold state for all items using their IDs as keys"""
         state: Dict[str, bool] = {}
-        
+
         for i in range(parent.childCount()):
             child = cast(TreeWidgetItem, parent.child(i))
             if isinstance(child, TreeWidgetItem):
                 item_id = child.get_id()
                 index = self.tree_widget.indexFromItem(child)
                 state[item_id] = self.tree_widget.isExpanded(index)
-                
+
                 # Recursively get state for children
                 if child.childCount():
                     state.update(self._get_tree_fold_state(child))
-        
+
         return state
 
     def _set_tree_fold_state(self, parent: QTreeWidgetItem) -> None:
@@ -128,7 +128,7 @@ class NoteTreeStateHandler:
                 if item_id in self.fold_state:
                     index = self.tree_widget.indexFromItem(child)
                     self.tree_widget.setExpanded(index, self.fold_state[item_id])
-                
+
                 if child.childCount():
                     self._set_tree_fold_state(child)
 
@@ -148,14 +148,16 @@ class NoteTreeStateHandler:
             if item:
                 item.setSelected(True)
 
-    def _find_item_by_id(self, parent: QTreeWidgetItem, item_id: str) -> TreeWidgetItem | None:
+    def _find_item_by_id(
+        self, parent: QTreeWidgetItem, item_id: str
+    ) -> TreeWidgetItem | None:
         """Find an item by its ID in the tree"""
         for i in range(parent.childCount()):
             child = cast(TreeWidgetItem, parent.child(i))
             if isinstance(child, TreeWidgetItem):
                 if child.get_id() == item_id:
                     return child
-                
+
                 # Recursively search children
                 if child.childCount():
                     if found := self._find_item_by_id(child, item_id):
