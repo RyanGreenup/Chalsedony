@@ -65,7 +65,9 @@ class NoteTree(QTreeWidget):
             folder_item = QTreeWidgetItem(parent_widget)
             folder_item.setText(0, folder_data.folder.title)
             folder_item.setData(
-                0, Qt.ItemDataRole.UserRole, TreeItemData(ItemType.FOLDER, folder_data.folder.id)
+                0,
+                Qt.ItemDataRole.UserRole,
+                TreeItemData(ItemType.FOLDER, folder_data.folder.id),
             )
             folder_items[folder_data.folder.id] = folder_item
 
@@ -73,7 +75,9 @@ class NoteTree(QTreeWidget):
             for note in folder_data.notes:
                 note_item = QTreeWidgetItem(folder_item)
                 note_item.setText(0, note.title)
-                note_item.setData(0, Qt.ItemDataRole.UserRole, TreeItemData(ItemType.NOTE, note.id))
+                note_item.setData(
+                    0, Qt.ItemDataRole.UserRole, TreeItemData(ItemType.NOTE, note.id)
+                )
 
             # Recursively add child folders
             for child_folder in folder_data.children:
@@ -192,14 +196,21 @@ class NoteTree(QTreeWidget):
             return
 
         # Get item types and IDs
-        dragged_data: TreeItemData = self._dragged_item.data(0, Qt.ItemDataRole.UserRole)
+        dragged_data: TreeItemData = self._dragged_item.data(
+            0, Qt.ItemDataRole.UserRole
+        )
         target_data: TreeItemData = target_item.data(0, Qt.ItemDataRole.UserRole)
 
         # Handle invalid operations
         if target_data.type != ItemType.FOLDER:
-            if dragged_data.type == ItemType.FOLDER and target_data.type == ItemType.NOTE:
+            if (
+                dragged_data.type == ItemType.FOLDER
+                and target_data.type == ItemType.NOTE
+            ):
                 self.send_status_message("Cannot drop folders onto notes")
-            elif dragged_data.type == ItemType.NOTE and target_data.type == ItemType.NOTE:
+            elif (
+                dragged_data.type == ItemType.NOTE and target_data.type == ItemType.NOTE
+            ):
                 self.send_status_message("Cannot drop notes onto other notes")
             event.ignore()
             return
