@@ -31,12 +31,14 @@ class TreeWidgetItem(QTreeWidgetItem):
         super().__init__(parent)
         self.setText(0, title)
         # Store data directly in the Qt UserRole
-        self.setData(0, Qt.ItemDataRole.UserRole, TreeItemData(type=item_type, id=item_id))
+        self.setData(
+            0, Qt.ItemDataRole.UserRole, TreeItemData(type=item_type, id=item_id)
+        )
 
-    @property 
+    @property
     def item_data(self) -> TreeItemData:
         """Get the TreeItemData directly"""
-        return self.data(0, Qt.ItemDataRole.UserRole)
+        return cast(TreeItemData, self.data(0, Qt.ItemDataRole.UserRole))
 
 
 class TreeItems:
@@ -107,20 +109,20 @@ class StatefulTree(QTreeWidget):
         Returns:
             List of TreeItemData for each expanded item
         """
+
         def collect_expanded(items: List[QTreeWidgetItem]) -> List[TreeItemData]:
             result = []
             for item in items:
                 if item.isExpanded():
                     result.append(cast(TreeWidgetItem, item).item_data)
-                result.extend(collect_expanded([
-                    item.child(i) for i in range(item.childCount())
-                ]))
+                result.extend(
+                    collect_expanded([item.child(i) for i in range(item.childCount())])
+                )
             return result
-                
-        return collect_expanded([
-            self.topLevelItem(i) 
-            for i in range(self.topLevelItemCount())
-        ])
+
+        return collect_expanded(
+            [self.topLevelItem(i) for i in range(self.topLevelItemCount())]
+        )
 
     def export_state(self) -> TreeState:
         """Export the current state of the tree"""
