@@ -95,6 +95,11 @@ class NoteTreeWidget(KbdTreeWidget):
         super().__init__(parent)
         self.tree_items = TreeItems()
 
+    def clear(self) -> None:
+        super().clear()
+        # Reset the stored hashmap
+        self.tree_items = TreeItems()
+
     def _create_and_store_tree_item(
         self,
         parent: QTreeWidget | QTreeWidgetItem,
@@ -161,12 +166,8 @@ class NoteTree(NoteTreeWidget):
         self._dragged_item = None
 
     def populate_tree(self) -> None:
-        """Populate the tree widget with folders and notes from the model.
-
-        Also stores all items in the tree_items attribute for O(1) lookup.
-        """
+        """Populate the tree widget with folders and notes from the model."""
         self.clear()
-        self.tree_items = TreeItems()  # Reset the items storage
 
         # Get the tree structure from the model
         tree_data = self.note_model.get_note_tree_structure()
@@ -202,7 +203,9 @@ class NoteTree(NoteTreeWidget):
                 add_folder_to_tree(folder_item, child_folder)
 
         # Add all root folders and their children recursively
-        for _folder_id, folder_data in tree_data.items():
+        for folder_id, folder_data in tree_data.items():
+            _ = folder_id
+            # TODO can this use types in some way?
             if folder_data.type == "folder":
                 add_folder_to_tree(self, folder_data)
 
