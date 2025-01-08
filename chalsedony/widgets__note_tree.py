@@ -116,11 +116,20 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         create_action.triggered.connect(lambda: self.create_note(item))
         menu.addAction(create_action)
 
-        # Add Rename action for folders
+        # Add folder-specific actions
         if item_type_enum == ItemType.FOLDER:
+            # Rename action
             rename_action = QAction("Rename Folder", self)
             rename_action.triggered.connect(lambda: self.request_folder_rename(item))
             menu.addAction(rename_action)
+
+            # Move to root action
+            if item.parent():  # Only show if folder has a parent
+                move_to_root_action = QAction("Move to Root", self)
+                move_to_root_action.triggered.connect(
+                    lambda: self.note_model.set_folder_to_root(item_data.id)
+                )
+                menu.addAction(move_to_root_action)
 
         # Add Cut action
         cut_action = QAction("Cut", self)
