@@ -45,6 +45,8 @@ class NoteTreeWidget(KbdTreeWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
+        self.tree_items = TreeItems()
+
     def _create_and_store_tree_item(
         self,
         parent: QTreeWidget | QTreeWidgetItem,
@@ -113,8 +115,6 @@ class NoteTree(NoteTreeWidget):
         self._hover_item: QTreeWidgetItem | None = None
         self._dragged_item: QTreeWidgetItem | None = None
         self.setup_ui()
-        # The class stores an attribute of type TreeItems
-        self.tree_items = TreeItems()
 
     def setup_ui(self) -> None:
         self.setAnimated(True)
