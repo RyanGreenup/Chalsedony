@@ -386,7 +386,7 @@ class NoteView(QWidget):
 
 
 class NoteListWidget(QListWidget):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def add_text_item(self, search_result: NoteSearchResult) -> QListWidgetItem:
