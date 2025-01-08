@@ -21,7 +21,13 @@ class TreeItemData(NamedTuple):
 class TreeWidgetItem(QTreeWidgetItem):
     """Custom QTreeWidgetItem that properly types the UserRole data"""
 
-    def __init__(self, parent: QWidget | QTreeWidgetItem, title: str, item_type: ItemType, item_id: str):
+    def __init__(
+        self,
+        parent: QWidget | QTreeWidgetItem,
+        title: str,
+        item_type: ItemType,
+        item_id: str,
+    ):
         super().__init__(parent)
         self.setText(0, title)
         self.item_data = TreeItemData(type=item_type, id=item_id)
@@ -113,13 +119,16 @@ class StatefulTree(QTreeWidget):
             List of TreeItemData for each expanded item
         """
         expanded_items = []
-        
+
         def collect_expanded(item: QTreeWidgetItem | None = None) -> None:
             if item and item.isExpanded():
                 expanded_items.append(cast(TreeWidgetItem, item).item_data)
-            
-            items = [item.child(i) for i in range(item.childCount())] if item else \
-                   [self.topLevelItem(i) for i in range(self.topLevelItemCount())]
+
+            items = (
+                [item.child(i) for i in range(item.childCount())]
+                if item
+                else [self.topLevelItem(i) for i in range(self.topLevelItemCount())]
+            )
             for child in items:
                 collect_expanded(child)
 
@@ -129,8 +138,9 @@ class StatefulTree(QTreeWidget):
     def export_state(self) -> TreeState:
         """Export the current state of the tree"""
         return {
-            "selected_items": [cast(TreeWidgetItem, item).item_data 
-                             for item in self.selectedItems()],
+            "selected_items": [
+                cast(TreeWidgetItem, item).item_data for item in self.selectedItems()
+            ],
             "expanded_items": self.get_expanded_items_data(),
         }
 
