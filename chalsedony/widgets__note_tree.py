@@ -1,8 +1,8 @@
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem
 from typing import Dict, List, cast
-from db_api import TreeItemData
 from widgets__kbd_widgets import KbdTreeWidget
+from typing import List, Optional, NamedTuple
 
 
 from PySide6.QtGui import (
@@ -78,6 +78,12 @@ class TreeItems:
         return self.items[item_id]
 
 
+class TreeItemData(NamedTuple):
+    """Represents data stored in a tree widget item"""
+
+    type: ItemType
+    id: str
+
 class NoteTreeWidget(KbdTreeWidget):
     """
     A TreeWidget to display notes and folders in a tree structure.
@@ -106,6 +112,7 @@ class NoteTreeWidget(KbdTreeWidget):
         self.tree_items = TreeItems()
 
 
+    # AI: Users of this class will use this to create items that will definitely be stored in the tree
     def _create_and_store_tree_item(
         self,
         parent: QTreeWidget | QTreeWidgetItem,
@@ -134,32 +141,14 @@ class NoteTreeWidget(KbdTreeWidget):
         self.tree_items.add_item(item)
         return item
 
+    # AI This method is used to get the data of an item in the tree
     @staticmethod
     def create_tree_item_data(item: QTreeWidgetItem | TreeWidgetItem) -> TreeItemData:
         assert isinstance(item, TreeWidgetItem), "NoteTreeWidget should only contain TreeWidgetItem"
         return TreeItemData(type=item.get_type(), id=item.get_id())
 
-    def get_selected_item_data(self) -> List[TreeItemData]:
-        """Get IDs of all selected items"""
+    #  Write a method to get all the selected items in the tree as a list of TreeItemData AI!
 
-        return [self.create_tree_item_data(item) for item in self.selectedItems()]
-
-    def set_selected_items(self, item_data: List[TreeItemData]) -> None:
-        """Select items in the tree by their IDs"""
-        for item_datum in item_data:
-            item = self.tree_items.get_item(item_datum)
-            item.setSelected(True)
-
-    def get_current_item(self) -> TreeItemData:
-        """Select an item in the tree by its ID"""
-        current_item = self.currentItem()
-        assert isinstance(current_item, TreeWidgetItem), "NoteTreeWidget should only contain TreeWidgetItem"
-        return self.create_tree_item_data(current_item)
-
-    def set_current_item(self, item_data: TreeItemData) -> None:
-        """Select an item in the tree by its ID"""
-        item = self.tree_items.get_item(item_data)
-        self.setCurrentItem(item)
 
 
 
