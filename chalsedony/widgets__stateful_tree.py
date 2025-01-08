@@ -33,7 +33,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         """Get the TreeItemData directly"""
         return self.data(0, Qt.ItemDataRole.UserRole)
 
-    @item_data.setter 
+    @item_data.setter
     def item_data(self, value: TreeItemData) -> None:
         """Set the TreeItemData directly"""
         self.setData(0, Qt.ItemDataRole.UserRole, value)
@@ -152,9 +152,9 @@ class StatefulTree(QTreeWidget):
         """Restore a previously exported tree state"""
         self.collapseAll()
         self.clearSelection()
-        
+
         for item_data in state["expanded_items"]:
             self.tree_items.get_item(item_data).setExpanded(True)
-            
+
         for item_data in state["selected_items"]:
             self.tree_items.get_item(item_data).setSelected(True)
