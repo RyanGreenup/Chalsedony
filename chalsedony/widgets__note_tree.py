@@ -212,16 +212,11 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
         # Handle invalid operations
         if target_data.type != ItemType.FOLDER:
-            # Modify this to use a match statement AI!
-            if (
-                dragged_data.type == ItemType.FOLDER
-                and target_data.type == ItemType.NOTE
-            ):
-                self.send_status_message("Cannot drop folders onto notes")
-            elif (
-                dragged_data.type == ItemType.NOTE and target_data.type == ItemType.NOTE
-            ):
-                self.send_status_message("Cannot drop notes onto other notes")
+            match (dragged_data.type, target_data.type):
+                case (ItemType.FOLDER, ItemType.NOTE):
+                    self.send_status_message("Cannot drop folders onto notes")
+                case (ItemType.NOTE, ItemType.NOTE):
+                    self.send_status_message("Cannot drop notes onto other notes")
             event.ignore()
             return
 
