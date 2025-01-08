@@ -42,7 +42,6 @@ class NoteView(QWidget):
         self._populate_ui()
         self._connect_signals()
 
-
     def send_status_message(self, message: str) -> None:
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
@@ -50,7 +49,6 @@ class NoteView(QWidget):
     def _populate_ui(self) -> None:
         self.tree_widget.populate_tree()
         self._populate_notes_list()
-
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -232,8 +230,7 @@ class NoteView(QWidget):
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
         self._handle_note_selection(item_type, item_id)
 
-
-
+    # TODO item_type sho
     def _handle_note_selection(self, item_type: str, item_id: str) -> None:
         """Common handler for note selection from either tree or list"""
         # Disconnect textChanged signal to prevent update loop
@@ -356,7 +353,6 @@ class NoteView(QWidget):
         """Split editor and preview panels equally in the content area"""
         self.content_area.equal_split()
 
-
     def _populate_notes_list(self, search_query: str = "") -> None:
         """Populate the all notes list view with optional search filtering"""
         self.search_sidebar.clear()
@@ -387,6 +383,7 @@ class NoteView(QWidget):
     def _on_search_text_changed(self, text: str) -> None:
         """Handle search text changes"""
         self._populate_notes_list(text)
+
 
 class NoteListWidget(QListWidget):
     def __init__(self):
