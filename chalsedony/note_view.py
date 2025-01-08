@@ -365,14 +365,12 @@ class NoteView(QWidget):
             # Use full text search
             results = self.model.search_notes(search_query)
             for result in results:
-                item = self.search_sidebar.add_text_item(result.title)
-                item.setData(Qt.ItemDataRole.UserRole, result.id)
+                self.search_sidebar.add_text_item(result.title, result.id)
         else:
             # Show all notes
             notes = self.model.get_all_notes()
             for note in notes:
-                item = self.search_sidebar.add_text_item(note.title)
-                item.setData(Qt.ItemDataRole.UserRole, note.id)
+                self.search_sidebar.add_text_item(note.title, note.id)
 
     def _on_list_selection_changed(self) -> None:
         """Handle selection from the all notes list"""
@@ -395,8 +393,9 @@ class NoteListWidget(QListWidget):
         super().__init__()
 
     # AI: If the items are added to the list like this
-    def add_text_item(self, text: str) -> QListWidgetItem:
-        """Add a new text item to the list and return the created item"""
+    def add_text_item(self, text: str, item_id: str) -> QListWidgetItem:
+        """Add a new text item to the list with associated ID and return the created item"""
         item = QListWidgetItem(text)
+        item.setData(Qt.ItemDataRole.UserRole, item_id)
         super().addItem(item)
         return item
