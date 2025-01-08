@@ -74,5 +74,5 @@ class NoteSearchResult(NamedTuple):
 class ItemType(Enum):
     """Enum representing types of items in the note tree"""
 
-    NOTE = auto()
-    FOLDER = auto()
+    NOTE = "note"
+    FOLDER = "folder"

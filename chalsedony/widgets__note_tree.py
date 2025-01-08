@@ -96,9 +96,9 @@ class NoteTree(QTreeWidget):
         menu = QMenu()
 
         # Add ID display as clickable menu item that copies to clipboard
-        # AI: item_type is used here
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
-        id_action = QAction(f"Copy {item_type.capitalize()} ID: {item_id}", self)
+        item_type_enum = ItemType(item_type)
+        id_action = QAction(f"Copy {item_type_enum.name.capitalize()} ID: {item_id}", self)
         id_action.triggered.connect(lambda: self.copy_to_clipboard(str(item_id)))
         menu.addAction(id_action)
 
@@ -111,9 +111,7 @@ class NoteTree(QTreeWidget):
         menu.addAction(create_action)
 
         # Add Rename action for folders
-                # AI: item_type is used here
-
-        if item_type == "folder":
+        if item_type_enum == ItemType.FOLDER:
             rename_action = QAction("Rename Folder", self)
             rename_action.triggered.connect(lambda: self.request_folder_rename(item))
             menu.addAction(rename_action)
@@ -122,10 +120,8 @@ class NoteTree(QTreeWidget):
 
     def request_folder_rename(self, item: QTreeWidgetItem) -> None:
         """Handle folder rename request"""
-                # AI: item_type is used here
-
         item_type, folder_id = item.data(0, Qt.ItemDataRole.UserRole)
-        if item_type == "folder":
+        if ItemType(item_type) == ItemType.FOLDER:
             new_title, ok = QInputDialog.getText(
                 self, "Rename Folder", "Enter new folder name:", text=item.text(0)
             )
@@ -158,12 +154,13 @@ class NoteTree(QTreeWidget):
 
         # Only allow dropping on folders
         if item:
-            # Refactor item_type to use the ItemType named tuple AI!
             item_type, _ = item.data(0, Qt.ItemDataRole.UserRole)
-            # AI: THis should be a match case
-            if item_type != "folder":
-                event.ignore()
-                return
+            match ItemType(item_type):
+                case ItemType.FOLDER:
+                    pass  # Allow drop on folders
+                case _:
+                    event.ignore()
+                    return
 
         # Update hover highlight
         if item != self._hover_item:
