@@ -65,8 +65,7 @@ class NoteTree(QTreeWidget):
             folder_item = QTreeWidgetItem(parent_widget)
             folder_item.setText(0, folder_data.folder.title)
             folder_item.setData(
-                    # Refactor this to use a namedtuple that describes the data AI!
-                0, Qt.ItemDataRole.UserRole, ("folder", folder_data.folder.id)
+                0, Qt.ItemDataRole.UserRole, TreeItemData(ItemType.FOLDER, folder_data.folder.id)
             )
             folder_items[folder_data.folder.id] = folder_item
 
@@ -74,7 +73,7 @@ class NoteTree(QTreeWidget):
             for note in folder_data.notes:
                 note_item = QTreeWidgetItem(folder_item)
                 note_item.setText(0, note.title)
-                note_item.setData(0, Qt.ItemDataRole.UserRole, ("note", note.id))
+                note_item.setData(0, Qt.ItemDataRole.UserRole, TreeItemData(ItemType.NOTE, note.id))
 
             # Recursively add child folders
             for child_folder in folder_data.children:
@@ -97,8 +96,8 @@ class NoteTree(QTreeWidget):
         menu = QMenu()
 
         # Add ID display as clickable menu item that copies to clipboard
-        item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
-        item_type_enum = ItemType(item_type)
+        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        item_type_enum = item_data.type
         id_action = QAction(
             f"Copy {item_type_enum.name.capitalize()} ID: {item_id}", self
         )
@@ -123,8 +122,8 @@ class NoteTree(QTreeWidget):
 
     def request_folder_rename(self, item: QTreeWidgetItem) -> None:
         """Handle folder rename request"""
-        item_type, folder_id = item.data(0, Qt.ItemDataRole.UserRole)
-        if ItemType(item_type) == ItemType.FOLDER:
+        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        if item_data.type == ItemType.FOLDER:
             new_title, ok = QInputDialog.getText(
                 self, "Rename Folder", "Enter new folder name:", text=item.text(0)
             )
@@ -157,8 +156,8 @@ class NoteTree(QTreeWidget):
 
         # Only allow dropping on folders
         if item:
-            item_type, _ = item.data(0, Qt.ItemDataRole.UserRole)
-            match ItemType(item_type):
+            item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+            match item_data.type:
                 case ItemType.FOLDER:
                     pass  # Allow drop on folders
                 case _:
@@ -193,19 +192,19 @@ class NoteTree(QTreeWidget):
             return
 
         # Get item types and IDs
-        dragged_type, dragged_id = self._dragged_item.data(0, Qt.ItemDataRole.UserRole)
-        target_type, target_id = target_item.data(0, Qt.ItemDataRole.UserRole)
+        dragged_data: TreeItemData = self._dragged_item.data(0, Qt.ItemDataRole.UserRole)
+        target_data: TreeItemData = target_item.data(0, Qt.ItemDataRole.UserRole)
 
         # Handle invalid operations
-        if target_type != "folder":
-            if dragged_type == "folder" and target_type == "note":
+        if target_data.type != ItemType.FOLDER:
+            if dragged_data.type == ItemType.FOLDER and target_data.type == ItemType.NOTE:
                 self.send_status_message("Cannot drop folders onto notes")
-            elif dragged_type == "note" and target_type == "note":
+            elif dragged_data.type == ItemType.NOTE and target_data.type == ItemType.NOTE:
                 self.send_status_message("Cannot drop notes onto other notes")
             event.ignore()
             return
 
-        if dragged_type == "folder":
+        if dragged_data.type == ItemType.FOLDER:
             # Remove the dragged item from its current position
             parent = self._dragged_item.parent()
             if parent:
@@ -218,9 +217,9 @@ class NoteTree(QTreeWidget):
             target_item.setExpanded(True)  # Expand to show the moved item
 
             # Emit signal to update model
-            self.folder_moved.emit(dragged_id, target_id)
+            self.folder_moved.emit(dragged_data.id, target_data.id)
             event.acceptProposedAction()
-        elif dragged_type == "note":
+        elif dragged_data.type == ItemType.NOTE:
             # Remove the dragged note from its current position
             parent = self._dragged_item.parent()
             if parent:
@@ -233,7 +232,7 @@ class NoteTree(QTreeWidget):
             target_item.setExpanded(True)
 
             # Emit signal to update model
-            self.note_moved.emit(dragged_id, target_id)
+            self.note_moved.emit(dragged_data.id, target_data.id)
             event.acceptProposedAction()
         else:
             event.ignore()
