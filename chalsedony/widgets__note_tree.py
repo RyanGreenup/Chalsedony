@@ -62,6 +62,7 @@ class NoteTree(QTreeWidget):
                 parent_widget: The parent widget to add items to (either the main tree or a folder item)
                 folder_data: The folder data structure containing folder info and child items
             """
+            # Create a custom class that inherits from QTreeWidgetItem that annotates the UserRole data as a TreeItemData so the user knows what type of data is stored AI!
             folder_item = QTreeWidgetItem(parent_widget)
             folder_item.setText(0, folder_data.folder.title)
             folder_item.setData(
@@ -76,7 +77,9 @@ class NoteTree(QTreeWidget):
                 note_item = QTreeWidgetItem(folder_item)
                 note_item.setText(0, note.title)
                 note_item.setData(
-                    0, Qt.ItemDataRole.UserRole, TreeItemData(type=ItemType.NOTE, id=note.id)
+                    0,
+                    Qt.ItemDataRole.UserRole,
+                    TreeItemData(type=ItemType.NOTE, id=note.id),
                 )
 
             # Recursively add child folders
