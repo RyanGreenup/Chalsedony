@@ -2,13 +2,7 @@ from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem
 from widgets__kbd_widgets import KbdTreeWidget
 
-
-from PySide6.QtGui import (
-    QAction,
-    QDragEnterEvent,
-    QDragMoveEvent,
-    QDropEvent,
-)
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QTreeWidget,
     QWidget,
@@ -16,6 +10,7 @@ from PySide6.QtWidgets import (
     QApplication,
     QInputDialog,
 )
+from widgets__drag_drop_handler import DragDropHandler
 from note_model import NoteModel
 from db_api import FolderTreeItem, ItemType
 
@@ -42,16 +37,8 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
-        # Enable drag and drop
-        self.setDragEnabled(True)
-        self.setAcceptDrops(True)
-        self.setDropIndicatorShown(True)
-        self.setDragDropMode(QTreeWidget.DragDropMode.InternalMove)
-        self.setSelectionMode(QTreeWidget.SelectionMode.SingleSelection)
-
-        # Initialize hover tracking
-        self._hover_item = None
-        self._dragged_item = None
+        # Initialize drag and drop handler
+        self.drag_drop_handler = DragDropHandler(self)
 
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model."""
@@ -152,87 +139,14 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         """Create a new note under the selected folder"""
         print("TODO implement this")
 
-    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        """Handle drag enter event"""
-        self._dragged_item = self.currentItem()
-        if self._dragged_item:
-            event.acceptProposedAction()
+    def dragEnterEvent(self, event) -> None:
+        self.drag_drop_handler.dragEnterEvent(event)
 
-    def dragMoveEvent(self, event: QDragMoveEvent) -> None:
-        """Handle drag move event with hover highlighting"""
-        if not self._dragged_item:
-            event.ignore()
-            return
+    def dragMoveEvent(self, event) -> None:
+        self.drag_drop_handler.dragMoveEvent(event)
 
-        # Get item under mouse
-        item = self.itemAt(event.position().toPoint())
-
-        # Only allow dropping on folders
-        if item:
-            item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-            match item_data.type:
-                case ItemType.FOLDER:
-                    pass  # Allow drop on folders
-                case _:
-                    event.ignore()
-                    return
-
-        # Update hover highlight
-        if item != self._hover_item:
-            if self._hover_item:
-                self._hover_item.setBackground(0, self.palette().base())
-            if item:
-                item.setBackground(0, self.palette().highlight())
-            self._hover_item = item
-
-        event.acceptProposedAction()
-
-    def dropEvent(self, event: QDropEvent) -> None:
-        """Handle drop event to move folders"""
-        if not self._dragged_item:
-            event.ignore()
-            return
-
-        # Clear hover highlight
-        if self._hover_item:
-            self._hover_item.setBackground(0, self.palette().base())
-            self._hover_item = None
-
-        # Get the target item under the mouse
-        target_item = self.itemAt(event.position().toPoint())
-        if not target_item:
-            event.ignore()
-            return
-
-        # Get item types and IDs
-        dragged_data: TreeItemData = self._dragged_item.data(
-            0, Qt.ItemDataRole.UserRole
-        )
-        target_data: TreeItemData = target_item.data(0, Qt.ItemDataRole.UserRole)
-
-        # Handle invalid operations
-        if target_data.type != ItemType.FOLDER:
-            match (dragged_data.type, target_data.type):
-                case (ItemType.FOLDER, ItemType.NOTE):
-                    self.send_status_message("Cannot drop folders onto notes")
-                case (ItemType.NOTE, ItemType.NOTE):
-                    self.send_status_message("Cannot drop notes onto other notes")
-            event.ignore()
-            return
-
-        # Handle valid moves
-        match dragged_data.type:
-            case ItemType.FOLDER:
-                self.folder_moved.emit(dragged_data.id, target_data.id)
-                event.acceptProposedAction()
-            case ItemType.NOTE:
-                self.note_moved.emit(dragged_data.id, target_data.id)
-                event.acceptProposedAction()
-            case _:
-                event.ignore()
-
-        # Reset dragged item
-        self._dragged_item = None
+    def dropEvent(self, event) -> None:
+        self.drag_drop_handler.dropEvent(event)
 
     def send_status_message(self, message: str) -> None:
         """Send a message to the status bar"""
