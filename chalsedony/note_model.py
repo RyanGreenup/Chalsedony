@@ -265,6 +265,18 @@ class NoteModel(QObject):
         cursor.execute(query, params)
         self.db_connection.commit()
 
+        # Don't refresh as this could be slow on mere content change that is
+        # Already reflected in the view (user can refresh or save to trigger that)
+        # self.refreshed.emit()
+
+    def move_note(self, note_id: str, parent_id: str) -> None:
+        """
+        Move a note to a different Folder
+        """
+        self.update_note(note_id, parent_id=parent_id)
+        # Don't refresh as this could be slow
+        self.refreshed.emit()
+
     def update_folder(
         self,
         folder_id: str,

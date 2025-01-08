@@ -149,7 +149,7 @@ class NoteView(QWidget):
 
     def update_note_folder(self, note_id: str, new_folder_id: str) -> None:
         """Update which folder a note belongs to"""
-        self.model.update_note(note_id, parent_id=new_folder_id)
+        self.model.move_note(note_id, parent_id=new_folder_id)
 
     def update_folder_title(self, folder_id: str, new_title: str) -> None:
         """Update a folder's title and refresh the view"""
