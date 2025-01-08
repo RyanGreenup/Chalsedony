@@ -79,5 +79,6 @@ class ItemType(Enum):
 
 class TreeItemData(NamedTuple):
     """Represents data stored in a tree widget item"""
+
     type: ItemType
     id: str

@@ -1,10 +1,16 @@
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem
-from typing import List, cast
+from typing import cast
 from db_api import TreeItemData
 
 
-from PySide6.QtGui import QAction, QDragEnterEvent, QDragMoveEvent, QDropEvent
+from PySide6.QtGui import (
+    QAction,
+    QDragEnterEvent,
+    QDragMoveEvent,
+    QDropEvent,
+    QKeyEvent,
+)
 from PySide6.QtWidgets import (
     QTreeWidget,
     QWidget,
@@ -34,13 +40,68 @@ class TreeWidgetItem(QTreeWidgetItem):
         """Get the type of the item"""
         return self.data(0, Qt.ItemDataRole.UserRole).type
 
+
 class KbdTreeWidget(QTreeWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
+    def _create_tree_item(
+        self,
+        parent: QTreeWidget | QTreeWidgetItem,
+        title: str,
+        item_type: ItemType,
+        item_id: str,
+    ) -> TreeWidgetItem:
+        """Create an item for the tree with proper type safety
+
+        Args:
+            parent: The parent widget/item to add to
+            title: The display text for the item
+            item_type: The type of item (FOLDER or NOTE)
+            item_id: The unique ID for the item
+
+        Returns:
+            The created TreeWidgetItem
+        """
+        item = TreeWidgetItem(parent)
+        item.setText(0, title)
+        item.setData(
+            0,
+            Qt.ItemDataRole.UserRole,
+            TreeItemData(type=item_type, id=item_id),
+        )
+        return item
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """Handle key press events for custom keybindings"""
+        current = self.currentItem()
+        if not current:
+            super().keyPressEvent(event)
+            return
+
+        match event.key():
+            case Qt.Key.Key_J:
+                # Move to next item
+                if next_item := self.itemBelow(current):
+                    self.setCurrentItem(next_item)
+            case Qt.Key.Key_K:
+                # Move to previous item
+                if prev_item := self.itemAbove(current):
+                    self.setCurrentItem(prev_item)
+            case Qt.Key.Key_H if current.isExpanded():
+                # Collapse current folder
+                current.setExpanded(False)
+            case Qt.Key.Key_L if not current.isExpanded():
+                # Expand current folder
+                current.setExpanded(True)
+            case Qt.Key.Key_Space:
+                # Toggle fold state
+                current.setExpanded(not current.isExpanded())
+            case _:
+                super().keyPressEvent(event)
 
 
-class NoteTree(QTreeWidget):
+class NoteTree(KbdTreeWidget):
     note_created = Signal(int)
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
@@ -90,32 +151,24 @@ class NoteTree(QTreeWidget):
                 parent_widget: The parent widget to add items to (either the main tree or a folder item)
                 folder_data: The folder data structure containing folder info and child items
             """
-            # Create a method that can add an item to the tree and just call that method here, this insures the data is always the correct type AI!
-            folder_item = TreeWidgetItem(parent_widget)
-            folder_item.setText(0, folder_data.folder.title)
-            folder_item.setData(
-                0,
-                Qt.ItemDataRole.UserRole,
-                TreeItemData(type=ItemType.FOLDER, id=folder_data.folder.id),
+            folder_item = self._create_tree_item(
+                parent_widget,
+                folder_data.folder.title,
+                ItemType.FOLDER,
+                folder_data.folder.id,
             )
             folder_items[folder_data.folder.id] = folder_item
 
             # Add notes for this folder
             for note in folder_data.notes:
-                note_item = TreeWidgetItem(folder_item)
-                note_item.setText(0, note.title)
-                note_item.setData(
-                    0,
-                    Qt.ItemDataRole.UserRole,
-                    TreeItemData(type=ItemType.NOTE, id=note.id),
-                )
+                self._create_tree_item(folder_item, note.title, ItemType.NOTE, note.id)
 
             # Recursively add child folders
             for child_folder in folder_data.children:
                 add_folder_to_tree(folder_item, child_folder)
 
         # Add all root folders and their children recursively
-        for folder_id, folder_data in tree_data.items():
+        for _folder_id, folder_data in tree_data.items():
             if folder_data.type == "folder":
                 add_folder_to_tree(self, folder_data)
 
