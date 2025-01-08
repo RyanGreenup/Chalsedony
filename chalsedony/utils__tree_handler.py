@@ -86,6 +86,7 @@ class NoteTreeStateHandler:
     """
     This class assumes that every item is a TreeWidgetItem and has a unique ID.
     """
+
     def __init__(self, tree_widget: NoteTreeWidget) -> None:
         self.tree_widget = tree_widget
         self.selected_ids: List[str] = []
@@ -93,7 +94,7 @@ class NoteTreeStateHandler:
 
     def save_state(self) -> None:
         """Save the current selection and expansion state of the tree"""
-        self.selected_ids = self._get_selected_ids()
+        self.selected_ids = self.tree_widget.get_selected_ids()
         self.fold_state = self._get_tree_fold_state()
 
     def restore_state(self, tree_widget: NoteTreeWidget | None = None) -> None:
@@ -103,14 +104,10 @@ class NoteTreeStateHandler:
         self._restore_selection()
         self._restore_fold_state()
 
-    def _get_selected_ids(self) -> List[str]:
-        """Get IDs of all selected items"""
-        return [item.get_id() for item in self.tree_widget.selectedItems()]
-
     def _get_tree_fold_state(self) -> Dict[str, bool]:
         """Get expansion state of all items by their IDs"""
         state: Dict[str, bool] = {}
-        
+
         def traverse(item: TreeWidgetItem) -> None:
             if item.childCount() > 0:
                 state[item.get_id()] = item.isExpanded()
@@ -120,7 +117,7 @@ class NoteTreeStateHandler:
         root = self.tree_widget.invisibleRootItem()
         for i in range(root.childCount()):
             traverse(cast(TreeWidgetItem, root.child(i)))
-        
+
         return state
 
     def _restore_selection(self) -> None:
@@ -131,6 +128,7 @@ class NoteTreeStateHandler:
                     stored_item.setSelected(True)
                     break
 
+    # This method makes items disappear when one item is
     def _restore_fold_state(self) -> None:
         """Restore expansion state using saved IDs"""
         for item_id, is_expanded in self.fold_state.items():

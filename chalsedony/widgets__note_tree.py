@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem
-from typing import Dict, cast
+from typing import Dict, List, cast
 from db_api import TreeItemData
 from widgets__kbd_widgets import KbdTreeWidget
 
@@ -99,6 +99,18 @@ class NoteTreeWidget(KbdTreeWidget):
         super().clear()
         # Reset the stored hashmap
         self.tree_items = TreeItems()
+
+    def get_selected_ids(self) -> List[str]:
+        """Get IDs of all selected items"""
+        selected_items = self.selectedItems()
+        ids: List[str] = [""] * len(selected_items)
+        for i, item in enumerate(selected_items):
+            assert isinstance(
+                item, TreeWidgetItem
+            ), "The NoteTreeWidget should only contain TreeWidgetItems"
+            ids[i] = item.get_id()
+
+        return ids
 
     def _create_and_store_tree_item(
         self,
