@@ -68,20 +68,17 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             )
             folder_items[folder_data.folder.id] = folder_item
 
-            # Add notes for this folder
-            for note in folder_data.notes:
-                # NOTE must use this method to create items so they are stored and the tree state can be tracked.
-                # This maintains a hashmap of items and is more performant.
-                self.create_tree_item(folder_item, note.title, ItemType.NOTE, note.id)
-
-            # Recursively add child folders
+            # Add child folders first to ensure they appear above notes
             for child_folder in folder_data.children:
                 add_folder_to_tree(folder_item, child_folder)
+
+            # Add notes after folders
+            for note in folder_data.notes:
+                self.create_tree_item(folder_item, note.title, ItemType.NOTE, note.id)
 
         # Add all root folders and their children recursively
         for folder_id, folder_data in tree_data.items():
             _ = folder_id
-            # TODO can this use types in some way?
             if folder_data.type == "folder":
                 add_folder_to_tree(self, folder_data)
 
