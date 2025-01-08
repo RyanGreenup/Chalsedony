@@ -76,13 +76,13 @@ class NoteTreeWidget(KbdTreeWidget):
 # AI: This class is a wrapper over a hashmap to store widgets and ids
 class TreeItems:
     """Wrapper class to store and access tree items with O(1) lookup"""
-    
+
     def __init__(self) -> None:
         self.items: Dict[str, TreeWidgetItem] = {}
 
     def add_item(self, item: TreeWidgetItem) -> None:
         """Add an item to the dict
-        
+
         Args:
             item: The tree widget item to store
         """
@@ -90,14 +90,15 @@ class TreeItems:
 
     def get_item(self, item_id: str) -> TreeWidgetItem:
         """Get an item from the dict
-        
+
         Args:
             item_id: The ID of the item to retrieve
-            
+
         Returns:
             The corresponding TreeWidgetItem
         """
         return self.items[item_id]
+
 
 class NoteTree(NoteTreeWidget):
     note_created = Signal(int)
@@ -134,7 +135,7 @@ class NoteTree(NoteTreeWidget):
 
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model.
-        
+
         Also stores all items in the tree_items attribute for O(1) lookup.
         """
         self.clear()
@@ -166,7 +167,9 @@ class NoteTree(NoteTreeWidget):
 
             # Add notes for this folder
             for note in folder_data.notes:
-                note_item = self._create_tree_item(folder_item, note.title, ItemType.NOTE, note.id)
+                note_item = self._create_tree_item(
+                    folder_item, note.title, ItemType.NOTE, note.id
+                )
                 self.tree_items.add_item(note_item)
 
             # Recursively add child folders
