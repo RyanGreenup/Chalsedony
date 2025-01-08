@@ -47,9 +47,6 @@ class TreeWidgetItem(QTreeWidgetItem):
         """Get the type of the item"""
         return self.data(0, Qt.ItemDataRole.UserRole).type
 
-    def get_tree_item_data(self) -> TreeItemData:
-        """Get the TreeItemData for the item"""
-        return self.data(0, Qt.ItemDataRole.UserRole)
 
 
 class TreeItems:
@@ -58,7 +55,8 @@ class TreeItems:
     def __init__(self) -> None:
         self.items: Dict[str, TreeWidgetItem] = {}
 
-    def _make_id(self, item: TreeItemData) -> str:
+    @staticmethod
+    def _make_id(item: TreeItemData) -> str:
         """Create a unique ID for an item based on its type and text"""
         return f"{item.type}-{item.id}"
 
@@ -147,8 +145,7 @@ class StatefulTree(QTreeWidget):
         return item
 
     @staticmethod
-    def create_tree_item_data(item: QTreeWidgetItem | TreeWidgetItem) -> TreeItemData:
-        assert isinstance(item, TreeWidgetItem), "NoteTreeWidget should only contain TreeWidgetItem"
+    def create_tree_item_data(item: TreeWidgetItem) -> TreeItemData:
         return TreeItemData(type=item.get_type(), id=item.get_id())
 
     def get_selected_items_data(self) -> List[TreeItemData]:
@@ -160,16 +157,6 @@ class StatefulTree(QTreeWidget):
         selected_items = self.selectedItems()
         return [self.create_tree_item_data(item) for item in selected_items]
 
-    def set_selected_items(self, items_data: List[TreeItemData]) -> None:
-        """Set the selected items in the tree based on TreeItemData
-
-        Args:
-            items_data: List of TreeItemData for items to select
-        """
-        self.clearSelection()
-        for item_data in items_data:
-            item = self.tree_items.get_item(item_data)
-            item.setSelected(True)
 
     def get_expanded_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all expanded items in the tree
@@ -193,16 +180,8 @@ class StatefulTree(QTreeWidget):
 
     def collapse_and_restore_expanded(self) -> None:
         """Collapses all items in the tree and then restores previously expanded items"""
-        # Store currently expanded items before collapsing
-        expanded_items_data = self.get_expanded_items_data()
-
-        # Collapse all items
-        self.collapseAll()
-
-        # Re-expand the previously expanded items
-        for item_data in expanded_items_data:
-            item = self.tree_items.get_item(item_data)
-            item.setExpanded(True)
+        state = {'expanded_items': self.get_expanded_items_data(), 'selected_items': []}
+        self.restore_state(state)
 
 
     def export_state(self) -> TreeState:
