@@ -377,29 +377,21 @@ class NoteView(QWidget):
             # Use full text search
             results = self.model.search_notes(search_query)
             for result in results:
-                item = self.search_sidebar.addItem(result.title)
+                item = self.search_sidebar.add_text_item(result.title)
                 item.setData(Qt.ItemDataRole.UserRole, result.id)
         else:
             # Show all notes
             notes = self.model.get_all_notes()
             for note in notes:
-                item = self.search_sidebar.addItem(note.title)
+                item = self.search_sidebar.add_text_item(note.title)
                 item.setData(Qt.ItemDataRole.UserRole, note.id)
 
 class NoteListWidget(QListWidget):
     def __init__(self):
         super().__init__()
 
-
-# Resolve this error AI!
-# Diagnostics:
-# Pyright: Method "addItem" overrides class "QListWidget" in an incompatible manner
-#   Parameter 2 name mismatch: base parameter is named "item", override parameter is named "text"
-#   Return type mismatch: base method returns type "None", override returns type "QListWidgetItem"
-#     "QListWidgetItem" is not assignable to "None" [reportIncompatibleMethodOverride]
-        
-    def addItem(self, text: str) -> QListWidgetItem:
-        """Override addItem to return the created item"""
+    def add_text_item(self, text: str) -> QListWidgetItem:
+        """Add a new text item to the list and return the created item"""
         item = QListWidgetItem(text)
         super().addItem(item)
         return item
