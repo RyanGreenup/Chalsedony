@@ -210,7 +210,8 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         )
         target_data: TreeItemData = target_item.data(0, Qt.ItemDataRole.UserRole)
 
-        # Handle invalid operations
+        # Refactor these if statements into match statements AI!
+        # AI: This if statement
         if target_data.type != ItemType.FOLDER:
             match (dragged_data.type, target_data.type):
                 case (ItemType.FOLDER, ItemType.NOTE):
@@ -219,7 +220,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                     self.send_status_message("Cannot drop notes onto other notes")
             event.ignore()
             return
-
+        # AI: This if statement
         if dragged_data.type == ItemType.FOLDER:
             # Emit signal to update model
             self.folder_moved.emit(dragged_data.id, target_data.id)
