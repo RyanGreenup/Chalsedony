@@ -11,10 +11,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
 )
 
-class ItemType(Enum):
-    """Enum representing types of items in the note tree"""
-    NOTE = auto()
-    FOLDER = auto()
+
 from db_api import NoteSearchResult
 from PySide6.QtCore import (
     Qt,
@@ -27,6 +24,13 @@ from note_model import NoteModel
 from utils__tree_handler import TreeStateHandler
 from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
+
+
+class ItemType(Enum):
+    """Enum representing types of items in the note tree"""
+
+    NOTE = auto()
+    FOLDER = auto()
 
 
 class NoteView(QWidget):
@@ -242,14 +246,15 @@ class NoteView(QWidget):
         self.content_area.editor.textChanged.disconnect(self._on_editor_text_changed)
 
         try:
-            if item_type == ItemType.NOTE:
-                self.current_note_id = item_id
-                note = self.model.find_note_by_id(item_id)
-                if note:
-                    self.content_area.editor.setPlainText(note.body or "")
-            else:
-                self.current_note_id = None
-                self.content_area.editor.clear()
+            match item_type:
+                case ItemType.NOTE:
+                    self.current_note_id = item_id
+                    note = self.model.find_note_by_id(item_id)
+                    if note:
+                        self.content_area.editor.setPlainText(note.body or "")
+                case ItemType.FOLDER:
+                    self.current_note_id = None
+                    self.content_area.editor.clear()
         finally:
             # Reconnect signal after text is set
             self.content_area.editor.textChanged.connect(self._on_editor_text_changed)
@@ -383,7 +388,7 @@ class NoteView(QWidget):
         # The ID was stored when the item was created in add_text_item()
         note_id = selected[0].data(Qt.ItemDataRole.UserRole)
         if note_id:
-            self._handle_note_selection("note", note_id)
+            self._handle_note_selection(ItemType.NOTE, note_id)
 
     def _on_search_text_changed(self, text: str) -> None:
         """Handle search text changes"""

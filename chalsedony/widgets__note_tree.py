@@ -167,6 +167,7 @@ class NoteTree(QTreeWidget):
             self._hover_item = item
 
         event.acceptProposedAction()
+
     def dropEvent(self, event: QDropEvent) -> None:
         """Handle drop event to move folders"""
         if not self._dragged_item:

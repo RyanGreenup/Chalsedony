@@ -101,7 +101,7 @@ class MainWindow(QMainWindow):
 
         # Set the view as the central widget
         self.setCentralWidget(self.note_view)
-        
+
         # Connect signals
         self._connect_signals()
 

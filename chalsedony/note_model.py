@@ -3,10 +3,8 @@ from PySide6.QtCore import QObject, Signal
 from utils__get_first_markdown_heading import get_markdown_heading
 from sqlite3 import Connection
 from pathlib import Path
-from typing import Dict, List, Optional, NamedTuple
+from typing import Dict, List, Optional
 from db_api import Note, Folder, FolderTreeItem, NoteSearchResult
-
-
 
 
 NOTES_FILE = Path("/tmp/notes.yml")
@@ -35,7 +33,7 @@ class NoteModel(QObject):
 
     def get_all_notes(self) -> List[NoteSearchResult]:
         """Get all notes from all folders
-        
+
         Returns:
             List of NoteSearchResult containing note IDs and titles
         """
@@ -308,4 +306,3 @@ class NoteModel(QObject):
         self.db_connection.commit()
 
         self.refreshed.emit()
-
