@@ -67,7 +67,7 @@ class NoteTree(QTreeWidget):
             folder_item.setData(
                 0,
                 Qt.ItemDataRole.UserRole,
-                TreeItemData(ItemType.FOLDER, folder_data.folder.id),
+                TreeItemData(type=ItemType.FOLDER, id=folder_data.folder.id),
             )
             folder_items[folder_data.folder.id] = folder_item
 
@@ -76,7 +76,7 @@ class NoteTree(QTreeWidget):
                 note_item = QTreeWidgetItem(folder_item)
                 note_item.setText(0, note.title)
                 note_item.setData(
-                    0, Qt.ItemDataRole.UserRole, TreeItemData(ItemType.NOTE, note.id)
+                    0, Qt.ItemDataRole.UserRole, TreeItemData(type=ItemType.NOTE, id=note.id)
                 )
 
             # Recursively add child folders
