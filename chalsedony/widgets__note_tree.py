@@ -177,12 +177,6 @@ class NoteTreeWidget(KbdTreeWidget):
         def collect_expanded(item: QTreeWidgetItem | None = None):
             # Start with top level items if no item provided
 
-            # Resolve this AI!
-            # Diagnostics:
-            # 1. Ruff: Local variable `items` is assigned to but never used [F841]
-            # 2. Pyright: "items" is not accessed
-            items = self.topLevelItem(0) if item is None else item
-            
             # If this is an expanded item, add it
             if item and item.isExpanded():
                 expanded_items.append(self.create_tree_item_data(item))
