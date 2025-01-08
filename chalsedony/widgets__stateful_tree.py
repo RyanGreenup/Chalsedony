@@ -9,14 +9,6 @@ from PySide6.QtWidgets import (
     QWidget,
     QApplication,
 )
-
-
-class DeferredSelectionEvent(QEvent):
-    """Custom event for deferred selection restoration"""
-    
-    def __init__(self, item_data_list: List[TreeItemData]) -> None:
-        super().__init__(QEvent.Type.User)
-        self.item_data_list = item_data_list
 from db_api import ItemType
 
 
@@ -25,6 +17,14 @@ class TreeItemData(NamedTuple):
 
     type: ItemType
     id: str
+
+
+class DeferredSelectionEvent(QEvent):
+    """Custom event for deferred selection restoration"""
+    
+    def __init__(self, item_data_list: List[TreeItemData]) -> None:
+        super().__init__(QEvent.Type.User)
+        self.item_data_list = item_data_list
 
 
 class TreeWidgetItem(QTreeWidgetItem):
