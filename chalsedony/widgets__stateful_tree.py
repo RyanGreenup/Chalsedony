@@ -22,9 +22,12 @@ class TreeItemData(NamedTuple):
 class DeferredSelectionEvent(QEvent):
     """Custom event for deferred selection restoration"""
 
-    def __init__(self, item_data_list: List[TreeItemData]) -> None:
+    def __init__(
+        self, item_data_list: List[TreeItemData], current_item: TreeItemData | None
+    ) -> None:
         super().__init__(QEvent.Type.User)
         self.item_data_list = item_data_list
+        self.current_item = current_item
 
 
 class TreeWidgetItem(QTreeWidgetItem):
@@ -71,6 +74,7 @@ class TreeState(TypedDict):
 
     selected_items: List[TreeItemData]
     expanded_items: List[TreeItemData]
+    current_item: TreeItemData | None
 
 
 class StatefulTree(QTreeWidget):
@@ -135,11 +139,15 @@ class StatefulTree(QTreeWidget):
 
     def export_state(self) -> TreeState:
         """Export the current state of the tree"""
+        current = self.currentItem()
         return {
             "selected_items": [
                 cast(TreeWidgetItem, item).item_data for item in self.selectedItems()
             ],
             "expanded_items": self.get_expanded_items_data(),
+            "current_item": cast(TreeWidgetItem, current).item_data
+            if current
+            else None,
         }
 
     def restore_state(self, state: TreeState) -> None:
@@ -154,7 +162,7 @@ class StatefulTree(QTreeWidget):
         # Create and post custom event for deferred selection
         # This is required for drag and drop to work correctly
         # Without it, items will be removed from the tree instead of selected
-        event = DeferredSelectionEvent(state["selected_items"])
+        event = DeferredSelectionEvent(state["selected_items"], state["current_item"])
         if app := QApplication.instance():
             app.postEvent(self, event)
 
@@ -165,5 +173,7 @@ class StatefulTree(QTreeWidget):
             # Handle our deferred selection event
             for item_data in event.item_data_list:
                 self.tree_items.get_item(item_data).setSelected(True)
+            if event.current_item:
+                self.setCurrentItem(self.tree_items.get_item(event.current_item))
             return True
         return super().event(event)
