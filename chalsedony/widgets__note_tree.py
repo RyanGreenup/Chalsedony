@@ -108,7 +108,7 @@ class NoteTreeWidget(KbdTreeWidget):
     def get_selected_item_data(self) -> List[TreeItemData]:
         """Get IDs of all selected items"""
         selected_items = self.selectedItems()
-        ids: List[TreeItemData] = [] * len(selected_items)
+        ids = [None] * len(selected_items)
         for i, item in enumerate(selected_items):
             assert isinstance(
                 item, TreeWidgetItem
