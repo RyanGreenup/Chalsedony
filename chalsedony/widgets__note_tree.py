@@ -187,7 +187,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
         event.acceptProposedAction()
 
-    # Ensure this method does not modify the tree in any way, it should be dumb and merely emit signals, the tree should be left as is AI!
     def dropEvent(self, event: QDropEvent) -> None:
         """Handle drop event to move folders"""
         if not self._dragged_item:
