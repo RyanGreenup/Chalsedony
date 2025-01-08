@@ -65,6 +65,7 @@ class NoteTree(QTreeWidget):
             folder_item = QTreeWidgetItem(parent_widget)
             folder_item.setText(0, folder_data.folder.title)
             folder_item.setData(
+                    # Refactor this to use a namedtuple that describes the data AI!
                 0, Qt.ItemDataRole.UserRole, ("folder", folder_data.folder.id)
             )
             folder_items[folder_data.folder.id] = folder_item
@@ -98,7 +99,9 @@ class NoteTree(QTreeWidget):
         # Add ID display as clickable menu item that copies to clipboard
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
         item_type_enum = ItemType(item_type)
-        id_action = QAction(f"Copy {item_type_enum.name.capitalize()} ID: {item_id}", self)
+        id_action = QAction(
+            f"Copy {item_type_enum.name.capitalize()} ID: {item_id}", self
+        )
         id_action.triggered.connect(lambda: self.copy_to_clipboard(str(item_id)))
         menu.addAction(id_action)
 
