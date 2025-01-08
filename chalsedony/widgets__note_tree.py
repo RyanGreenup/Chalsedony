@@ -40,6 +40,10 @@ class TreeWidgetItem(QTreeWidgetItem):
         """Get the type of the item"""
         return self.data(0, Qt.ItemDataRole.UserRole).type
 
+    def get_tree_item_data(self) -> TreeItemData:
+        """Get the TreeItemData for the item"""
+        return self.data(0, Qt.ItemDataRole.UserRole)
+
 
 class TreeItems:
     """Wrapper class to store and access tree items with O(1) lookup"""
@@ -47,9 +51,9 @@ class TreeItems:
     def __init__(self) -> None:
         self.items: Dict[str, TreeWidgetItem] = {}
 
-    def _make_id(self, item: TreeWidgetItem) -> str:
+    def _make_id(self, item: TreeItemData) -> str:
         """Create a unique ID for an item based on its type and text"""
-        return f"{item.get_type()}-{item.text(0)}"
+        return f"{item.type}-{item.id}"
 
     def add_item(self, item: TreeWidgetItem) -> None:
         """Add an item to the dict
@@ -57,10 +61,11 @@ class TreeItems:
         Args:
             item: The tree widget item to store
         """
-        id = self._make_id(item)
+        tree_item_data = TreeItemData( type=item.get_type(), id=item.get_id())
+        id = self._make_id(tree_item_data)
         self.items[id] = item
 
-    def get_item(self, tree_item: TreeWidgetItem) -> TreeWidgetItem:
+    def get_item(self, tree_item: TreeItemData) -> TreeWidgetItem:
         """Get an item from the dict
 
         Args:
@@ -100,15 +105,15 @@ class NoteTreeWidget(KbdTreeWidget):
         # Reset the stored hashmap
         self.tree_items = TreeItems()
 
-    def get_selected_ids(self) -> List[str]:
+    def get_selected_item_data(self) -> List[TreeItemData]:
         """Get IDs of all selected items"""
         selected_items = self.selectedItems()
-        ids: List[str] = [""] * len(selected_items)
+        ids: List[TreeItemData] = [] * len(selected_items)
         for i, item in enumerate(selected_items):
             assert isinstance(
                 item, TreeWidgetItem
             ), "The NoteTreeWidget should only contain TreeWidgetItems"
-            ids[i] = item.get_id()
+            ids[i] = TreeItemData(type=item.get_type(), id=item.get_id())
 
         return ids
 
@@ -140,10 +145,16 @@ class NoteTreeWidget(KbdTreeWidget):
         self.tree_items.add_item(item)
         return item
 
-    def select_item(self, item: TreeWidgetItem) -> None:
+    def set_current_item(self, item_data: TreeItemData) -> None:
         """Select an item in the tree by its ID"""
-        item = self.tree_items.get_item(item)
+        item = self.tree_items.get_item(item_data)
         self.setCurrentItem(item)
+
+    def set_selected_items(self, item_data: List[TreeItemData]) -> None:
+        """Select items in the tree by their IDs"""
+        for item_datum in item_data:
+            item = self.tree_items.get_item(item_datum)
+            item.setSelected(True)
 
 
 class NoteTree(NoteTreeWidget):
