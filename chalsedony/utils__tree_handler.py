@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from typing import List, Tuple, Dict
+from widgets__note_tree import NoteTreeWidget
 
 
 class TreeStateHandler:
@@ -79,3 +80,10 @@ class TreeStateHandler:
             if item is None:
                 return None
         return item
+
+
+
+
+class NoteTreeStateHandler:
+    def __init__(self, tree_widget: NoteTreeWidget) -> None:
+        self.tree_widget = tree_widget
