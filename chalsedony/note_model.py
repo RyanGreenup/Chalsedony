@@ -277,7 +277,14 @@ class NoteModel(QObject):
         # Don't refresh as this could be slow
         self.refreshed.emit()
 
-    # Add a method to set the folder to the root AI!
+    def set_folder_to_root(self, folder_id: str) -> None:
+        """Move a folder to the root of the folder tree
+        
+        Args:
+            folder_id: ID of the folder to move to root
+        """
+        self.update_folder(folder_id, parent_id="")
+
     def update_folder(
         self,
         folder_id: str,
