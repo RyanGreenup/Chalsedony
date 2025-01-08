@@ -154,6 +154,27 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         """Create a new note under the selected folder"""
         print("TODO implement this")
 
+    def keyPressEvent(self, event) -> None:
+        """Handle keyboard shortcuts for cut/paste operations"""
+        if self.currentItem():
+            match event.key():
+                case Qt.Key.Key_X:  # Cut
+                    self.cut_selected_items()
+                    event.accept()
+                    return
+                case Qt.Key.Key_P:  # Paste
+                    self.paste_items(self.currentItem())
+                    event.accept()
+                    return
+                case Qt.Key.Key_Escape:  # Clear cut items
+                    if self._cut_items:
+                        self.clear_cut_items()
+                        event.accept()
+                        return
+
+        # Let parent class handle other keys
+        super().keyPressEvent(event)
+
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         self.drag_drop_handler.dragEnterEvent(event)
 
@@ -210,7 +231,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 self.note_moved.emit(item_data.id, target_data.id)
 
         # Clear cut items after paste
-        self.clear_cut_items()
+        self._cut_items.clear()
 
 
 class DragDropHandler:
