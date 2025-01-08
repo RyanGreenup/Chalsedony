@@ -77,7 +77,10 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
             # Add notes after folders
             for note in folder_data.notes:
-                self.create_tree_item(folder_item, note.title, ItemType.NOTE, note.id)
+                note_item = self.create_tree_item(folder_item, note.title, ItemType.NOTE, note.id)
+                # Move note items to the bottom of their parent folder
+                folder_item.removeChild(note_item)
+                folder_item.addChild(note_item)
 
         # Add all root folders and their children recursively
         for folder_id, folder_data in tree_data.items():
