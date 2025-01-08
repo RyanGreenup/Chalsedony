@@ -4,14 +4,9 @@ from utils__get_first_markdown_heading import get_markdown_heading
 from sqlite3 import Connection
 from pathlib import Path
 from typing import Dict, List, Optional, NamedTuple
-from db_api import Note, Folder, FolderTreeItem
+from db_api import Note, Folder, FolderTreeItem, NoteSearchResult
 
 
-class NoteSearchResult(NamedTuple):
-    """Represents a search result containing note ID and title"""
-
-    id: str
-    title: str
 
 
 NOTES_FILE = Path("/tmp/notes.yml")
@@ -38,6 +33,7 @@ class NoteModel(QObject):
             return Note(**row_dict)
         return None
 
+    # Modify this to return a NoteSearchResult type, this will involve modifying the SQL query to get only the appropriate fields AI!
     def get_all_notes(self) -> List[Note]:
         """Get all notes from all folders"""
         cursor = self.db_connection.cursor()

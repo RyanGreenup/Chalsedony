@@ -61,6 +61,8 @@ class FolderTreeItem(BaseModel):
     notes: List[Note]
     children: List["FolderTreeItem"] = []
 
+
+# AI: This is the named tuple
 class NoteSearchResult(NamedTuple):
     """Represents a search result containing note ID and title"""
 
