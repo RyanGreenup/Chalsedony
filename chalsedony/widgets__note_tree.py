@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem
-from typing import cast
+from typing import Dict, cast
 from db_api import TreeItemData
 from widgets__kbd_widgets import KbdTreeWidget
 
@@ -73,6 +73,19 @@ class NoteTreeWidget(KbdTreeWidget):
         return item
 
 
+# AI: This class is a wrapper over a hashmap to store widgets and ids
+class TreeItems():
+    def __init__(self) -> None:
+        self.items: Dict[str, TreeWidgetItem] = {}
+
+    def add_item(self, item: TreeWidgetItem) -> None:
+        """Add an item to the dict"""
+        self.items[item.get_id()] = item
+
+    def get_item(self, item_id: str) -> TreeWidgetItem:
+        """Get an item from the dict"""
+        return self.items[item_id]
+
 class NoteTree(NoteTreeWidget):
     note_created = Signal(int)
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
@@ -86,6 +99,8 @@ class NoteTree(NoteTreeWidget):
         self._hover_item: QTreeWidgetItem | None = None
         self._dragged_item: QTreeWidgetItem | None = None
         self.setup_ui()
+        # The class stores an attribute of type TreeItems
+        self.tree_items = TreeItems()
 
     def setup_ui(self) -> None:
         self.setAnimated(True)
@@ -104,6 +119,7 @@ class NoteTree(NoteTreeWidget):
         self._hover_item = None
         self._dragged_item = None
 
+    # When the tree is populated, store the items in the tree_items attribute so the user can access them with O(1) lookup AI!
     def populate_tree(self) -> None:
         """Populate the tree widget with folders and notes from the model"""
         self.clear()
