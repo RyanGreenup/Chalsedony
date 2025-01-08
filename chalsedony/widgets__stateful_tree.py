@@ -152,6 +152,8 @@ class StatefulTree(QTreeWidget):
             self.tree_items.get_item(item_data).setExpanded(True)
 
         # Create and post custom event for deferred selection
+        # This is required for drag and drop to work correctly
+        # Without it, items will be removed from the tree instead of selected
         event = DeferredSelectionEvent(state["selected_items"])
         if app := QApplication.instance():
             app.postEvent(self, event)
