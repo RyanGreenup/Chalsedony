@@ -1,4 +1,3 @@
-from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QWidget,
     QHBoxLayout,
@@ -6,16 +5,10 @@ from PySide6.QtWidgets import (
     QFrame,
     QSplitter,
     QTabWidget,
-    QListWidget,
-    QListWidgetItem,
-    QLineEdit,
-    QMenu,
-    QApplication,
 )
-from PySide6.QtCore import QPoint
 
 
-from db_api import NoteSearchResult, ItemType
+from db_api import ItemType
 from PySide6.QtCore import (
     Qt,
     Signal,
@@ -27,6 +20,7 @@ from note_model import NoteModel
 from utils__tree_handler import TreeStateHandler
 from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
+from widgets__search_tab import SearchTab
 
 
 class NoteView(QWidget):
@@ -82,22 +76,8 @@ class NoteView(QWidget):
         self.left_tabs.addTab(self.tree_widget, "Folders")
 
         # Second tab - Search and List view
-        search_tab = QWidget()
-        search_layout = QVBoxLayout()
-        search_layout.setContentsMargins(0, 0, 0, 0)
-        search_layout.setSpacing(5)
-
-        # Search bar
-        self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Search notes...")
-        search_layout.addWidget(self.search_input)
-
-        # List view
-        self.search_sidebar_list = NoteListWidget()
-        search_layout.addWidget(self.search_sidebar_list)
-
-        search_tab.setLayout(search_layout)
-        self.left_tabs.addTab(search_tab, "All Notes")
+        self.search_tab = SearchTab(model=self.model)
+        self.left_tabs.addTab(self.search_tab, "All Notes")
 
         left_layout.addWidget(self.left_tabs)
         self.left_sidebar.setLayout(left_layout)
@@ -150,10 +130,10 @@ class NoteView(QWidget):
         self.tree_widget.note_moved.connect(self.update_note_folder)
         self.tree_widget.status_bar_message.connect(self.send_status_message)
 
-        # Connect search and list selection
-        self.search_input.textChanged.connect(self._on_search_text_changed)
-        self.search_sidebar_list.itemSelectionChanged.connect(
-            self._on_list_selection_changed
+        # Connect search tab signals
+        self.search_tab.search_text_changed.connect(self._on_search_text_changed)
+        self.search_tab.note_selected.connect(
+            lambda note_id: self._handle_note_selection(ItemType.NOTE, note_id)
         )
 
     def save_current_note(self) -> None:
@@ -361,69 +341,8 @@ class NoteView(QWidget):
 
     def _populate_notes_list(self, search_query: str = "") -> None:
         """Populate the all notes list view with optional search filtering"""
-        self.search_sidebar_list.clear()
-
-        if search_query:
-            # Use full text search
-            results = self.model.search_notes(search_query)
-            for result in results:
-                self.search_sidebar_list.add_text_item(result)
-        else:
-            # Show all notes
-            notes = self.model.get_all_notes()
-            for note in notes:
-                self.search_sidebar_list.add_text_item(note)
-
-    def _on_list_selection_changed(self) -> None:
-        """Handle selection from the all notes list"""
-        selected = self.search_sidebar_list.selectedItems()
-        if not selected:
-            return
-
-        # Get the note ID from the selected item's UserRole data
-        # The ID was stored when the item was created in add_text_item()
-        note_id = selected[0].data(Qt.ItemDataRole.UserRole)
-        if note_id:
-            self._handle_note_selection(ItemType.NOTE, note_id)
+        self.search_tab.populate_notes_list(search_query)
 
     def _on_search_text_changed(self, text: str) -> None:
         """Handle search text changes"""
         self._populate_notes_list(text)
-
-
-class NoteListWidget(QListWidget):
-    def __init__(self) -> None:
-        super().__init__()
-        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._show_context_menu)
-
-    def _show_context_menu(self, position: QPoint) -> None:
-        """Show context menu with note ID copy option"""
-        item = self.itemAt(position)
-        if not item:
-            return
-
-        note_id = item.data(Qt.ItemDataRole.UserRole)
-        if not note_id:
-            return
-
-        menu = QMenu(self)
-
-        # Create action to copy note ID
-        copy_action = QAction(f"Copy Note ID: {note_id}", self)
-        copy_action.triggered.connect(lambda: self._copy_to_clipboard(note_id))
-        menu.addAction(copy_action)
-
-        menu.exec(self.mapToGlobal(position))
-
-    def _copy_to_clipboard(self, text: str) -> None:
-        """Copy text to clipboard"""
-        clipboard = QApplication.clipboard()
-        clipboard.setText(text)
-
-    def add_text_item(self, search_result: NoteSearchResult) -> QListWidgetItem:
-        """Add a new text item to the list using NoteSearchResult and return the created item"""
-        item = QListWidgetItem(search_result.title)
-        item.setData(Qt.ItemDataRole.UserRole, search_result.id)
-        super().addItem(item)
-        return item
