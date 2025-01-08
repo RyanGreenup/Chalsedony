@@ -33,15 +33,15 @@ class NoteModel(QObject):
             return Note(**row_dict)
         return None
 
-    # Modify this to return a NoteSearchResult type, this will involve modifying the SQL query to get only the appropriate fields AI!
-    def get_all_notes(self) -> List[Note]:
-        """Get all notes from all folders"""
+    def get_all_notes(self) -> List[NoteSearchResult]:
+        """Get all notes from all folders
+        
+        Returns:
+            List of NoteSearchResult containing note IDs and titles
+        """
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT * FROM notes")
-
-        # Convert tuple rows to dictionaries using column names
-        columns = [col[0] for col in cursor.description]
-        return [Note(**dict(zip(columns, row))) for row in cursor.fetchall()]
+        cursor.execute("SELECT id, title FROM notes")
+        return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
     def on_note_content_changed(self, note_id: str, content: str) -> None:
         """Handle note content changes from view

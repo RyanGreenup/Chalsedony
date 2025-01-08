@@ -370,7 +370,7 @@ class NoteView(QWidget):
             # Show all notes
             notes = self.model.get_all_notes()
             for note in notes:
-                self.search_sidebar.add_text_item(NoteSearchResult(note.id, note.title))
+                self.search_sidebar.add_text_item(note)
 
     def _on_list_selection_changed(self) -> None:
         """Handle selection from the all notes list"""
