@@ -277,6 +277,7 @@ class NoteModel(QObject):
         # Don't refresh as this could be slow
         self.refreshed.emit()
 
+    # Add a method to set the folder to the root AI!
     def update_folder(
         self,
         folder_id: str,
@@ -290,6 +291,8 @@ class NoteModel(QObject):
             folder_id: ID of the folder to update
             title: New title (optional)
             parent_id: New parent folder ID (optional)
+
+            set parent_id as an empty (`""`) string to set the parent to None
         """
         updates = []
         params = []
