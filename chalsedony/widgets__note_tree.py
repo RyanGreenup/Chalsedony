@@ -41,7 +41,56 @@ class TreeWidgetItem(QTreeWidgetItem):
         return self.data(0, Qt.ItemDataRole.UserRole).type
 
 
+class TreeItems:
+    """Wrapper class to store and access tree items with O(1) lookup"""
+
+    def __init__(self) -> None:
+        self.items: Dict[str, TreeWidgetItem] = {}
+
+    def _make_id(self, item: TreeWidgetItem) -> str:
+        """Create a unique ID for an item based on its type and text"""
+        return f"{item.get_type()}-{item.text(0)}"
+
+    def add_item(self, item: TreeWidgetItem) -> None:
+        """Add an item to the dict
+
+        Args:
+            item: The tree widget item to store
+        """
+        id = self._make_id(item)
+        self.items[id] = item
+
+    def get_item(self, tree_item: TreeWidgetItem) -> TreeWidgetItem:
+        """Get an item from the dict
+
+        Args:
+            item_id: The ID of the item to retrieve
+
+        Returns:
+            The corresponding TreeWidgetItem
+        """
+        item_id = self._make_id(tree_item)
+        return self.items[item_id]
+
+
 class NoteTreeWidget(KbdTreeWidget):
+    """
+    A TreeWidget to display notes and folders in a tree structure.
+
+    Ensures the type and ID of items are stored and retrieved correctly.
+
+
+    Usage:
+        Get an item's ID and type:
+            item = tree_widget.currentItem()
+            item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+            item_id = item_data.id
+            item_type = item_data.type
+        Select an item by ID:
+            item = tree_widget.tree_items.get_item(item_id)
+            tree_widget.setCurrentItem(item)
+    """
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.tree_items = TreeItems()
@@ -74,31 +123,10 @@ class NoteTreeWidget(KbdTreeWidget):
         self.tree_items.add_item(item)
         return item
 
-
-class TreeItems:
-    """Wrapper class to store and access tree items with O(1) lookup"""
-
-    def __init__(self) -> None:
-        self.items: Dict[str, TreeWidgetItem] = {}
-
-    def add_item(self, item: TreeWidgetItem) -> None:
-        """Add an item to the dict
-
-        Args:
-            item: The tree widget item to store
-        """
-        self.items[item.get_id()] = item
-
-    def get_item(self, item_id: str) -> TreeWidgetItem:
-        """Get an item from the dict
-
-        Args:
-            item_id: The ID of the item to retrieve
-
-        Returns:
-            The corresponding TreeWidgetItem
-        """
-        return self.items[item_id]
+    def select_item(self, item: TreeWidgetItem) -> None:
+        """Select an item in the tree by its ID"""
+        item = self.tree_items.get_item(item)
+        self.setCurrentItem(item)
 
 
 class NoteTree(NoteTreeWidget):
