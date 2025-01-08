@@ -166,7 +166,29 @@ class NoteTreeWidget(KbdTreeWidget):
             item = self.tree_items.get_item(item_data)
             item.setSelected(True)
 
-    # Write a method to get all items in the tree that are expanded AI!
+    def get_expanded_items_data(self) -> List[TreeItemData]:
+        """Get TreeItemData for all expanded items in the tree
+        
+        Returns:
+            List of TreeItemData for each expanded item
+        """
+        expanded_items = []
+        
+        def collect_expanded(item: QTreeWidgetItem | None = None):
+            # Start with top level items if no item provided
+            items = self.topLevelItem(0) if item is None else item
+            
+            # If this is an expanded item, add it
+            if item and item.isExpanded():
+                expanded_items.append(self.create_tree_item_data(item))
+                
+            # Recursively check children
+            for i in range(item.childCount() if item else self.topLevelItemCount()):
+                child = item.child(i) if item else self.topLevelItem(i)
+                collect_expanded(child)
+        
+        collect_expanded()
+        return expanded_items
 
 
 class NoteTree(NoteTreeWidget):
