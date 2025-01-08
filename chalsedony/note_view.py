@@ -1,3 +1,4 @@
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QWidget,
     QHBoxLayout,
@@ -8,7 +9,10 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QLineEdit,
+    QMenu,
+    QApplication,
 )
+from PySide6.QtCore import QPoint
 
 
 from db_api import NoteSearchResult, ItemType
@@ -390,6 +394,32 @@ class NoteView(QWidget):
 class NoteListWidget(QListWidget):
     def __init__(self) -> None:
         super().__init__()
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_context_menu)
+
+    def _show_context_menu(self, position: QPoint) -> None:
+        """Show context menu with note ID copy option"""
+        item = self.itemAt(position)
+        if not item:
+            return
+
+        note_id = item.data(Qt.ItemDataRole.UserRole)
+        if not note_id:
+            return
+
+        menu = QMenu(self)
+
+        # Create action to copy note ID
+        copy_action = QAction(f"Copy Note ID: {note_id}", self)
+        copy_action.triggered.connect(lambda: self._copy_to_clipboard(note_id))
+        menu.addAction(copy_action)
+
+        menu.exec(self.mapToGlobal(position))
+
+    def _copy_to_clipboard(self, text: str) -> None:
+        """Copy text to clipboard"""
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text)
 
     def add_text_item(self, search_result: NoteSearchResult) -> QListWidgetItem:
         """Add a new text item to the list using NoteSearchResult and return the created item"""
