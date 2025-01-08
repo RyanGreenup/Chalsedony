@@ -21,6 +21,11 @@ class TreeItemData(NamedTuple):
 class TreeWidgetItem(QTreeWidgetItem):
     """Custom QTreeWidgetItem that properly types the UserRole data"""
 
+    def __init__(self, parent: QWidget | QTreeWidgetItem, title: str, item_type: ItemType, item_id: str):
+        super().__init__(parent)
+        self.setText(0, title)
+        self.item_data = TreeItemData(type=item_type, id=item_id)
+
     def data(self, column: int, role: int) -> TreeItemData:
         """Override data method to return properly typed TreeItemData"""
         return cast(TreeItemData, super().data(column, role))
@@ -43,20 +48,16 @@ class TreeItems:
     """Wrapper class to store and access tree items with O(1) lookup"""
 
     def __init__(self) -> None:
-        self.items: Dict[str, TreeWidgetItem] = {}
-
-    @staticmethod
-    def _make_key(item_data: TreeItemData) -> str:
-        """Create a unique key for an item"""
-        return f"{item_data.type}-{item_data.id}"
+        self.items: Dict[tuple[ItemType, str], TreeWidgetItem] = {}
 
     def add_item(self, item: TreeWidgetItem) -> None:
         """Add an item to the dict"""
-        self.items[self._make_key(item.item_data)] = item
+        data = item.item_data
+        self.items[(data.type, data.id)] = item
 
     def get_item(self, item_data: TreeItemData) -> TreeWidgetItem:
         """Get an item from the dict"""
-        return self.items[self._make_key(item_data)]
+        return self.items[(item_data.type, item_data.id)]
 
 
 class TreeState(TypedDict):
@@ -93,7 +94,7 @@ class StatefulTree(QTreeWidget):
         # Reset the stored hashmap
         self.tree_items = TreeItems()
 
-    def create_and_store_tree_item(
+    def create_tree_item(
         self,
         parent: QTreeWidget | QTreeWidgetItem,
         title: str,
@@ -101,25 +102,9 @@ class StatefulTree(QTreeWidget):
         item_id: str,
     ) -> TreeWidgetItem:
         """Create and store a tree item"""
-        item = TreeWidgetItem(parent)
-        item.setText(0, title)
-        item.item_data = TreeItemData(type=item_type, id=item_id)
+        item = TreeWidgetItem(parent, title, item_type, item_id)
         self.tree_items.add_item(item)
         return item
-
-    @staticmethod
-    def create_tree_item_data(item: QTreeWidgetItem) -> TreeItemData:
-        """Get TreeItemData from any tree item"""
-        return cast(TreeWidgetItem, item).item_data
-
-    def get_selected_items_data(self) -> List[TreeItemData]:
-        """Get TreeItemData for all selected items in the tree
-
-        Returns:
-            List of TreeItemData for each selected item
-        """
-        selected_items = self.selectedItems()
-        return [self.create_tree_item_data(item) for item in selected_items]
 
     def get_expanded_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all expanded items in the tree
@@ -128,14 +113,14 @@ class StatefulTree(QTreeWidget):
             List of TreeItemData for each expanded item
         """
         expanded_items = []
-
+        
         def collect_expanded(item: QTreeWidgetItem | None = None) -> None:
             if item and item.isExpanded():
-                expanded_items.append(self.create_tree_item_data(item))
-
-            # Recursively check children
-            for i in range(item.childCount() if item else self.topLevelItemCount()):
-                child = item.child(i) if item else self.topLevelItem(i)
+                expanded_items.append(cast(TreeWidgetItem, item).item_data)
+            
+            items = [item.child(i) for i in range(item.childCount())] if item else \
+                   [self.topLevelItem(i) for i in range(self.topLevelItemCount())]
+            for child in items:
                 collect_expanded(child)
 
         collect_expanded()
@@ -144,7 +129,8 @@ class StatefulTree(QTreeWidget):
     def export_state(self) -> TreeState:
         """Export the current state of the tree"""
         return {
-            "selected_items": self.get_selected_items_data(),
+            "selected_items": [cast(TreeWidgetItem, item).item_data 
+                             for item in self.selectedItems()],
             "expanded_items": self.get_expanded_items_data(),
         }
 
