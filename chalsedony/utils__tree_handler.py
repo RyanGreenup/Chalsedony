@@ -84,7 +84,57 @@ class TreeStateHandler:
 
 class NoteTreeStateHandler:
     """
-    This class assumes that every item is a TreeeWidgetItem and has a unique ID.
+    This class assumes that every item is a TreeWidgetItem and has a unique ID.
     """
     def __init__(self, tree_widget: NoteTreeWidget) -> None:
         self.tree_widget = tree_widget
+        self.selected_ids: List[str] = []
+        self.fold_state: Dict[str, bool] = {}
+
+    def save_state(self) -> None:
+        """Save the current selection and expansion state of the tree"""
+        self.selected_ids = self._get_selected_ids()
+        self.fold_state = self._get_tree_fold_state()
+
+    def restore_state(self, tree_widget: NoteTreeWidget | None = None) -> None:
+        """Restore the saved selection and expansion state"""
+        if tree_widget:
+            self.tree_widget = tree_widget
+        self._restore_selection()
+        self._restore_fold_state()
+
+    def _get_selected_ids(self) -> List[str]:
+        """Get IDs of all selected items"""
+        return [item.get_id() for item in self.tree_widget.selectedItems()]
+
+    def _get_tree_fold_state(self) -> Dict[str, bool]:
+        """Get expansion state of all items by their IDs"""
+        state: Dict[str, bool] = {}
+        
+        def traverse(item: TreeWidgetItem) -> None:
+            if item.childCount() > 0:
+                state[item.get_id()] = item.isExpanded()
+                for i in range(item.childCount()):
+                    traverse(cast(TreeWidgetItem, item.child(i)))
+
+        root = self.tree_widget.invisibleRootItem()
+        for i in range(root.childCount()):
+            traverse(cast(TreeWidgetItem, root.child(i)))
+        
+        return state
+
+    def _restore_selection(self) -> None:
+        """Restore selection state using saved IDs"""
+        for item_id in self.selected_ids:
+            for stored_item in self.tree_widget.tree_items.items.values():
+                if stored_item.get_id() == item_id:
+                    stored_item.setSelected(True)
+                    break
+
+    def _restore_fold_state(self) -> None:
+        """Restore expansion state using saved IDs"""
+        for item_id, is_expanded in self.fold_state.items():
+            for stored_item in self.tree_widget.tree_items.items.values():
+                if stored_item.get_id() == item_id:
+                    stored_item.setExpanded(is_expanded)
+                    break
