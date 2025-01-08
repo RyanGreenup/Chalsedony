@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 
 from db_api import ItemType
 from PySide6.QtCore import (
+    QTimer,
     Qt,
     Signal,
     Property,
@@ -179,6 +180,9 @@ class NoteView(QWidget):
         # This needs to be rconsidered so that the items in the tree widget are folded based on their id
         # For now, we'll hold off on this until the underlying data is more stable
         try:
+            # Disable animations before any tree operations
+            self.tree_widget.setAnimated(False)
+
             tree_state = self.tree_widget.export_state()
 
             # Populate the UI
@@ -187,11 +191,12 @@ class NoteView(QWidget):
             # Restore the fold state
             self.tree_widget.restore_state(tree_state)
 
-            # TODO Attempt to focus the last item based on the note id or folder id respectively
-            # This could be a bit slow, walking through the tree, look at this later
-        finally:
-            # Restore original animation state
+            # Use a timer to restore animations after deferred events complete
+            QTimer.singleShot(100, lambda: self.tree_widget.setAnimated(is_animated))
+        except Exception as e:
+            # Ensure animations are restored even if something fails
             self.tree_widget.setAnimated(is_animated)
+            raise e
 
     def _on_editor_text_changed(self) -> None:
         """
