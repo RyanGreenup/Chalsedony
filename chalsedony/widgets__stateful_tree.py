@@ -23,7 +23,7 @@ class TreeWidgetItem(QTreeWidgetItem):
 
     def __init__(
         self,
-        parent: QWidget | QTreeWidgetItem,
+        parent: QTreeWidget | QTreeWidgetItem,
         title: str,
         item_type: ItemType,
         item_id: str,
