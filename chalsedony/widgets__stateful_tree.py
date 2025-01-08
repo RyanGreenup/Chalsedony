@@ -21,7 +21,7 @@ class TreeItemData(NamedTuple):
 
 class DeferredSelectionEvent(QEvent):
     """Custom event for deferred selection restoration"""
-    
+
     def __init__(self, item_data_list: List[TreeItemData]) -> None:
         super().__init__(QEvent.Type.User)
         self.item_data_list = item_data_list
@@ -153,10 +153,12 @@ class StatefulTree(QTreeWidget):
 
         # Create and post custom event for deferred selection
         event = DeferredSelectionEvent(state["selected_items"])
-        QApplication.instance().postEvent(self, event)
+        if app := QApplication.instance():
+            app.postEvent(self, event)
 
-    def event(self, event: QEvent) -> bool:
+    def event(self, e: QEvent) -> bool:
         """Handle custom events"""
+        event = e
         if isinstance(event, DeferredSelectionEvent):
             # Handle our deferred selection event
             for item_data in event.item_data_list:
