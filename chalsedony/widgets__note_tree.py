@@ -199,6 +199,8 @@ class NoteTreeWidget(KbdTreeWidget):
             item = self.tree_items.get_item(item_data)
             item.setExpanded(True)
 
+    # Write a method to export the state of the tree as a typed dictionary and another metod to set the state from that dictionary AI!
+
 
 class NoteTree(NoteTreeWidget):
     note_created = Signal(int)
