@@ -30,40 +30,29 @@ class TreeWidgetItem(QTreeWidgetItem):
     ):
         super().__init__(parent)
         self.setText(0, title)
-        self.item_data = TreeItemData(type=item_type, id=item_id)
+        # Store data directly in the Qt UserRole
+        self.setData(0, Qt.ItemDataRole.UserRole, TreeItemData(type=item_type, id=item_id))
 
-    def data(self, column: int, role: int) -> TreeItemData:
-        """Override data method to return properly typed TreeItemData"""
-        return cast(TreeItemData, super().data(column, role))
-
-    def setData(self, column: int, role: int, value: TreeItemData) -> None:
-        super().setData(column, role, value)
-
-    @property
+    @property 
     def item_data(self) -> TreeItemData:
         """Get the TreeItemData directly"""
         return self.data(0, Qt.ItemDataRole.UserRole)
-
-    @item_data.setter
-    def item_data(self, value: TreeItemData) -> None:
-        """Set the TreeItemData directly"""
-        self.setData(0, Qt.ItemDataRole.UserRole, value)
 
 
 class TreeItems:
     """Wrapper class to store and access tree items with O(1) lookup"""
 
     def __init__(self) -> None:
-        self.items: Dict[tuple[ItemType, str], TreeWidgetItem] = {}
+        self.items: Dict[str, TreeWidgetItem] = {}  # Use f"{type}:{id}" as key
 
     def add_item(self, item: TreeWidgetItem) -> None:
         """Add an item to the dict"""
         data = item.item_data
-        self.items[(data.type, data.id)] = item
+        self.items[f"{data.type}:{data.id}"] = item
 
     def get_item(self, item_data: TreeItemData) -> TreeWidgetItem:
         """Get an item from the dict"""
-        return self.items[(item_data.type, item_data.id)]
+        return self.items[f"{item_data.type}:{item_data.id}"]
 
 
 class TreeState(TypedDict):
@@ -118,22 +107,20 @@ class StatefulTree(QTreeWidget):
         Returns:
             List of TreeItemData for each expanded item
         """
-        expanded_items = []
-
-        def collect_expanded(item: QTreeWidgetItem | None = None) -> None:
-            if item and item.isExpanded():
-                expanded_items.append(cast(TreeWidgetItem, item).item_data)
-
-            items = (
-                [item.child(i) for i in range(item.childCount())]
-                if item
-                else [self.topLevelItem(i) for i in range(self.topLevelItemCount())]
-            )
-            for child in items:
-                collect_expanded(child)
-
-        collect_expanded()
-        return expanded_items
+        def collect_expanded(items: List[QTreeWidgetItem]) -> List[TreeItemData]:
+            result = []
+            for item in items:
+                if item.isExpanded():
+                    result.append(cast(TreeWidgetItem, item).item_data)
+                result.extend(collect_expanded([
+                    item.child(i) for i in range(item.childCount())
+                ]))
+            return result
+                
+        return collect_expanded([
+            self.topLevelItem(i) 
+            for i in range(self.topLevelItemCount())
+        ])
 
     def export_state(self) -> TreeState:
         """Export the current state of the tree"""
