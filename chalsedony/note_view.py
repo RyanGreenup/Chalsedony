@@ -1,3 +1,4 @@
+from enum import Enum, auto
 from PySide6.QtWidgets import (
     QWidget,
     QHBoxLayout,
@@ -9,6 +10,11 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QLineEdit,
 )
+
+class ItemType(Enum):
+    """Enum representing types of items in the note tree"""
+    NOTE = auto()
+    FOLDER = auto()
 from db_api import NoteSearchResult
 from PySide6.QtCore import (
     Qt,
@@ -230,14 +236,13 @@ class NoteView(QWidget):
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
         self._handle_note_selection(item_type, item_id)
 
-    # Create an enum for item_type that can be a "note" or "folder" AI!
-    def _handle_note_selection(self, item_type: str, item_id: str) -> None:
+    def _handle_note_selection(self, item_type: ItemType, item_id: str) -> None:
         """Common handler for note selection from either tree or list"""
         # Disconnect textChanged signal to prevent update loop
         self.content_area.editor.textChanged.disconnect(self._on_editor_text_changed)
 
         try:
-            if item_type == "note":
+            if item_type == ItemType.NOTE:
                 self.current_note_id = item_id
                 note = self.model.find_note_by_id(item_id)
                 if note:
