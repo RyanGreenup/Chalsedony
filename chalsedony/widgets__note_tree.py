@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, QPoint, Signal
-from PySide6.QtWidgets import QTreeWidgetItem
+from PySide6.QtWidgets import QTreeWidgetItem, QStyle
 from widgets__kbd_widgets import KbdTreeWidget
 
 from PySide6.QtGui import QAction, QDragEnterEvent, QDragMoveEvent, QDropEvent, QKeyEvent
@@ -66,6 +66,9 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 ItemType.FOLDER,
                 folder_data.folder.id,
             )
+            # Set folder icon
+            folder_icon = self.style().standardIcon(QStyle.StandardPixmap.SP_DirIcon)
+            folder_item.setIcon(0, folder_icon)
             folder_items[folder_data.folder.id] = folder_item
 
             # Add child folders first to ensure they appear above notes
