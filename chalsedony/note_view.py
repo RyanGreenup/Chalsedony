@@ -357,7 +357,6 @@ class NoteView(QWidget):
         self.content_area.equal_split()
 
 
-    # AI: And th elist is populated here
     def _populate_notes_list(self, search_query: str = "") -> None:
         """Populate the all notes list view with optional search filtering"""
         self.search_sidebar.clear()
@@ -366,14 +365,12 @@ class NoteView(QWidget):
             # Use full text search
             results = self.model.search_notes(search_query)
             for result in results:
-                # AI: This will need to be updated
-                self.search_sidebar.add_text_item(result.title, result.id)
+                self.search_sidebar.add_text_item(result)
         else:
             # Show all notes
             notes = self.model.get_all_notes()
             for note in notes:
-                # AI: This will also need to be updated
-                self.search_sidebar.add_text_item(note.title, note.id)
+                self.search_sidebar.add_text_item(NoteSearchResult(note.id, note.title))
 
     def _on_list_selection_changed(self) -> None:
         """Handle selection from the all notes list"""
@@ -381,8 +378,8 @@ class NoteView(QWidget):
         if not selected:
             return
 
-        # Get the note ID directly from the item data
-        # How does this get the ID, explain it in logical sequance by looking at all the code so developers can understand AI?
+        # Get the note ID from the selected item's UserRole data
+        # The ID was stored when the item was created in add_text_item()
         note_id = selected[0].data(Qt.ItemDataRole.UserRole)
         if note_id:
             self._handle_note_selection("note", note_id)
@@ -395,10 +392,9 @@ class NoteListWidget(QListWidget):
     def __init__(self):
         super().__init__()
 
-    # This method should use that named tuple `NoteSearchResult` as a parameter AI!
-    def add_text_item(self, text: str, item_id: str) -> QListWidgetItem:
-        """Add a new text item to the list with associated ID and return the created item"""
-        item = QListWidgetItem(text)
-        item.setData(Qt.ItemDataRole.UserRole, item_id)
+    def add_text_item(self, search_result: NoteSearchResult) -> QListWidgetItem:
+        """Add a new text item to the list using NoteSearchResult and return the created item"""
+        item = QListWidgetItem(search_result.title)
+        item.setData(Qt.ItemDataRole.UserRole, search_result.id)
         super().addItem(item)
         return item
