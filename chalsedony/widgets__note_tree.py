@@ -72,7 +72,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 parent_widget: The parent widget to add items to (either the main tree or a folder item)
                 folder_data: The folder data structure containing folder info and child items
             """
-            folder_item = self._create_and_store_tree_item(
+            folder_item = self.create_and_store_tree_item(
                 parent_widget,
                 folder_data.folder.title,
                 ItemType.FOLDER,
@@ -84,7 +84,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             for note in folder_data.notes:
                 # NOTE must use this method to create items so they are stored and the tree state can be tracked.
                 # This maintains a hashmap of items and is more performant.
-                self._create_and_store_tree_item(
+                self.create_and_store_tree_item(
                     folder_item, note.title, ItemType.NOTE, note.id
                 )
 

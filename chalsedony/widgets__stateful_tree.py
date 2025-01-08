@@ -93,7 +93,7 @@ class StatefulTree(QTreeWidget):
         # Reset the stored hashmap
         self.tree_items = TreeItems()
 
-    def _create_and_store_tree_item(
+    def create_and_store_tree_item(
         self,
         parent: QTreeWidget | QTreeWidgetItem,
         title: str,
