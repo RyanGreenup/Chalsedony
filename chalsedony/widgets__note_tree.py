@@ -135,8 +135,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
         menu.exec(self.viewport().mapToGlobal(position))
 
-
-
     def request_folder_rename(self, item: QTreeWidgetItem) -> None:
         """Handle folder rename request"""
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
