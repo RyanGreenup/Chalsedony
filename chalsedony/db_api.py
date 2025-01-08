@@ -70,6 +70,7 @@ class NoteSearchResult(NamedTuple):
     title: str
 
 
+# AI: The ItemType is defined here
 class ItemType(Enum):
     """Enum representing types of items in the note tree"""
 

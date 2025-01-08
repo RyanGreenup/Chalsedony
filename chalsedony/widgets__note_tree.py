@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
 )
 from note_model import NoteModel
-from db_api import FolderTreeItem
+from db_api import FolderTreeItem, ItemType
 
 
 class NoteTree(QTreeWidget):
@@ -96,6 +96,7 @@ class NoteTree(QTreeWidget):
         menu = QMenu()
 
         # Add ID display as clickable menu item that copies to clipboard
+        # AI: item_type is used here
         item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
         id_action = QAction(f"Copy {item_type.capitalize()} ID: {item_id}", self)
         id_action.triggered.connect(lambda: self.copy_to_clipboard(str(item_id)))
@@ -110,6 +111,8 @@ class NoteTree(QTreeWidget):
         menu.addAction(create_action)
 
         # Add Rename action for folders
+                # AI: item_type is used here
+
         if item_type == "folder":
             rename_action = QAction("Rename Folder", self)
             rename_action.triggered.connect(lambda: self.request_folder_rename(item))
@@ -119,6 +122,8 @@ class NoteTree(QTreeWidget):
 
     def request_folder_rename(self, item: QTreeWidgetItem) -> None:
         """Handle folder rename request"""
+                # AI: item_type is used here
+
         item_type, folder_id = item.data(0, Qt.ItemDataRole.UserRole)
         if item_type == "folder":
             new_title, ok = QInputDialog.getText(
@@ -153,7 +158,9 @@ class NoteTree(QTreeWidget):
 
         # Only allow dropping on folders
         if item:
+            # Refactor item_type to use the ItemType named tuple AI!
             item_type, _ = item.data(0, Qt.ItemDataRole.UserRole)
+            # AI: THis should be a match case
             if item_type != "folder":
                 event.ignore()
                 return
