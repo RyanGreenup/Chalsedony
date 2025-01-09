@@ -765,6 +765,7 @@ class NoteModel(QObject):
             
         return None
 
+    # Improve this function to return an enum that represents the types of files that may be included in a html document such as file, video, audio, image, etc. Write the enum as well AI!
     def get_resource_mime_type(self, resource_id: str) -> str | None:
         """Get the MIME type of a resource by its ID
         
