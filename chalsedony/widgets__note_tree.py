@@ -1,3 +1,4 @@
+from typing import Callable
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem, QStyle
 from widgets__kbd_widgets import KbdTreeWidget
@@ -42,7 +43,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self.create_keybinings()
 
     def create_keybinings(self) -> None:
-        self.key_actions = {
+        self.key_actions: dict[Qt.Key, Callable[[], None]] = {
             Qt.Key.Key_X: self.cut_selected_items,
             Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
             Qt.Key.Key_R: self.clear_cut_items,
