@@ -170,6 +170,13 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             )
             menu.addAction(duplicate_action)
 
+            # Delete folder
+            duplicate_action = QAction("Duplicate Folder", self)
+            duplicate_action.triggered.connect(
+                lambda: self.duplicate_folder(item)
+            )
+            menu.addAction(duplicate_action)
+
         # Add Cut action
         cut_action = QAction("Cut", self)
         cut_action.triggered.connect(self.cut_selected_items)
