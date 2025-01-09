@@ -124,10 +124,9 @@ class MainWindow(QMainWindow):
                     app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
                     self.style_changed.emit(False)
 
-    # Improve this so the user can specify a title as well AI!
     def upload_resource(self) -> None:
-        """Handle resource file upload"""
-        from PySide6.QtWidgets import QFileDialog
+        """Handle resource file upload with optional title"""
+        from PySide6.QtWidgets import QFileDialog, QInputDialog
 
         if not self.note_view or not self.note_model:
             return
@@ -146,10 +145,25 @@ class MainWindow(QMainWindow):
         )
 
         if file_path:
-            print(f"Uploading file: {file_path}")
+            # Get resource title from user
+            title, ok = QInputDialog.getText(
+                self,
+                "Resource Title",
+                "Enter a title for the resource:",
+                text=Path(file_path).stem  # Default to filename without extension
+            )
+            
+            if not ok:  # User canceled
+                return
+
+            print(f"Uploading file: {file_path} with title: {title}")
             try:
-                resource_id = self.note_model.upload_resource(Path(file_path), note_id)
-                self.set_status_message(f"Uploaded resource: {Path(file_path).name}")
+                resource_id = self.note_model.upload_resource(
+                    Path(file_path), 
+                    note_id,
+                    title=title if title else None
+                )
+                self.set_status_message(f"Uploaded resource: {title or Path(file_path).name}")
                 # Emit signal with resource ID if needed
                 self.resource_uploaded.emit(resource_id)
                 print(f"Resource ID: {resource_id}")
