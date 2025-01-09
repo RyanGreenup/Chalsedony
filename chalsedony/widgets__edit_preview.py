@@ -109,7 +109,6 @@ class EditPreview(QWidget):
     def _apply_html_template(self, html: str) -> str:
         # Replace image URLs to use note: scheme
         html = html.replace('src=":', 'src="note:/')
-        print(html)
         css_includes = self._get_css_resources()
         return f"""<!DOCTYPE html>
         <html>
@@ -249,7 +248,7 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
             # Extract the resource ID without any leading slashes
             resource_id = info.requestUrl().toString().replace("note://", "")
             print(f"Intercepted request for resource: {resource_id}")  # Debug print
-            
+
             # Find the first matching file with this ID prefix
             for filename in os.listdir(self.ASSET_DIR):
                 if filename.startswith(resource_id):
@@ -257,8 +256,10 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                     info.redirect(QUrl(f"file://{filepath}"))
                     print(f"Redirecting to: {filepath}")  # Debug print
                     return
-            
-            print(f"No matching file found for resource ID: {resource_id}")  # Debug print
+
+            print(
+                f"No matching file found for resource ID: {resource_id}"
+            )  # Debug print
 
 
 class NoteLinkPage(QWebEnginePage):
