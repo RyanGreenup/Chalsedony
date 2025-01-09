@@ -719,6 +719,25 @@ class NoteModel(QObject):
         result = cursor.fetchone()
         return result[0] if result else None
 
+    def get_resource_path(self, resource_id: str) -> Path | None:
+        """Get the file path of a resource by its ID
+
+        Args:
+            resource_id: ID of the resource to look up
+
+        Returns:
+            The path to the resource file if found, None otherwise
+
+        Notes:
+            The filepath field does not appear to be used by Joplin
+        """
+        # Find the first matching file with this ID prefix
+        for path in self.asset_dir.iterdir():
+            if path.name.startswith(resource_id):
+                return path
+        return None
+
+
 
 # Footnotes
 # [fn_is_associated]: https://discourse.joplinapp.org/t/is-associated-in-note-resource-0-at-what-time-orphaned-files-are-detectable/4443/3
