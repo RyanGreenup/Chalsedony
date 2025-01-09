@@ -285,6 +285,36 @@ class NoteModel(QObject):
         """
         self.update_folder(folder_id, parent_id="")
 
+    def create_note(self, parent_folder_id: str, title: str = "", body: str = "") -> str:
+        """Create a new note in the specified folder
+
+        Args:
+            parent_folder_id: ID of the parent folder
+            title: Note title (default empty string)
+            body: Note content (default empty string)
+
+        Returns:
+            The ID of the newly created note
+        """
+        note_id = str(int(time.time() * 1000))  # Simple timestamp-based ID
+        created_time = int(time.time())
+        
+        cursor = self.db_connection.cursor()
+        cursor.execute("""
+            INSERT INTO notes_normalized (
+                id, title, body, user_created_time, user_updated_time,
+                is_todo, todo_completed, parent_id, latitude, longitude,
+                altitude, source_url, todo_due
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            note_id, title, body, created_time, created_time,
+            0, 0, parent_folder_id, 0.0, 0.0,
+            0.0, "", 0
+        ))
+        self.db_connection.commit()
+        self.refreshed.emit()
+        return note_id
+
     def update_folder(
         self,
         folder_id: str,
