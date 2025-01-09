@@ -45,6 +45,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self.key_actions = {
             Qt.Key.Key_X: self.cut_selected_items,
             Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
+            # This keybinding is not working, fix that AI!
             Qt.Key.Key_Escape: self.clear_cut_items if self._cut_items else None,
         }
 
@@ -277,14 +278,12 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 return True
         return False
 
-    # AI: Items are marked as cut here
     def cut_selected_items(self) -> None:
         """Store the currently selected items for cutting"""
         self._cut_items = self.selectedItems()
         for item in self._cut_items:
             item.setBackground(0, self.palette().highlight())
 
-    # The highlighting is not removed from the first cut item, review and fix this, ensure that multiple items can be marked as cut AI!
     def clear_cut_items(self) -> None:
         """Clear the cut items selection"""
         try:
