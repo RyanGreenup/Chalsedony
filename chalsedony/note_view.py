@@ -83,7 +83,7 @@ class NoteView(QWidget):
         self.left_sidebar.setLayout(left_layout)
 
         # Main content area
-        self.content_area = EditPreview()
+        self.content_area = EditPreview(self.model.asset_dir)
         self.content_area.setObjectName("contentArea")
 
         # Right sidebar

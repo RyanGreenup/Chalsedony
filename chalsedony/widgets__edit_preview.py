@@ -1,3 +1,4 @@
+from pathlib import Path
 from PySide6.QtWidgets import (
     QTextEdit,
     QWidget,
@@ -49,9 +50,10 @@ register_scheme("qrc")
 class EditPreview(QWidget):
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, asset_dir: Path, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._splitter_animation: QPropertyAnimation | None = None
+        self.asset_dir = asset_dir
         self.setup_ui()
 
     def setup_ui(self) -> None:
@@ -63,7 +65,7 @@ class EditPreview(QWidget):
         self.splitter.setHandleWidth(15)
 
         self.editor = MDTextEdit()
-        self.preview = WebPreview()
+        self.preview = WebPreview(asset_dir=self.asset_dir)
 
         # The background should be transparent to match the UI
         self.preview.setStyleSheet("background: transparent;")
@@ -239,9 +241,9 @@ class MDTextEdit(QTextEdit):
 
 
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
-    def __init__(self, asset_dir: str) -> None:
+    def __init__(self, asset_dir: Path) -> None:
         super().__init__()
-        self.ASSET_DIR = asset_dir
+        self.ASSET_DIR = str(asset_dir)
 
     def interceptRequest(self, info: QWebEngineUrlRequestInfo) -> None:
         if info.requestUrl().scheme() == "note":
@@ -263,11 +265,11 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
 
 
 class NoteLinkPage(QWebEnginePage):
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, asset_dir: Path, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.ASSET_DIR = "/home/ryan/.config/joplin-desktop/resources/"
+        self.asset_dir = asset_dir
         # Create and set the URL interceptor
-        self.interceptor = NoteUrlRequestInterceptor(self.ASSET_DIR)
+        self.interceptor = NoteUrlRequestInterceptor(self.asset_dir)
         self.setUrlRequestInterceptor(self.interceptor)
 
     def acceptNavigationRequest(
@@ -292,6 +294,6 @@ class NoteLinkPage(QWebEnginePage):
 
 
 class WebPreview(QWebEngineView):
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, asset_dir: Path, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setPage(NoteLinkPage(self))
+        self.setPage(NoteLinkPage(parent=self, asset_dir=asset_dir))

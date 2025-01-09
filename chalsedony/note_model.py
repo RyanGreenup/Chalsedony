@@ -14,6 +14,7 @@ class NoteModel(QObject):
     def __init__(self, db_connection: Connection, assets: Path) -> None:
         super().__init__()
         self.db_connection = db_connection
+        self.asset_dir = assets
 
     def find_note_by_id(self, note_id: str) -> Optional[Note]:
         """Find a note by its ID in the entire tree"""
