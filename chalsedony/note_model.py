@@ -342,7 +342,16 @@ class NoteModel(QObject):
         self.refreshed.emit()
         return note_id
 
-    # Create a method to delete a note AI!
+    def delete_note(self, note_id: str) -> None:
+        """Delete a note from the database
+        
+        Args:
+            note_id: ID of the note to delete
+        """
+        cursor = self.db_connection.cursor()
+        cursor.execute("DELETE FROM notes WHERE id = ?", (note_id,))
+        self.db_connection.commit()
+        self.refreshed.emit()
 
     def update_folder(
         self,
