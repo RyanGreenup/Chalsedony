@@ -44,7 +44,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
     def create_keybinings(self) -> None:
         """Create keyboard shortcuts for tree operations.
-        
+
         Returns:
             None
         """
@@ -129,7 +129,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             item: The tree item to delete
         """
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-        
+
         match item_data.type:
             case ItemType.NOTE:
                 self.note_model.delete_note(item_data.id)
@@ -139,15 +139,14 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 self.folder_deleted.emit(item_data.id)
                 self.send_status_message(f"Deleted folder: {item_data.title}")
 
-    # Refactor duplicate_folder into a more general duplicate_item method that uses a match case statement AI!
     def duplicate_item(self, item: QTreeWidgetItem) -> None:
         """Duplicate a note or folder and its contents
-        
+
         Args:
             item: The tree item to duplicate
         """
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-        
+
         match item_data.type:
             case ItemType.FOLDER:
                 self.folder_duplicated.emit(item_data.id)
@@ -199,10 +198,13 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 menu.addAction(move_to_root_action)
 
             # Add Duplicate action
-            duplicate_action = QAction(f"Duplicate {item_type_enum.name.capitalize()}", self)
+            duplicate_action = QAction(
+                f"Duplicate {item_type_enum.name.capitalize()}", self
+            )
             duplicate_action.triggered.connect(lambda: self.duplicate_item(item))
             menu.addAction(duplicate_action)
 
+            # Refactor this to be a context menu action that occurs for both notes and folders and calls delete_item AI!
             # Delete folder
             delete_action = QAction("Delete Folder", self)
             delete_action.triggered.connect(lambda: self.delete_folder(item))
@@ -287,7 +289,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
     def send_status_message(self, message: str) -> None:
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
-
 
     def _is_child_of(
         self, child_item: QTreeWidgetItem, parent_item: QTreeWidgetItem
