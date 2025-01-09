@@ -43,6 +43,11 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self.create_keybinings()
 
     def create_keybinings(self) -> None:
+        """Create keyboard shortcuts for tree operations.
+        
+        Returns:
+            None
+        """
         self.key_actions: dict[Qt.Key, Callable[[], None]] = {
             Qt.Key.Key_X: self.cut_selected_items,
             Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
@@ -241,9 +246,8 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         if self.currentItem():
             key = Qt.Key(event.key())
             action = self.key_actions.get(key)
-            # Error: Call to untyped function (unknown) in typed context  [no-untyped-call] AI!
-            if action:
-                action()
+            if action is not None:
+                action()  # type: ignore[call-arg]
                 event.accept()
                 return
 
