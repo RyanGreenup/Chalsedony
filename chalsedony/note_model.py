@@ -74,9 +74,6 @@ class NoteModel(QObject):
         if refresh:
             self.refreshed.emit()
 
-    def create_note(self, parent_folder_id: int) -> None:
-        """Create a new note under the specified folder"""
-        print(f"Trying to create a new note under folder ID {parent_folder_id}")
 
     def get_note_tree_structure(
         self, order_by: str = "order"
