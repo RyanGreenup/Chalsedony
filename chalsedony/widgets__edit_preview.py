@@ -8,6 +8,8 @@ from PySide6.QtWebEngineCore import (
     QWebEngineUrlScheme,
     QWebEnginePage,
     QWebEngineUrlRequestJob,
+    QWebEngineUrlRequestInterceptor,
+    QWebEngineUrlRequestInfo,
 )
 import os
 import mimetypes
@@ -239,12 +241,28 @@ class MDTextEdit(QTextEdit):
         return scrollbar.value() / scrollbar.maximum()
 
 
+class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
+    def __init__(self, asset_dir: str) -> None:
+        super().__init__()
+        self.ASSET_DIR = asset_dir
+
+    def interceptRequest(self, info: QWebEngineUrlRequestInfo) -> None:
+        if info.requestUrl().scheme() == "note":
+            resource_id = info.requestUrl().path().strip("/")
+            # Find the first matching file with this ID prefix
+            for filename in os.listdir(self.ASSET_DIR):
+                if filename.startswith(resource_id):
+                    filepath = os.path.join(self.ASSET_DIR, filename)
+                    info.redirect(QUrl(f"file://{filepath}"))
+                    return
+
 class NoteLinkPage(QWebEnginePage):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.ASSET_DIR = "/home/ryan/.config/joplin-desktop/resources/"
-        # Register for URL scheme handling
-        self.setUrlRequestInterceptor(self)
+        # Create and set the URL interceptor
+        self.interceptor = NoteUrlRequestInterceptor(self.ASSET_DIR)
+        self.setUrlRequestInterceptor(self.interceptor)
 
     def acceptNavigationRequest(
         self, url: QUrl | str, type: QWebEnginePage.NavigationType, isMainFrame: bool
@@ -265,24 +283,6 @@ class NoteLinkPage(QWebEnginePage):
 
     def requestedUrl(self) -> QUrl:
         return QUrl("note://")
-
-    def interceptRequest(self, info):
-        if info.requestUrl().scheme() == "note":
-            resource_id = info.requestUrl().path().strip("/")
-            # Find the first matching file with this ID prefix
-            for filename in os.listdir(self.ASSET_DIR):
-                if filename.startswith(resource_id):
-                    filepath = os.path.join(self.ASSET_DIR, filename)
-                    with open(filepath, 'rb') as f:
-                        data = f.read()
-                    
-                    # Determine mime type from file extension
-                    mime_type = mimetypes.guess_type(filepath)[0]
-                    if mime_type is None:
-                        mime_type = 'application/octet-stream'
-                    
-                    info.redirect(QUrl(f"file://{filepath}"))
-                    return
 
 
 class WebPreview(QWebEngineView):
