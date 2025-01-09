@@ -202,6 +202,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         full_title = self.note_model.get_folder_path(folder_id)
         self.send_status_message(f"Created new note in folder: {full_title}")
 
+    # Improve this to show the keybindings in the context menu in a conventional way AI!
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard shortcuts for cut/paste operations"""
         if self.currentItem():
