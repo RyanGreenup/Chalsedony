@@ -100,7 +100,18 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         # Collapse all folders by default
         self.collapseAll()
 
-    # Add a method to delete a note AI!
+    def delete_note(self, item: QTreeWidgetItem) -> None:
+        """Delete a note from the tree and database
+        
+        Args:
+            item: The tree item representing the note to delete
+        """
+        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        if item_data.type == ItemType.NOTE:
+            self.note_model.delete_note(item_data.id)
+            self.note_deleted.emit(item_data.id)
+            self.send_status_message(f"Deleted note: {item.text(0)}")
+
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
@@ -156,6 +167,12 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             clear_cut_action = QAction("Clear Cut", self)
             clear_cut_action.triggered.connect(self.clear_cut_items)
             menu.addAction(clear_cut_action)
+
+        # Add Delete action for notes
+        if item_type_enum == ItemType.NOTE:
+            delete_action = QAction("Delete Note", self)
+            delete_action.triggered.connect(lambda: self.delete_note(item))
+            menu.addAction(delete_action)
 
         menu.exec(self.viewport().mapToGlobal(position))
 
