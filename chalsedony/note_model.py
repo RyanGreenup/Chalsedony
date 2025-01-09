@@ -454,10 +454,10 @@ class NoteModel(QObject):
         """
         cursor = self.db_connection.cursor()
         cursor.execute("SELECT * FROM notes WHERE parent_id = ?", (parent_id,))
-        return [Note(**dict(zip(
-            [col[0] for col in cursor.description], 
-            row
-        ))) for row in cursor.fetchall()]
+        return [
+            Note(**dict(zip([col[0] for col in cursor.description], row)))
+            for row in cursor.fetchall()
+        ]
 
     def delete_notes(self, note_ids: List[str]) -> None:
         """Delete multiple notes in a single SQL query
@@ -467,11 +467,11 @@ class NoteModel(QObject):
         """
         if not note_ids:
             return
-            
+
         # Create a parameterized query with the right number of placeholders
         placeholders = ",".join("?" * len(note_ids))
         query = f"DELETE FROM notes WHERE id IN ({placeholders})"
-        
+
         cursor = self.db_connection.cursor()
         cursor.execute(query, note_ids)
         self.db_connection.commit()
@@ -505,7 +505,9 @@ class NoteModel(QObject):
         self.db_connection.commit()
         self.refreshed.emit()
 
-    def copy_folder_recursive(self, folder_id: str, new_parent_id: Optional[str] = None) -> str:
+    def copy_folder_recursive(
+        self, folder_id: str, new_parent_id: Optional[str] = None
+    ) -> str:
         """Copy a folder and all its contents recursively
 
         Args:
@@ -519,7 +521,7 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
         cursor.execute("SELECT * FROM folders WHERE id = ?", (folder_id,))
         row = cursor.fetchone()
-        
+
         if not row:
             raise ValueError(f"Folder {folder_id} not found")
 
@@ -539,17 +541,17 @@ class NoteModel(QObject):
                 original_folder["title"] + " (Copy)",
                 int(time.time()),
                 int(time.time()),
-                new_parent_id if new_parent_id is not None else original_folder["parent_id"]
-            )
+                new_parent_id
+                if new_parent_id is not None
+                else original_folder["parent_id"],
+            ),
         )
 
         # Copy all notes in this folder
         notes = self.get_notes_by_parent_id(folder_id)
         for note in notes:
             self.create_note(
-                parent_folder_id=new_folder_id,
-                title=note.title,
-                body=note.body
+                parent_folder_id=new_folder_id, title=note.title, body=note.body
             )
 
         # Copy all child folders recursively

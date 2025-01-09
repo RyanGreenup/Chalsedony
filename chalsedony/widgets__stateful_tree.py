@@ -134,7 +134,7 @@ class StatefulTree(QTreeWidget):
 
     def highlight_item(self, item_data: TreeItemData) -> None:
         """Highlight an item in the tree using TreeItemData
-        
+
         Args:
             item_data: The TreeItemData containing the item's type and ID
         """
@@ -148,7 +148,7 @@ class StatefulTree(QTreeWidget):
 
     def unhighlight_item(self, item_data: TreeItemData) -> None:
         """Remove highlight from an item in the tree using TreeItemData
-        
+
         Args:
             item_data: The TreeItemData containing the item's type and ID
         """
@@ -162,14 +162,11 @@ class StatefulTree(QTreeWidget):
 
     def get_selected_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all selected items in the tree
-        
+
         Returns:
             List of TreeItemData for each selected item
         """
-        return [
-            cast(TreeWidgetItem, item).item_data
-            for item in self.selectedItems()
-        ]
+        return [cast(TreeWidgetItem, item).item_data for item in self.selectedItems()]
 
     def get_expanded_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all expanded items in the tree
@@ -254,6 +251,3 @@ class StatefulTree(QTreeWidget):
                     pass
             return True
         return super().event(event)
-
-
-

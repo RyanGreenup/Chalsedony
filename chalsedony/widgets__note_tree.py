@@ -37,7 +37,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self.note_model = note_model
         self._hover_item: QTreeWidgetItem | None = None
         self._dragged_item: QTreeWidgetItem | None = None
-        self._cut_items: list[QTreeWidgetItem] = []
+        self._cut_items: list[TreeItemData] = []
         self.setup_ui()
         self.create_keybinings()
 
@@ -279,26 +279,28 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
     def cut_selected_items(self) -> None:
         """Store the currently selected items for cutting"""
-        self._cut_items = self.selectedItems()
+        self._cut_items += self.get_selected_items_data()
         for item in self._cut_items:
-            item.setBackground(0, self.palette().highlight())
+            self.highlight_item(item)
 
     def clear_cut_items(self) -> None:
         """Clear the cut items selection"""
         if not self._cut_items:
             return
-            
+
         # Make a copy of the list since we're modifying it
         items_to_clear = list(self._cut_items)
         self._cut_items.clear()
-        
+
         for item in items_to_clear:
             try:
                 if item:  # Check if item still exists
-                    item.setBackground(0, self.palette().base())
+                    self.unhighlight_item(item)
             except RuntimeError:
                 continue  # Skip if item was deleted
 
+    # TODO this should call an operation in the model that bulkd moves items
+    # otherwise each item triggers a refresh which is needlessly slow
     def paste_items(self, target_item: QTreeWidgetItem) -> None:
         """Paste cut items to the target folder"""
         if not target_item:
@@ -311,8 +313,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             return
 
         # Move each cut item to the target folder
-        for item in self._cut_items:
-            item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        for item_data in self._cut_items:
             if item_data.type == ItemType.FOLDER:
                 self.folder_moved.emit(item_data.id, target_data.id)
             elif item_data.type == ItemType.NOTE:
