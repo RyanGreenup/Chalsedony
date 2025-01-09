@@ -1,4 +1,5 @@
 from pathlib import Path
+from PySide6.QtGui import QClipboard
 from PySide6.QtWidgets import (
     QWidget,
     QHBoxLayout,
@@ -6,6 +7,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QSplitter,
     QTabWidget,
+    QApplication,
 )
 
 
@@ -393,8 +395,9 @@ class NoteView(QWidget):
             resource_name = self.model.get_resource_title(resource_path)
             markdown_link = f"![{resource_name}](:/{resource_path})"
 
-            # Copy the markdown link to the clipboard AI!
-
+            # Copy markdown link to clipboard
+            clipboard = QApplication.clipboard()
+            clipboard.setText(markdown_link)
 
             # Insert at cursor position
             cursor.insertText(markdown_link)
