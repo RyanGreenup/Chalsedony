@@ -182,6 +182,8 @@ class StatefulTree(QTreeWidget):
         if app := QApplication.instance():
             app.postEvent(self, event)
 
+    # Create a method to set the current item based on  TreeItemData AI!
+
     def event(self, e: QEvent) -> bool:
         """Handle custom events"""
         event = e
