@@ -58,7 +58,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             Qt.Key.Key_C: lambda: self.copy_to_clipboard(
                 self.currentItem().data(0, Qt.ItemDataRole.UserRole).id
             ),
-            Qt.Key.Key_Y: lambda: self.duplicate_folder(self.currentItem()),
+            Qt.Key.Key_Y: lambda: self.duplicate_item(self.currentItem()),
         }
 
     def setup_ui(self) -> None:
@@ -139,6 +139,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 self.folder_deleted.emit(item_data.id)
                 self.send_status_message(f"Deleted folder: {item_data.title}")
 
+    # Refactor duplicate_folder into a more general duplicate_item method that uses a match case statement AI!
     def duplicate_folder(self, item: QTreeWidgetItem) -> None:
         """Duplicate a folder and its contents"""
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
@@ -192,7 +193,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
             # Add Duplicate Folder action
             duplicate_action = QAction("Duplicate Folder", self)
-            duplicate_action.triggered.connect(lambda: self.duplicate_folder(item))
+            duplicate_action.triggered.connect(lambda: self.duplicate_item(item))
             menu.addAction(duplicate_action)
 
             # Delete folder
