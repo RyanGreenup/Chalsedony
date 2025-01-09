@@ -518,10 +518,14 @@ class NoteModel(QObject):
         # Get the original folder
         cursor = self.db_connection.cursor()
         cursor.execute("SELECT * FROM folders WHERE id = ?", (folder_id,))
-        original_folder = cursor.fetchone()
+        row = cursor.fetchone()
         
-        if not original_folder:
+        if not row:
             raise ValueError(f"Folder {folder_id} not found")
+
+        # Convert tuple to dictionary using cursor description
+        columns = [col[0] for col in cursor.description]
+        original_folder = dict(zip(columns, row))
 
         # Create new folder with same title
         new_folder_id = self.create_id()
