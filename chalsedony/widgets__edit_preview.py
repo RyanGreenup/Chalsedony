@@ -57,7 +57,7 @@ class EditPreview(QWidget):
         self.splitter.setHandleWidth(15)
 
         self.editor = MDTextEdit()
-        self.preview = QWebEngineView()
+        self.preview = WebPreview()
 
         # The background should be transparent to match the UI
         self.preview.setStyleSheet("background: transparent;")
@@ -102,6 +102,7 @@ class EditPreview(QWidget):
 
     def _apply_html_template(self, html: str) -> str:
         css_includes = self._get_css_resources()
+        print(html)
         return f"""<!DOCTYPE html>
         <html>
         <head>
@@ -230,3 +231,10 @@ class MDTextEdit(QTextEdit):
         if scrollbar.maximum() == 0:
             return 0
         return scrollbar.value() / scrollbar.maximum()
+
+
+
+class WebPreview(QWebEngineView):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+
