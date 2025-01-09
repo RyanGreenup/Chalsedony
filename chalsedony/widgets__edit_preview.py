@@ -240,6 +240,8 @@ class MDTextEdit(QTextEdit):
         return scrollbar.value() / scrollbar.maximum()
 
 
+# TODO Refactor this so it simply talks to the model rather than looking at the filesystem
+# Consider using signals instead of talking to the model directly? Not sure on that
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
     def __init__(self, asset_dir: Path) -> None:
         super().__init__()

@@ -150,20 +150,20 @@ class MainWindow(QMainWindow):
                 self,
                 "Resource Title",
                 "Enter a title for the resource:",
-                text=Path(file_path).stem  # Default to filename without extension
+                text=Path(file_path).stem,  # Default to filename without extension
             )
-            
+
             if not ok:  # User canceled
                 return
 
             print(f"Uploading file: {file_path} with title: {title}")
             try:
                 resource_id = self.note_model.upload_resource(
-                    Path(file_path), 
-                    note_id,
-                    title=title if title else None
+                    Path(file_path), note_id, title=title if title else None
                 )
-                self.set_status_message(f"Uploaded resource: {title or Path(file_path).name}")
+                self.set_status_message(
+                    f"Uploaded resource: {title or Path(file_path).name}"
+                )
                 # Emit signal with resource ID if needed
                 self.resource_uploaded.emit(resource_id)
                 print(f"Resource ID: {resource_id}")

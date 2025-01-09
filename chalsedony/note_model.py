@@ -705,7 +705,6 @@ class NoteModel(QObject):
         self.db_connection.commit()
         return resource_id
 
-
     def get_resource_title(self, resource_id: str) -> str | None:
         """Get the title of a resource by its ID
 

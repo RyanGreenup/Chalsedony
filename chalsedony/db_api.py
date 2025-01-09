@@ -82,3 +82,32 @@ class TreeItemData(NamedTuple):
 
     type: ItemType
     id: str
+
+
+# AI: The resource model is defined here
+class Resource(BaseModel):
+    """Model representing a resource/asset in the database"""
+
+    id: str
+    title: str = ""
+    mime: str
+    # This is not used for compatability with the Joplin API
+    filename: str = ""
+    created_time: int
+    updated_time: int
+    user_created_time: int = 0
+    user_updated_time: int = 0
+    file_extension: str = ""
+    encryption_cipher_text: str = ""
+    encryption_applied: int = 0
+    encryption_blob_encrypted: int = 0
+    size: int = -1
+    is_shared: int = 0
+    share_id: str = ""
+    master_key_id: str = ""
+    user_data: str = ""
+    blob_updated_time: int = 0
+    ocr_text: str = ""
+    ocr_details: str = ""
+    ocr_status: int = 0
+    ocr_error: str = ""
