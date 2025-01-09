@@ -765,7 +765,21 @@ class NoteModel(QObject):
             
         return None
 
-    # Use the get_resource_path method to get the path to the resource file and then determine and return the MIME type AI!
+    def get_resource_mime_type(self, resource_id: str) -> str | None:
+        """Get the MIME type of a resource by its ID
+        
+        Args:
+            resource_id: ID of the resource to look up
+            
+        Returns:
+            The MIME type string if found, None otherwise
+        """
+        import mimetypes
+        path = self.get_resource_path(resource_id)
+        if path:
+            mime_type, _ = mimetypes.guess_type(str(path))
+            return mime_type or "application/octet-stream"
+        return None
 
 
 # Footnotes
