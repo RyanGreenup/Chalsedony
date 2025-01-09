@@ -155,7 +155,7 @@ class EditPreview(QWidget):
         )
 
         html = md.convert(self.editor.toPlainText())
-        self.preview.setHtml(self._apply_html_template(html))
+        self.preview.setHtml(self._apply_html_template(html), QUrl("note:/"))
 
     def _get_editor_width(self) -> float:
         return float(self.editor.width())
