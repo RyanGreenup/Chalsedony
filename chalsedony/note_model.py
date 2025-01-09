@@ -442,3 +442,6 @@ class NoteModel(QObject):
             result is not None
         ), "Notes at root level (without parent folder) are not supported"
         return str(result[0])
+
+
+    # Create a method to return all Notes with a given parent_id AI!
