@@ -159,7 +159,6 @@ class NoteView(QWidget):
         """Update a folder's parent ID and refresh the view"""
         self.model.update_folder(folder_id, parent_id=new_parent_id)
 
-    # AI: THe method to create a new note is defined here
     def _on_note_created(self, folder_id: str) -> None:
         try:
             self.model.create_note(folder_id)
