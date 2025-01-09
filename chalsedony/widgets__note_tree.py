@@ -26,6 +26,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
     note_deleted = Signal(str)  # note_id
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
+    folder_duplicated = Signal(str)  # folder_id
     note_moved = Signal(str, str)  # (note_id, new_parent_folder_id)
     status_bar_message = Signal(str)  # Signal to send messages to status bar
     # Create a signal for creating a new note
