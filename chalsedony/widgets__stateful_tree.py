@@ -94,6 +94,8 @@ class TreeState(TypedDict):
 
 
 class StatefulTree(QTreeWidget):
+
+    # Create a signal to focus a note based on TreeItemData AI!
     """
     A TreeWidget to display notes and folders in a tree structure.
 
