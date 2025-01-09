@@ -765,6 +765,8 @@ class NoteModel(QObject):
             
         return None
 
+    # Use the get_resource_path method to get the path to the resource file and then determine and return the MIME type AI!
+
 
 # Footnotes
 # [fn_is_associated]: https://discourse.joplinapp.org/t/is-associated-in-note-resource-0-at-what-time-orphaned-files-are-detectable/4443/3
