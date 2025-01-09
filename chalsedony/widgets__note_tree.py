@@ -54,7 +54,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             Qt.Key.Key_R: self.clear_cut_items,
             Qt.Key.Key_N: lambda: self.create_note(self.currentItem()),
             Qt.Key.Key_F2: lambda: self.request_folder_rename(self.currentItem()),
-            Qt.Key.Key_Delete: lambda: self.delete_note(self.currentItem()),
+            Qt.Key.Key_Delete: lambda: self.delete_item(self.currentItem()),
             Qt.Key.Key_C: lambda: self.copy_to_clipboard(
                 self.currentItem().data(0, Qt.ItemDataRole.UserRole).id
             ),
@@ -122,6 +122,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         # Collapse all folders by default
         self.collapseAll()
 
+    # Refactor delete_note and delete_folder to use a common delete_item method that uses a match case statement AI!
     def delete_note(self, item: QTreeWidgetItem) -> None:
         """Delete a note from the tree and database
 
@@ -133,6 +134,25 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             self.note_model.delete_note(item_data.id)
             self.note_deleted.emit(item_data.id)
             self.send_status_message(f"Deleted note: {item_data.title}")
+
+
+    def delete_folder(self, item: QTreeWidgetItem) -> None:
+        """Delete a folder and its contents"""
+        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        item_title = item_data.title
+        status_message = f"Deleted folder: {item_title}"
+        self.send_status_message(status_message)
+        if item_data.type == ItemType.FOLDER:
+            self.folder_deleted.emit(item_data.id)
+
+    def duplicate_folder(self, item: QTreeWidgetItem) -> None:
+        """Duplicate a folder and its contents"""
+        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        item_title = item_data.title
+        status_message = f"Duplicated folder: {item_title}"
+        self.send_status_message(status_message)
+        if item_data.type == ItemType.FOLDER:
+            self.folder_duplicated.emit(item_data.id)
 
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
@@ -208,7 +228,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         # Add Delete action for notes
         if item_type_enum == ItemType.NOTE:
             delete_action = QAction("Delete Note", self)
-            delete_action.triggered.connect(lambda: self.delete_note(item))
+            delete_action.triggered.connect(lambda: self.delete_item(item))
             delete_action.setShortcut("Del")
             menu.addAction(delete_action)
 
@@ -267,23 +287,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
 
-    def duplicate_folder(self, item: QTreeWidgetItem) -> None:
-        """Duplicate a folder and its contents"""
-        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-        item_title = item_data.title
-        status_message = f"Duplicated folder: {item_title}"
-        self.send_status_message(status_message)
-        if item_data.type == ItemType.FOLDER:
-            self.folder_duplicated.emit(item_data.id)
-
-    def delete_folder(self, item: QTreeWidgetItem) -> None:
-        """Delete a folder and its contents"""
-        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-        item_title = item_data.title
-        status_message = f"Deleted folder: {item_title}"
-        self.send_status_message(status_message)
-        if item_data.type == ItemType.FOLDER:
-            self.folder_deleted.emit(item_data.id)
 
     def _is_child_of(
         self, child_item: QTreeWidgetItem, parent_item: QTreeWidgetItem
