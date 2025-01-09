@@ -246,15 +246,19 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
 
     def interceptRequest(self, info: QWebEngineUrlRequestInfo) -> None:
         if info.requestUrl().scheme() == "note":
-            resource_id = info.requestUrl().path().strip("/")
+            # Extract the resource ID without any leading slashes
+            resource_id = info.requestUrl().toString().replace("note://", "")
+            print(f"Intercepted request for resource: {resource_id}")  # Debug print
+            
             # Find the first matching file with this ID prefix
             for filename in os.listdir(self.ASSET_DIR):
-                print(resource_id)
                 if filename.startswith(resource_id):
                     filepath = os.path.join(self.ASSET_DIR, filename)
                     info.redirect(QUrl(f"file://{filepath}"))
-                    print(filepath)
+                    print(f"Redirecting to: {filepath}")  # Debug print
                     return
+            
+            print(f"No matching file found for resource ID: {resource_id}")  # Debug print
 
 
 class NoteLinkPage(QWebEnginePage):
