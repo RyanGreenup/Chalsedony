@@ -505,5 +505,55 @@ class NoteModel(QObject):
         self.db_connection.commit()
         self.refreshed.emit()
 
+    def copy_folder_recursive(self, folder_id: str, new_parent_id: Optional[str] = None) -> str:
+        """Copy a folder and all its contents recursively
 
-    # Create a method that can copy a folder recursively AI!
+        Args:
+            folder_id: ID of the folder to copy
+            new_parent_id: ID of the parent folder for the copy (None for root)
+
+        Returns:
+            ID of the new folder
+        """
+        # Get the original folder
+        cursor = self.db_connection.cursor()
+        cursor.execute("SELECT * FROM folders WHERE id = ?", (folder_id,))
+        original_folder = cursor.fetchone()
+        
+        if not original_folder:
+            raise ValueError(f"Folder {folder_id} not found")
+
+        # Create new folder with same title
+        new_folder_id = self.create_id()
+        cursor.execute(
+            """
+            INSERT INTO folders (id, title, created_time, updated_time, parent_id)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                new_folder_id,
+                original_folder["title"] + " (Copy)",
+                int(time.time()),
+                int(time.time()),
+                new_parent_id if new_parent_id is not None else original_folder["parent_id"]
+            )
+        )
+
+        # Copy all notes in this folder
+        notes = self.get_notes_by_parent_id(folder_id)
+        for note in notes:
+            self.create_note(
+                parent_folder_id=new_folder_id,
+                title=note.title,
+                body=note.body
+            )
+
+        # Copy all child folders recursively
+        cursor.execute("SELECT id FROM folders WHERE parent_id = ?", (folder_id,))
+        child_folders = [row[0] for row in cursor.fetchall()]
+        for child_id in child_folders:
+            self.copy_folder_recursive(child_id, new_folder_id)
+
+        self.db_connection.commit()
+        self.refreshed.emit()
+        return new_folder_id
