@@ -132,9 +132,33 @@ class StatefulTree(QTreeWidget):
         self.tree_items.add_item(item)
         return item
 
+    def highlight_item(self, item_data: TreeItemData) -> None:
+        """Highlight an item in the tree using TreeItemData
+        
+        Args:
+            item_data: The TreeItemData containing the item's type and ID
+        """
+        try:
+            item = self.tree_items.get_item(item_data)
+            item.setBackground(0, QApplication.palette().highlight())
+            item.setForeground(0, QApplication.palette().highlightedText())
+        except KeyError:
+            # Item was deleted or doesn't exist, skip silently
+            pass
 
-    # Create a method to highlight an item based on TreeItemData and another method to remove the highlight. AI!
-
+    def unhighlight_item(self, item_data: TreeItemData) -> None:
+        """Remove highlight from an item in the tree using TreeItemData
+        
+        Args:
+            item_data: The TreeItemData containing the item's type and ID
+        """
+        try:
+            item = self.tree_items.get_item(item_data)
+            item.setBackground(0, QApplication.palette().base())
+            item.setForeground(0, QApplication.palette().text())
+        except KeyError:
+            # Item was deleted or doesn't exist, skip silently
+            pass
 
     def get_expanded_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all expanded items in the tree
