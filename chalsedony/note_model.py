@@ -425,3 +425,5 @@ class NoteModel(QObject):
             current_id = folder.parent_id if folder.parent_id else None
 
         return "/".join([f.title for f in path])
+
+    # Create a method to get the folder_id from a note_id AI!
