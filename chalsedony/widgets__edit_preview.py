@@ -7,12 +7,10 @@ from PySide6.QtWidgets import (
 from PySide6.QtWebEngineCore import (
     QWebEngineUrlScheme,
     QWebEnginePage,
-    QWebEngineUrlRequestJob,
     QWebEngineUrlRequestInterceptor,
     QWebEngineUrlRequestInfo,
 )
 import os
-import mimetypes
 from PySide6.QtCore import (
     QDir,
     QDirIterator,
@@ -24,7 +22,6 @@ from PySide6.QtCore import (
 )
 from PySide6.QtWebEngineWidgets import QWebEngineView
 import markdown
-from markdown.extensions.wikilinks import WikiLinkExtension
 
 import static_resources_rc  # pyright: ignore # noqa
 import katex_resources_rc  # pyright: ignore   # noqa
@@ -255,6 +252,7 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                     filepath = os.path.join(self.ASSET_DIR, filename)
                     info.redirect(QUrl(f"file://{filepath}"))
                     return
+
 
 class NoteLinkPage(QWebEnginePage):
     def __init__(self, parent: QWidget | None = None) -> None:
