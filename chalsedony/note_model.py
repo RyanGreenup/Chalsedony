@@ -737,7 +737,6 @@ class NoteModel(QObject):
                 return path
         return None
 
-    # Fix the return type AI!
     def what_is_this(self, id: str) -> IdTable | None:
         """Determine the table a given ID belongs to, None if not found
         
