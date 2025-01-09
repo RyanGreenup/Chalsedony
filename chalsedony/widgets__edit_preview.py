@@ -109,6 +109,7 @@ class EditPreview(QWidget):
     def _apply_html_template(self, html: str) -> str:
         # Replace image URLs to use note: scheme
         html = html.replace('src=":', 'src="note:/')
+        print(html)
         css_includes = self._get_css_resources()
         return f"""<!DOCTYPE html>
         <html>
@@ -248,9 +249,11 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
             resource_id = info.requestUrl().path().strip("/")
             # Find the first matching file with this ID prefix
             for filename in os.listdir(self.ASSET_DIR):
+                print(resource_id)
                 if filename.startswith(resource_id):
                     filepath = os.path.join(self.ASSET_DIR, filename)
                     info.redirect(QUrl(f"file://{filepath}"))
+                    print(filepath)
                     return
 
 
