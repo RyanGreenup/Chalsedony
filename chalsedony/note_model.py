@@ -363,5 +363,31 @@ class NoteModel(QObject):
 
         self.refreshed.emit()
 
-
-# Write a method to get the materialized path of a folder AI!
+    def get_folder_path(self, folder_id: str) -> List[Folder]:
+        """Get the materialized path of a folder from root to the specified folder
+        
+        Args:
+            folder_id: ID of the target folder
+            
+        Returns:
+            List of Folder objects representing the path from root to target folder
+        """
+        path = []
+        current_id = folder_id
+        
+        while current_id:
+            cursor = self.db_connection.cursor()
+            cursor.execute("SELECT * FROM folders WHERE id = ?", (current_id,))
+            row = cursor.fetchone()
+            
+            if not row:
+                break
+                
+            # Convert tuple to dictionary using cursor description
+            columns = [col[0] for col in cursor.description]
+            folder = Folder(**dict(zip(columns, row)))
+            path.insert(0, folder)  # Add to beginning to maintain root->child order
+            
+            current_id = folder.parent_id if folder.parent_id else None
+            
+        return path
