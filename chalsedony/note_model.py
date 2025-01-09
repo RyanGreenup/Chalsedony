@@ -629,8 +629,27 @@ class NoteModel(QObject):
 # Here is the sql for the assets table:
 # 
 # ```sql
-# CREATE TABLE `resources`(`id` TEXT PRIMARY KEY,`title` TEXT NOT NULL DEFAULT "",`mime` TEXT NOT NULL,`filename` TEXT NOT NULL DEFAULT "",`created_time` INT NOT NULL,`updated_time` INT NOT NULL,`user_created_time` INT NOT NULL DEFAULT 0,`user_updated_time` INT NOT NULL DEFAULT 0,`file_extension` TEXT NOT NULL DEFAULT "",`encryption_cipher_text` TEXT NOT NULL DEFAULT "",`encryption_applied` INT NOT NULL DEFAULT 0,`encryption_blob_encrypted` INT NOT NULL DEFAULT 0, `size` INT NOT NULL DEFAULT -1, is_shared INT NOT NULL DEFAULT 0, share_id TEXT NOT NULL DEFAULT "", master_key_id TEXT NOT NULL DEFAULT "", `user_data` TEXT NOT NULL DEFAULT "", blob_updated_time INT NOT NULL DEFAULT 0, `ocr_text` TEXT NOT NULL DEFAULT "", `ocr_details` TEXT NOT NULL DEFAULT "", `ocr_status` INT NOT NULL DEFAULT 0, `ocr_error` TEXT NOT NULL DEFAULT "");
-# ```
-# 
-# Create a pydantic model for the assets table AI!
-# 
+class Resource(BaseModel):
+    """Model representing a resource/asset in the database"""
+    id: str
+    title: str = ""
+    mime: str
+    filename: str = ""
+    created_time: int
+    updated_time: int
+    user_created_time: int = 0
+    user_updated_time: int = 0
+    file_extension: str = ""
+    encryption_cipher_text: str = ""
+    encryption_applied: int = 0
+    encryption_blob_encrypted: int = 0
+    size: int = -1
+    is_shared: int = 0
+    share_id: str = ""
+    master_key_id: str = ""
+    user_data: str = ""
+    blob_updated_time: int = 0
+    ocr_text: str = ""
+    ocr_details: str = ""
+    ocr_status: int = 0
+    ocr_error: str = ""
