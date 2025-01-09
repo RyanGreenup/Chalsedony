@@ -122,28 +122,22 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         # Collapse all folders by default
         self.collapseAll()
 
-    # Refactor delete_note and delete_folder to use a common delete_item method that uses a match case statement AI!
-    def delete_note(self, item: QTreeWidgetItem) -> None:
-        """Delete a note from the tree and database
+    def delete_item(self, item: QTreeWidgetItem) -> None:
+        """Delete a note or folder from the tree and database
 
         Args:
-            item: The tree item representing the note to delete
+            item: The tree item to delete
         """
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-        if item_data.type == ItemType.NOTE:
-            self.note_model.delete_note(item_data.id)
-            self.note_deleted.emit(item_data.id)
-            self.send_status_message(f"Deleted note: {item_data.title}")
-
-
-    def delete_folder(self, item: QTreeWidgetItem) -> None:
-        """Delete a folder and its contents"""
-        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-        item_title = item_data.title
-        status_message = f"Deleted folder: {item_title}"
-        self.send_status_message(status_message)
-        if item_data.type == ItemType.FOLDER:
-            self.folder_deleted.emit(item_data.id)
+        
+        match item_data.type:
+            case ItemType.NOTE:
+                self.note_model.delete_note(item_data.id)
+                self.note_deleted.emit(item_data.id)
+                self.send_status_message(f"Deleted note: {item_data.title}")
+            case ItemType.FOLDER:
+                self.folder_deleted.emit(item_data.id)
+                self.send_status_message(f"Deleted folder: {item_data.title}")
 
     def duplicate_folder(self, item: QTreeWidgetItem) -> None:
         """Duplicate a folder and its contents"""
@@ -225,12 +219,11 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             clear_cut_action.setShortcut("Esc")
             menu.addAction(clear_cut_action)
 
-        # Add Delete action for notes
-        if item_type_enum == ItemType.NOTE:
-            delete_action = QAction("Delete Note", self)
-            delete_action.triggered.connect(lambda: self.delete_item(item))
-            delete_action.setShortcut("Del")
-            menu.addAction(delete_action)
+        # Add Delete action for notes and folders
+        delete_action = QAction(f"Delete {item_type_enum.name.capitalize()}", self)
+        delete_action.triggered.connect(lambda: self.delete_item(item))
+        delete_action.setShortcut("Del")
+        menu.addAction(delete_action)
 
         menu.exec(self.viewport().mapToGlobal(position))
 
