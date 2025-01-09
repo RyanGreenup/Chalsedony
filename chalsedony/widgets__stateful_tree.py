@@ -216,6 +216,19 @@ class StatefulTree(QTreeWidget):
             return True
         return super().event(event)
 
+    def highlight_item(self, item_data: TreeItemData) -> None:
+        """Highlight a specific item in the tree
+        
+        Args:
+            item_data: The TreeItemData of the item to highlight
+        """
+        try:
+            item = self.tree_items.get_item(item_data)
+            item.setBackground(0, self.palette().highlight())
+        except KeyError:
+            # Item was deleted or doesn't exist, skip silently
+            pass
+
 
 
     # Create a method to highlight an item based on TreeItemData AI!
