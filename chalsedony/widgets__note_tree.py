@@ -140,14 +140,21 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 self.send_status_message(f"Deleted folder: {item_data.title}")
 
     # Refactor duplicate_folder into a more general duplicate_item method that uses a match case statement AI!
-    def duplicate_folder(self, item: QTreeWidgetItem) -> None:
-        """Duplicate a folder and its contents"""
+    def duplicate_item(self, item: QTreeWidgetItem) -> None:
+        """Duplicate a note or folder and its contents
+        
+        Args:
+            item: The tree item to duplicate
+        """
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-        item_title = item_data.title
-        status_message = f"Duplicated folder: {item_title}"
-        self.send_status_message(status_message)
-        if item_data.type == ItemType.FOLDER:
-            self.folder_duplicated.emit(item_data.id)
+        
+        match item_data.type:
+            case ItemType.FOLDER:
+                self.folder_duplicated.emit(item_data.id)
+                self.send_status_message(f"Duplicated folder: {item_data.title}")
+            case ItemType.NOTE:
+                # TODO: Implement note duplication
+                self.send_status_message("Note duplication not yet implemented")
 
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
@@ -191,8 +198,8 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 )
                 menu.addAction(move_to_root_action)
 
-            # Add Duplicate Folder action
-            duplicate_action = QAction("Duplicate Folder", self)
+            # Add Duplicate action
+            duplicate_action = QAction(f"Duplicate {item_type_enum.name.capitalize()}", self)
             duplicate_action.triggered.connect(lambda: self.duplicate_item(item))
             menu.addAction(duplicate_action)
 
