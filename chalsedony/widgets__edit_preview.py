@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QSplitter,
 )
-from PySide6.QtWebEngineCore import QWebEngineUrlScheme
+from PySide6.QtWebEngineCore import QWebEngineUrlScheme, QWebEnginePage
 from PySide6.QtCore import (
     QDir,
     QDirIterator,
@@ -235,7 +235,23 @@ class MDTextEdit(QTextEdit):
 
 
 
+class NoteLinkPage(QWebEnginePage):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+
+    def acceptNavigationRequest(self, url, nav_type, is_main_frame):
+        """Handle link clicks in the preview"""
+        if url.scheme() == "note":
+            note_id = url.path().strip('/')
+            print(f"Note link clicked! ID: {note_id}")
+            return False  # Prevent default navigation
+        
+        # Allow normal navigation for other links
+        return True
+
+
 class WebPreview(QWebEngineView):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self.setPage(NoteLinkPage(self))
 
