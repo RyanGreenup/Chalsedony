@@ -282,6 +282,12 @@ class NoteModel(QObject):
         """
         self.update_folder(folder_id, parent_id="")
 
+# Current IDs look like this:
+# 79bec23a22ec43c196469569d24992af
+# 11aa099966a24158a94263927ae2587f
+# 1db5549fb0b74faeb9c1659d42589c97
+# Modify the create_note method to follow this same patter for the id AI!
+
     def create_note(self, parent_folder_id: str, title: str = "", body: str = "") -> str:
         """Create a new note in the specified folder
 
@@ -358,7 +364,3 @@ class NoteModel(QObject):
 
 
 
-# Here is the sql schema for the notes table:
-# 
-# CREATE TABLE notes_normalized (id TEXT NOT NULL, title TEXT NOT NULL DEFAULT "", body TEXT NOT NULL DEFAULT "", user_created_time INT NOT NULL DEFAULT 0, user_updated_time INT NOT NULL DEFAULT 0, is_todo INT NOT NULL DEFAULT 0, todo_completed INT NOT NULL DEFAULT 0, parent_id TEXT NOT NULL DEFAULT "", latitude NUMERIC NOT NULL DEFAULT 0, longitude NUMERIC NOT NULL DEFAULT 0, altitude NUMERIC NOT NULL DEFAULT 0, source_url TEXT NOT NULL DEFAULT "", todo_due INT NOT NULL DEFAULT 0);
-# 
