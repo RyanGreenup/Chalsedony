@@ -188,9 +188,17 @@ class StatefulTree(QTreeWidget):
         if isinstance(event, DeferredSelectionEvent):
             # Handle our deferred selection event
             for item_data in event.item_data_list:
-                # First check if the item exists in the tree, it could have been deleted AI!
-                self.tree_items.get_item(item_data).setSelected(True)
+                try:
+                    item = self.tree_items.get_item(item_data)
+                    item.setSelected(True)
+                except KeyError:
+                    # Item was deleted, skip it
+                    continue
             if event.current_item:
-                self.setCurrentItem(self.tree_items.get_item(event.current_item))
+                try:
+                    self.setCurrentItem(self.tree_items.get_item(event.current_item))
+                except KeyError:
+                    # Current item was deleted, skip it
+                    pass
             return True
         return super().event(event)
