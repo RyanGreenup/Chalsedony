@@ -459,5 +459,20 @@ class NoteModel(QObject):
             row
         ))) for row in cursor.fetchall()]
 
-    
-    # Create a method to delete a list of note ids in a single SQL query AI!
+    def delete_notes(self, note_ids: List[str]) -> None:
+        """Delete multiple notes in a single SQL query
+
+        Args:
+            note_ids: List of note IDs to delete
+        """
+        if not note_ids:
+            return
+            
+        # Create a parameterized query with the right number of placeholders
+        placeholders = ",".join("?" * len(note_ids))
+        query = f"DELETE FROM notes WHERE id IN ({placeholders})"
+        
+        cursor = self.db_connection.cursor()
+        cursor.execute(query, note_ids)
+        self.db_connection.commit()
+        self.refreshed.emit()
