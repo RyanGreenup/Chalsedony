@@ -119,8 +119,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             self.note_model.delete_note(item_data.id)
             self.note_deleted.emit(item_data.id)
             self.send_status_message(f"Deleted note: {item_data.title}")
-
-    # Create a context menu event for folders to emit the folder_duplicated signal AI!
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
