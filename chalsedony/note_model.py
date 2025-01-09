@@ -706,7 +706,19 @@ class NoteModel(QObject):
         return resource_id
 
 
-    # Implement a method to get the title of a resource AI!
+    def get_resource_title(self, resource_id: str) -> str | None:
+        """Get the title of a resource by its ID
+
+        Args:
+            resource_id: ID of the resource to look up
+
+        Returns:
+            The resource title if found, None otherwise
+        """
+        cursor = self.db_connection.cursor()
+        cursor.execute("SELECT title FROM resources WHERE id = ?", (resource_id,))
+        result = cursor.fetchone()
+        return result[0] if result else None
 
 
 # Footnotes
