@@ -124,6 +124,7 @@ class MainWindow(QMainWindow):
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
+        # Create an action to upload a resource file, this should call a method that allows the user to choose a file and emits a signal with the id for the resource AI!
         return MenuConfig(
             menus=[
                 MenuStructure(
