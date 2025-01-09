@@ -131,6 +131,8 @@ class NoteView(QWidget):
         self.tree_widget.note_moved.connect(self.update_note_folder)
         self.tree_widget.status_bar_message.connect(self.send_status_message)
         self.tree_widget.folder_duplicated.connect(self.model.copy_folder_recursive)
+        # TODO consider focusing the note, this returns the new id
+        self.tree_widget.duplicate_note.connect(self.model.duplicate_note)
         self.tree_widget.folder_deleted.connect(self.model.delete_folder_recursive)
 
         # Connect search tab signals

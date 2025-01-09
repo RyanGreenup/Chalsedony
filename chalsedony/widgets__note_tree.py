@@ -25,6 +25,7 @@ from widgets__stateful_tree import StatefulTree, TreeItemData
 class NoteTree(StatefulTree, KbdTreeWidget):
     note_created = Signal(str)  # folder_id
     note_deleted = Signal(str)  # note_id
+    duplicate_note = Signal(str)  # note_id
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
     folder_duplicated = Signal(str)  # folder_id
@@ -153,7 +154,8 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 self.send_status_message(f"Duplicated folder: {item_data.title}")
             case ItemType.NOTE:
                 # TODO: Implement note duplication
-                self.send_status_message("Note duplication not yet implemented")
+                self.duplicate_note.emit(item_data.id)
+                self.send_status_message(f"Duplicated note: {item_data.title}")
 
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
@@ -181,6 +183,17 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         create_action.setShortcut("Ctrl+N")
         menu.addAction(create_action)
 
+        # Add Duplicate action
+        duplicate_action = QAction(
+            f"Duplicate {item_type_enum.name.capitalize()}", self
+        )
+        duplicate_action.triggered.connect(lambda: self.duplicate_item(item))
+        menu.addAction(duplicate_action)
+
+        delete_action = QAction(f"Delete {item_type_enum.name.capitalize()}", self)
+        delete_action.triggered.connect(lambda: self.delete_item(item))
+        menu.addAction(delete_action)
+
         # Add folder-specific actions
         if item_type_enum == ItemType.FOLDER:
             # Rename action
@@ -196,18 +209,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                     lambda: self.note_model.set_folder_to_root(item_data.id)
                 )
                 menu.addAction(move_to_root_action)
-
-            # Add Duplicate action
-            duplicate_action = QAction(
-                f"Duplicate {item_type_enum.name.capitalize()}", self
-            )
-            duplicate_action.triggered.connect(lambda: self.duplicate_item(item))
-            menu.addAction(duplicate_action)
-
-            # Delete action for folders
-            delete_action = QAction("Delete Folder", self)
-            delete_action.triggered.connect(lambda: self.delete_item(item))
-            menu.addAction(delete_action)
 
         # Add Cut action
         cut_action = QAction("Cut", self)
@@ -227,7 +228,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             clear_cut_action.triggered.connect(self.clear_cut_items)
             clear_cut_action.setShortcut("Esc")
             menu.addAction(clear_cut_action)
-
 
         menu.exec(self.viewport().mapToGlobal(position))
 
@@ -264,7 +264,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             key = Qt.Key(event.key())
             action = self.key_actions.get(key)
             if action is not None:
-                action()  # type: ignore[call-arg]
+                action()
                 event.accept()
                 return
 
