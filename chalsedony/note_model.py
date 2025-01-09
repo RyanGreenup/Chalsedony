@@ -5,7 +5,7 @@ from utils__get_first_markdown_heading import get_markdown_heading
 from sqlite3 import Connection
 from pathlib import Path
 from typing import Dict, List, Optional
-from db_api import Note, Folder, FolderTreeItem, NoteSearchResult
+from db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
 
 
 class NoteModel(QObject):
@@ -737,7 +737,17 @@ class NoteModel(QObject):
                 return path
         return None
 
+    def what_is_this(self, id: str) -> IdTable | None:
+        """Determine the table a given ID belongs to, None if not found"""
+        # Search for the id in the notes table, folders table and finally resources table if it's not found in any of them return None  AI!
 
+
+# AI: This is the class to use
+class IdTable(Enum):
+    """Enum representing the table an ID belongs to"""
+    NOTE = "note"
+    FOLDER = "folder"
+    RESOURCE = "resource"
 
 # Footnotes
 # [fn_is_associated]: https://discourse.joplinapp.org/t/is-associated-in-note-resource-0-at-what-time-orphaned-files-are-detectable/4443/3
