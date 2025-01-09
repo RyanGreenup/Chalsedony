@@ -45,8 +45,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self.key_actions = {
             Qt.Key.Key_X: self.cut_selected_items,
             Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
-            # This keybinding is not working, fix that AI!
-            Qt.Key.Key_Escape: self.clear_cut_items if self._cut_items else None,
+            Qt.Key.Key_Escape: self.clear_cut_items,
         }
 
     def setup_ui(self) -> None:
@@ -286,12 +285,19 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
     def clear_cut_items(self) -> None:
         """Clear the cut items selection"""
-        try:
-            for item in self._cut_items:
-                item.setBackground(0, self.palette().base())
-        except RuntimeError:
-            pass  # Ignore errors when items are already removed
+        if not self._cut_items:
+            return
+            
+        # Make a copy of the list since we're modifying it
+        items_to_clear = list(self._cut_items)
         self._cut_items.clear()
+        
+        for item in items_to_clear:
+            try:
+                if item:  # Check if item still exists
+                    item.setBackground(0, self.palette().base())
+            except RuntimeError:
+                continue  # Skip if item was deleted
 
     def paste_items(self, target_item: QTreeWidgetItem) -> None:
         """Paste cut items to the target folder"""
