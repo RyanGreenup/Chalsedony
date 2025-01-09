@@ -94,8 +94,6 @@ class TreeState(TypedDict):
 
 
 class StatefulTree(QTreeWidget):
-
-    # Create a signal to focus a note based on TreeItemData AI!
     """
     A TreeWidget to display notes and folders in a tree structure.
 
@@ -186,7 +184,7 @@ class StatefulTree(QTreeWidget):
 
     def set_current_item_by_data(self, item_data: TreeItemData) -> None:
         """Set the current item using TreeItemData
-        
+
         Args:
             item_data: The TreeItemData containing the item's type and ID
         """

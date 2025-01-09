@@ -428,10 +428,10 @@ class NoteModel(QObject):
 
     def get_folder_id_from_note(self, note_id: str) -> str | None:
         """Get the parent folder ID for a given note ID
-        
+
         Args:
             note_id: The ID of the note to look up
-            
+
         Returns:
             The parent folder ID if found, None otherwise
         """
