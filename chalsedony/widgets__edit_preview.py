@@ -234,18 +234,29 @@ class MDTextEdit(QTextEdit):
         return scrollbar.value() / scrollbar.maximum()
 
 
-
 class NoteLinkPage(QWebEnginePage):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
-    def acceptNavigationRequest(self, url, nav_type, is_main_frame):
+    def acceptNavigationRequest(
+        self, url: QUrl | str, type: QWebEnginePage.NavigationType, isMainFrame: bool
+    ) -> bool:
         """Handle link clicks in the preview"""
+        # Discard unused arguments
+        nav_type = type
+        _ = nav_type
+        _ = isMainFrame
+
+        # Handle string input
+        if isinstance(url, str):
+            url = QUrl(url)
+
+        # Handle the navigation request
         if url.scheme() == "note":
-            note_id = url.path().strip('/')
+            note_id = url.path().strip("/")
             print(f"Note link clicked! ID: {note_id}")
             return False  # Prevent default navigation
-        
+
         # Allow normal navigation for other links
         return True
 
@@ -254,4 +265,3 @@ class WebPreview(QWebEngineView):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setPage(NoteLinkPage(self))
-
