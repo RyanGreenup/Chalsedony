@@ -45,7 +45,14 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self.key_actions = {
             Qt.Key.Key_X: self.cut_selected_items,
             Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
-            Qt.Key.Key_Escape: self.clear_cut_items,
+            Qt.Key.Key_R: self.clear_cut_items,
+            Qt.Key.Key_N: lambda: self.create_note(self.currentItem()),
+            Qt.Key.Key_F2: lambda: self.request_folder_rename(self.currentItem()),
+            Qt.Key.Key_Delete: lambda: self.delete_note(self.currentItem()),
+            Qt.Key.Key_C: lambda: self.copy_to_clipboard(
+                self.currentItem().data(0, Qt.ItemDataRole.UserRole).id
+            ),
+            Qt.Key.Key_Y: lambda: self.duplicate_folder(self.currentItem()),
         }
 
     def setup_ui(self) -> None:
@@ -257,12 +264,18 @@ class NoteTree(StatefulTree, KbdTreeWidget):
     def duplicate_folder(self, item: QTreeWidgetItem) -> None:
         """Duplicate a folder and its contents"""
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        item_title = item_data.title
+        status_message = f"Duplicated folder: {item_title}"
+        self.send_status_message(status_message)
         if item_data.type == ItemType.FOLDER:
             self.folder_duplicated.emit(item_data.id)
 
     def delete_folder(self, item: QTreeWidgetItem) -> None:
         """Delete a folder and its contents"""
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        item_title = item_data.title
+        status_message = f"Deleted folder: {item_title}"
+        self.send_status_message(status_message)
         if item_data.type == ItemType.FOLDER:
             self.folder_deleted.emit(item_data.id)
 
