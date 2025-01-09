@@ -4,8 +4,20 @@ from PySide6.QtCore import QObject, Signal
 from utils__get_first_markdown_heading import get_markdown_heading
 from sqlite3 import Connection
 from pathlib import Path
-from typing import Dict, List, Optional
+from enum import Enum
+from typing import Dict, List, Optional, Tuple
 from db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
+
+
+class ResourceType(Enum):
+    """Enum representing different types of resources that can be embedded in HTML"""
+    IMAGE = "image"
+    VIDEO = "video"
+    AUDIO = "audio"
+    DOCUMENT = "document"
+    ARCHIVE = "archive"
+    CODE = "code"
+    OTHER = "other"
 
 
 class NoteModel(QObject):
@@ -765,22 +777,51 @@ class NoteModel(QObject):
             
         return None
 
-    # Improve this function to return an enum that represents the types of files that may be included in a html document such as file, video, audio, image, etc. Write the enum as well AI!
-    def get_resource_mime_type(self, resource_id: str) -> str | None:
-        """Get the MIME type of a resource by its ID
+    def get_resource_mime_type(self, resource_id: str) -> Tuple[str | None, ResourceType]:
+        """Get the MIME type and resource type by its ID
         
         Args:
             resource_id: ID of the resource to look up
             
         Returns:
-            The MIME type string if found, None otherwise
+            A tuple containing:
+            - The MIME type string if found, None otherwise
+            - The ResourceType enum indicating the type of resource
         """
         import mimetypes
         path = self.get_resource_path(resource_id)
-        if path:
-            mime_type, _ = mimetypes.guess_type(str(path))
-            return mime_type or "application/octet-stream"
-        return None
+        if not path:
+            return None, ResourceType.OTHER
+
+        mime_type, _ = mimetypes.guess_type(str(path))
+        mime_type = mime_type or "application/octet-stream"
+
+        # Determine resource type based on MIME type
+        if mime_type.startswith("image/"):
+            return mime_type, ResourceType.IMAGE
+        elif mime_type.startswith("video/"):
+            return mime_type, ResourceType.VIDEO
+        elif mime_type.startswith("audio/"):
+            return mime_type, ResourceType.AUDIO
+        elif mime_type in [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ]:
+            return mime_type, ResourceType.DOCUMENT
+        elif mime_type in [
+            "application/zip",
+            "application/x-tar",
+            "application/x-rar-compressed",
+        ]:
+            return mime_type, ResourceType.ARCHIVE
+        elif mime_type.startswith("text/") or mime_type in [
+            "application/json",
+            "application/javascript",
+        ]:
+            return mime_type, ResourceType.CODE
+        else:
+            return mime_type, ResourceType.OTHER
 
 
 # Footnotes
