@@ -240,6 +240,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         if self.currentItem():
             key = Qt.Key(event.key())
             action = self.key_actions.get(key)
+            # Error: Call to untyped function (unknown) in typed context  [no-untyped-call] AI!
             if action:
                 action()
                 event.accept()
