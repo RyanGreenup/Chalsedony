@@ -737,6 +737,7 @@ class NoteModel(QObject):
                 return path
         return None
 
+    # Fix the return type AI!
     def what_is_this(self, id: str) -> IdTable | None:
         """Determine the table a given ID belongs to, None if not found
         
@@ -765,11 +766,6 @@ class NoteModel(QObject):
             
         return None
 
-class IdTable(Enum):
-    """Enum representing the table an ID belongs to"""
-    NOTE = "note"
-    FOLDER = "folder"
-    RESOURCE = "resource"
 
 # Footnotes
 # [fn_is_associated]: https://discourse.joplinapp.org/t/is-associated-in-note-resource-0-at-what-time-orphaned-files-are-detectable/4443/3
