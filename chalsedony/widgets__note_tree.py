@@ -57,9 +57,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             Qt.Key.Key_N: lambda: self.create_note(self.currentItem()),
             Qt.Key.Key_F2: lambda: self.request_folder_rename(self.currentItem()),
             Qt.Key.Key_Delete: lambda: self.delete_item(self.currentItem()),
-            Qt.Key.Key_C: lambda: self.copy_to_clipboard(
-                self.currentItem().data(0, Qt.ItemDataRole.UserRole).id
-            ),
+            Qt.Key.Key_C: lambda: self.copy_id(self.currentItem()),
             Qt.Key.Key_Y: lambda: self.duplicate_item(self.currentItem()),
         }
 
@@ -172,6 +170,12 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             self.folder_create.emit(title, parent_id)
             self.send_status_message(f"Created folder: {title}")
 
+    def copy_id(self, item: QTreeWidgetItem) -> None:
+        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        id = item_data.id
+        title = item_data.title
+        self.copy_to_clipboard(f"[{title}](:/{id})")
+
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
@@ -186,7 +190,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         id_action = QAction(
             f"Copy {item_type_enum.name.capitalize()} ID: {item_data.id}", self
         )
-        id_action.triggered.connect(lambda: self.copy_to_clipboard(str(item_data.id)))
+        id_action.triggered.connect(lambda: self.copy_id(item))
         menu.addAction(id_action)
 
         # Add separator
