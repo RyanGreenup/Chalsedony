@@ -122,14 +122,48 @@ class MainWindow(QMainWindow):
                     app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
                     self.style_changed.emit(False)
 
+    def upload_resource(self) -> None:
+        """Handle resource file upload"""
+        from PySide6.QtWidgets import QFileDialog
+        
+        if not self.note_view or not self.note_model:
+            return
+            
+        # Get current note ID
+        note_id = self.note_view.get_current_note_id()
+        if not note_id:
+            return
+            
+        # Open file dialog
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select File to Upload",
+            "",  # Start in current directory
+            "All Files (*);;Images (*.png *.jpg *.jpeg *.gif);;Documents (*.pdf *.doc *.docx *.txt)"
+        )
+        
+        if file_path:
+            try:
+                resource_id = self.note_model.upload_resource(Path(file_path), note_id)
+                self.set_status_message(f"Uploaded resource: {Path(file_path).name}")
+                # Emit signal with resource ID if needed
+                # self.resource_uploaded.emit(resource_id)
+            except Exception as e:
+                self.set_status_message(f"Error uploading file: {str(e)}")
+
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
-        # Create an action to upload a resource file, this should call a method that allows the user to choose a file and emits a signal with the id for the resource AI!
         return MenuConfig(
             menus=[
                 MenuStructure(
                     name="&File",
                     actions=[
+                        MenuAction(
+                            id="upload_resource",
+                            text="&Upload Resource",
+                            handler="upload_resource",
+                            shortcut="Ctrl+U",
+                        ),
                         MenuAction(
                             id="settings",
                             text="&Settings",
