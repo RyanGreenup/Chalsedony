@@ -504,3 +504,6 @@ class NoteModel(QObject):
         cursor.execute("DELETE FROM folders WHERE id = ?", (folder_id,))
         self.db_connection.commit()
         self.refreshed.emit()
+
+
+    # Create a method that can copy a folder recursively AI!
