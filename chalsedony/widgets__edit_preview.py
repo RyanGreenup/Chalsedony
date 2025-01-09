@@ -12,6 +12,7 @@ from PySide6.QtCore import (
     Property,
     QPropertyAnimation,
     QEasingCurve,
+    QUrl,
 )
 from PySide6.QtWebEngineWidgets import QWebEngineView
 import markdown
