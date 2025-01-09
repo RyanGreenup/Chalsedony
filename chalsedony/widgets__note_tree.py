@@ -193,11 +193,11 @@ class NoteTree(StatefulTree, KbdTreeWidget):
     def create_note(self, clicked_item: QTreeWidgetItem) -> None:
         """Create a new note under the selected folder"""
         item_data: TreeItemData = clicked_item.data(0, Qt.ItemDataRole.UserRole)
-        # Refactor this into a match case AI!
-        if item_data.type == ItemType.NOTE:
-            folder_id = self.note_model.get_note_parent_id(item_data.id)
-        elif item_data.type == ItemType.FOLDER:
-            folder_id = item_data.id
+        match item_data.type:
+            case ItemType.NOTE:
+                folder_id = self.note_model.get_note_parent_id(item_data.id)
+            case ItemType.FOLDER:
+                folder_id = item_data.id
         self.note_created.emit(folder_id)
         full_title = self.note_model.get_folder_path(folder_id)
         self.send_status_message(f"Created new note in folder: {full_title}")
