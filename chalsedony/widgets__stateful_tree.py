@@ -231,4 +231,4 @@ class StatefulTree(QTreeWidget):
 
 
 
-    # Create a method to highlight an item based on TreeItemData AI!
+    # Create a method to clear the highlight on an item based on TreeItemData  AI!
