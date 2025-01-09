@@ -134,12 +134,21 @@ class NoteView(QWidget):
         # TODO consider focusing the note, this returns the new id
         self.tree_widget.duplicate_note.connect(self.model.duplicate_note)
         self.tree_widget.folder_deleted.connect(self.model.delete_folder_recursive)
+        self.tree_widget.folder_create.connect(self._on_create_folder_requested)
 
         # Connect search tab signals
         self.search_tab.search_text_changed.connect(self._on_search_text_changed)
         self.search_tab.note_selected.connect(
             lambda note_id: self._handle_note_selection(ItemType.NOTE, note_id)
         )
+
+    def _on_create_folder_requested(self, title: str, parent_id: str) -> None:
+        try:
+            self.model.create_folder(title, parent_id)
+        except ValueError as e:
+            status_message = f"Failed to create folder: {e}"
+            print(status_message)
+            self.send_status_message(status_message)
 
     def save_current_note(self) -> None:
         """Save the current note with title update from heading"""

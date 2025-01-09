@@ -588,12 +588,12 @@ class NoteModel(QObject):
         self.refreshed.emit()
         return new_note_id
 
-    def create_folder(self, title: str, parent_id: Optional[str] = None) -> str:
+    def create_folder(self, title: str, parent_id: str = "") -> str:
         """Create a new folder
 
         Args:
             title: Title of the new folder
-            parent_id: ID of the parent folder (None for root)
+            parent_id: ID of the parent folder (empty string for root)
 
         Returns:
             ID of the newly created folder
@@ -602,19 +602,25 @@ class NoteModel(QObject):
         created_time = int(time.time())
 
         cursor = self.db_connection.cursor()
-        cursor.execute(
-            """
-            INSERT INTO folders (id, title, created_time, updated_time, parent_id)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (
-                folder_id,
-                title,
-                created_time,
-                created_time,
-                parent_id if parent_id is not None else "",
-            ),
-        )
-        self.db_connection.commit()
-        self.refreshed.emit()
+        print("Creating a folder")
+        print(title)
+        print(folder_id)
+        try:
+            cursor.execute(
+                """
+                INSERT INTO folders (id, title, created_time, updated_time, parent_id)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    folder_id,
+                    title,
+                    created_time,
+                    created_time,
+                    parent_id if parent_id is not None else "",
+                ),
+            )
+            self.db_connection.commit()
+            self.refreshed.emit()
+        except Exception as e:
+            print(e)
         return folder_id

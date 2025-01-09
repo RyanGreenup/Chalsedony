@@ -29,6 +29,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
     folder_duplicated = Signal(str)  # folder_id
+    folder_create = Signal(str, str)  # title, parent_id
     folder_deleted = Signal(str)  # folder_id
     note_moved = Signal(str, str)  # (note_id, new_parent_folder_id)
     status_bar_message = Signal(str)  # Signal to send messages to status bar
@@ -157,6 +158,20 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 self.duplicate_note.emit(item_data.id)
                 self.send_status_message(f"Duplicated note: {item_data.title}")
 
+    def create_folder(self, item: QTreeWidgetItem) -> None:
+        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+
+        match item_data.type:
+            case ItemType.FOLDER:
+                parent_id = item_data.id
+            case ItemType.NOTE:
+                parent_id = self.note_model.get_folder_id_from_note(item_data.id)
+
+        title, ok = QInputDialog.getText(self, "Create Folder", "Enter folder name:")
+        if ok and title:
+            self.folder_create.emit(title, parent_id)
+            self.send_status_message(f"Created folder: {title}")
+
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
@@ -182,6 +197,12 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         create_action.triggered.connect(lambda: self.create_note(item))
         create_action.setShortcut("Ctrl+N")
         menu.addAction(create_action)
+
+        # Add Create Folder action
+        create_folder_action = QAction("Create Folder", self)
+        create_folder_action.triggered.connect(lambda: self.create_folder(item))
+        create_folder_action.setShortcut("Ctrl+Shift+N")
+        menu.addAction(create_folder_action)
 
         # Add Duplicate action
         duplicate_action = QAction(
