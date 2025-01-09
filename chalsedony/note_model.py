@@ -303,19 +303,6 @@ class NoteModel(QObject):
         note_id = self.create_id()
         created_time = int(time.time())
 
-# Resolve this error AI!
-#   chalsedony/note_model.py", line 307, in create_note
-#     cursor.execute("""
-#     ~~~~~~~~~~~~~~^^^^
-#         INSERT INTO notes (
-#         ^^^^^^^^^^^^^^^^^^^
-#     ...<7 lines>...
-#         0.0, "", 0
-#         ^^^^^^^^^^
-#     ))
-#     ^^
-# sqlite3.IntegrityError: NOT NULL constraint failed: notes.created_time
-
         cursor = self.db_connection.cursor()
         cursor.execute("""
             INSERT INTO notes (
@@ -377,4 +364,4 @@ class NoteModel(QObject):
         self.refreshed.emit()
 
 
-
+# Write a method to get the materialized path of a folder AI!
