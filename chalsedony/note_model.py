@@ -587,3 +587,6 @@ class NoteModel(QObject):
 
         self.refreshed.emit()
         return new_note_id
+
+
+    # Write a method to create a new folder AI!
