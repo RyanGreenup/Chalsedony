@@ -182,7 +182,18 @@ class StatefulTree(QTreeWidget):
         if app := QApplication.instance():
             app.postEvent(self, event)
 
-    # Create a method to set the current item based on  TreeItemData AI!
+    def set_current_item_by_data(self, item_data: TreeItemData) -> None:
+        """Set the current item using TreeItemData
+        
+        Args:
+            item_data: The TreeItemData containing the item's type and ID
+        """
+        try:
+            item = self.tree_items.get_item(item_data)
+            self.setCurrentItem(item)
+        except KeyError:
+            # Item was deleted or doesn't exist, skip silently
+            pass
 
     def event(self, e: QEvent) -> bool:
         """Handle custom events"""
