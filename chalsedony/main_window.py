@@ -52,6 +52,7 @@ class MainWindow(QMainWindow):
     style_changed = Signal(bool)  # Emits True for dark mode, False for light mode
     refresh = Signal()
     save_note_signal = Signal()  # Signal to trigger note save
+    resource_uploaded = Signal(str)  # resource ID
 
     def __init__(self, database: Path, assets: Path) -> None:
         super().__init__()
@@ -98,6 +99,7 @@ class MainWindow(QMainWindow):
         # Connect signals to the view
         # Ask the model to refresh the data (which will emit a signal to refresh the view)
         self.refresh.connect(self.note_model.refresh)
+        self.resource_uploaded.connect(self.note_view.handle_resource_uploaded)
 
         # Set the view as the central widget
         self.setCentralWidget(self.note_view)
@@ -122,32 +124,35 @@ class MainWindow(QMainWindow):
                     app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
                     self.style_changed.emit(False)
 
+    # Improve this so the user can specify a title as well AI!
     def upload_resource(self) -> None:
         """Handle resource file upload"""
         from PySide6.QtWidgets import QFileDialog
-        
+
         if not self.note_view or not self.note_model:
             return
-            
+
         # Get current note ID
         note_id = self.note_view.get_current_note_id()
         if not note_id:
             return
-            
+
         # Open file dialog
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Select File to Upload",
             "",  # Start in current directory
-            "All Files (*);;Images (*.png *.jpg *.jpeg *.gif);;Documents (*.pdf *.doc *.docx *.txt)"
+            "All Files (*);;Images (*.png *.jpg *.jpeg *.gif);;Documents (*.pdf *.doc *.docx *.txt)",
         )
-        
+
         if file_path:
+            print(f"Uploading file: {file_path}")
             try:
                 resource_id = self.note_model.upload_resource(Path(file_path), note_id)
                 self.set_status_message(f"Uploaded resource: {Path(file_path).name}")
                 # Emit signal with resource ID if needed
-                # self.resource_uploaded.emit(resource_id)
+                self.resource_uploaded.emit(resource_id)
+                print(f"Resource ID: {resource_id}")
             except Exception as e:
                 self.set_status_message(f"Error uploading file: {str(e)}")
 
