@@ -599,9 +599,6 @@ class NoteModel(QObject):
         created_time = int(time.time())
 
         cursor = self.db_connection.cursor()
-        print("Creating a folder")
-        print(title)
-        print(folder_id)
         try:
             cursor.execute(
                 """
@@ -622,80 +619,95 @@ class NoteModel(QObject):
             print(e)
         return folder_id
 
-    def upload_resource(self, file_path: Path, note_id: str, title: str = "") -> str:
+    def upload_resource(
+        self, file_path: Path, note_id: str | None = None, title: str | None = None
+    ) -> str | None:
         """Upload a file as a resource attached to a note
-        
+
         Args:
             file_path: Path to the file to upload
             note_id: ID of the note to attach the resource to
             title: Optional title for the resource (defaults to filename)
-            
+
         Returns:
             ID of the newly created resource
         """
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
-            
+
         # Generate resource ID
         resource_id = self.create_id()
         created_time = int(time.time())
-        
+
         # Get file info
         file_size = file_path.stat().st_size
         file_ext = file_path.suffix.lower()[1:]  # Remove dot from extension
         mime_type = "application/octet-stream"  # Default MIME type
-        
+
         # Try to get more specific MIME type
         try:
             import mimetypes
+
             mime_type = mimetypes.guess_type(str(file_path))[0] or mime_type
         except ImportError:
+            print("Mimetypes module not found, using default MIME type")
             pass
-            
+
         # Use filename as title if not provided
         if not title:
             title = file_path.name
-            
+
         # Copy file to assets directory
         asset_path = self.asset_dir / f"{resource_id}.{file_ext}"
         asset_path.parent.mkdir(parents=True, exist_ok=True)
         asset_path.write_bytes(file_path.read_bytes())
-        
-        # Insert resource record
-        cursor = self.db_connection.cursor()
-        cursor.execute(
-            """
-            INSERT INTO resources (
-                id, title, mime, filename, created_time, updated_time,
-                file_extension, size, blob_updated_time
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                resource_id,
-                title,
-                mime_type,
-                file_path.name,  # Original filename
-                created_time,
-                created_time,
-                file_ext,
-                file_size,
-                created_time,
-            ),
-        )
-        
-        # Link resource to note
-        cursor.execute(
-            """
-            INSERT INTO note_resources (note_id, resource_id)
-            VALUES (?, ?)
-            """,
-            (note_id, resource_id),
-        )
-        
+
+        try:
+            # Insert resource record
+            cursor = self.db_connection.cursor()
+            cursor.execute(
+                """
+                INSERT INTO resources (
+                    id, title, mime, filename, created_time, updated_time,
+                    file_extension, size, blob_updated_time
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    resource_id,
+                    title,
+                    mime_type,
+                    file_path.name,  # Original filename
+                    created_time,
+                    created_time,
+                    file_ext,
+                    file_size,
+                    created_time,
+                ),
+            )
+
+            if note_id is not None:
+                posix_time = int(time.time())
+                # Link resource to note
+                # It's not clear what the is_associated field does, so we set it to 0
+                # It is required though [fn_is_associated]
+                cursor.execute(
+                    """
+                    INSERT INTO note_resources (note_id, resource_id, is_associated, last_seen_time)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (note_id, resource_id, 0, posix_time),
+                )
+        except Exception as e:
+            print(e)
+            print("Model: Failed to upload resource")
+            return None
+
         self.db_connection.commit()
         return resource_id
 
 
+    # Implement a method to get the title of a resource AI!
 
 
-
+# Footnotes
+# [fn_is_associated]: https://discourse.joplinapp.org/t/is-associated-in-note-resource-0-at-what-time-orphaned-files-are-detectable/4443/3
