@@ -621,3 +621,16 @@ class NoteModel(QObject):
         except Exception as e:
             print(e)
         return folder_id
+
+
+
+
+
+# Here is the sql for the assets table:
+# 
+# ```sql
+# CREATE TABLE `resources`(`id` TEXT PRIMARY KEY,`title` TEXT NOT NULL DEFAULT "",`mime` TEXT NOT NULL,`filename` TEXT NOT NULL DEFAULT "",`created_time` INT NOT NULL,`updated_time` INT NOT NULL,`user_created_time` INT NOT NULL DEFAULT 0,`user_updated_time` INT NOT NULL DEFAULT 0,`file_extension` TEXT NOT NULL DEFAULT "",`encryption_cipher_text` TEXT NOT NULL DEFAULT "",`encryption_applied` INT NOT NULL DEFAULT 0,`encryption_blob_encrypted` INT NOT NULL DEFAULT 0, `size` INT NOT NULL DEFAULT -1, is_shared INT NOT NULL DEFAULT 0, share_id TEXT NOT NULL DEFAULT "", master_key_id TEXT NOT NULL DEFAULT "", `user_data` TEXT NOT NULL DEFAULT "", blob_updated_time INT NOT NULL DEFAULT 0, `ocr_text` TEXT NOT NULL DEFAULT "", `ocr_details` TEXT NOT NULL DEFAULT "", `ocr_status` INT NOT NULL DEFAULT 0, `ocr_error` TEXT NOT NULL DEFAULT "");
+# ```
+# 
+# Create a pydantic model for the assets table AI!
+# 
