@@ -27,6 +27,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
     note_moved = Signal(str, str)  # (note_id, new_parent_folder_id)
     status_bar_message = Signal(str)  # Signal to send messages to status bar
+    # Create a signal for creating a new note
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -97,6 +98,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         # Collapse all folders by default
         self.collapseAll()
 
+    # Create a context menu for creating a new note, this should allow the user to right click a folder and create a new note under that AI!
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
