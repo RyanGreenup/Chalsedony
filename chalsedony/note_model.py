@@ -738,11 +738,33 @@ class NoteModel(QObject):
         return None
 
     def what_is_this(self, id: str) -> IdTable | None:
-        """Determine the table a given ID belongs to, None if not found"""
-        # Search for the id in the notes table, folders table and finally resources table if it's not found in any of them return None  AI!
+        """Determine the table a given ID belongs to, None if not found
+        
+        Args:
+            id: The ID to look up
+            
+        Returns:
+            IdTable enum indicating which table the ID belongs to, or None if not found
+        """
+        cursor = self.db_connection.cursor()
+        
+        # Check notes table
+        cursor.execute("SELECT id FROM notes WHERE id = ?", (id,))
+        if cursor.fetchone():
+            return IdTable.NOTE
+            
+        # Check folders table
+        cursor.execute("SELECT id FROM folders WHERE id = ?", (id,))
+        if cursor.fetchone():
+            return IdTable.FOLDER
+            
+        # Check resources table
+        cursor.execute("SELECT id FROM resources WHERE id = ?", (id,))
+        if cursor.fetchone():
+            return IdTable.RESOURCE
+            
+        return None
 
-
-# AI: This is the class to use
 class IdTable(Enum):
     """Enum representing the table an ID belongs to"""
     NOTE = "note"
