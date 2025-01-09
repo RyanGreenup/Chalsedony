@@ -426,4 +426,16 @@ class NoteModel(QObject):
 
         return "/".join([f.title for f in path])
 
-    # Create a method to get the folder_id from a note_id AI!
+    def get_folder_id_from_note(self, note_id: str) -> str | None:
+        """Get the parent folder ID for a given note ID
+        
+        Args:
+            note_id: The ID of the note to look up
+            
+        Returns:
+            The parent folder ID if found, None otherwise
+        """
+        cursor = self.db_connection.cursor()
+        cursor.execute("SELECT parent_id FROM notes WHERE id = ?", (note_id,))
+        result = cursor.fetchone()
+        return result[0] if result else None
