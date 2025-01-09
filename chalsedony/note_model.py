@@ -563,3 +563,8 @@ class NoteModel(QObject):
         self.db_connection.commit()
         self.refreshed.emit()
         return new_folder_id
+
+    # Implement a method to duplicate a note AI!
+    def duplicate_note(self) -> None:
+        print("TODO")
+        self.refreshed.emit()
