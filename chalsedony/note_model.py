@@ -797,32 +797,25 @@ class NoteModel(QObject):
         mime_type = mime_type or "application/octet-stream"
 
         # Determine resource type based on MIME type
-        # Modify this to use a match case statement AI!
-        if mime_type.startswith("image/"):
-            return mime_type, ResourceType.IMAGE
-        elif mime_type.startswith("video/"):
-            return mime_type, ResourceType.VIDEO
-        elif mime_type.startswith("audio/"):
-            return mime_type, ResourceType.AUDIO
-        elif mime_type in [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        ]:
-            return mime_type, ResourceType.DOCUMENT
-        elif mime_type in [
-            "application/zip",
-            "application/x-tar",
-            "application/x-rar-compressed",
-        ]:
-            return mime_type, ResourceType.ARCHIVE
-        elif mime_type.startswith("text/") or mime_type in [
-            "application/json",
-            "application/javascript",
-        ]:
-            return mime_type, ResourceType.CODE
-        else:
-            return mime_type, ResourceType.OTHER
+        match mime_type.split('/')[0], mime_type:
+            case ('image', _):
+                return mime_type, ResourceType.IMAGE
+            case ('video', _):
+                return mime_type, ResourceType.VIDEO
+            case ('audio', _):
+                return mime_type, ResourceType.AUDIO
+            case (_, 'application/pdf' | 
+                     'application/msword' |
+                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'):
+                return mime_type, ResourceType.DOCUMENT
+            case (_, 'application/zip' |
+                     'application/x-tar' |
+                     'application/x-rar-compressed'):
+                return mime_type, ResourceType.ARCHIVE
+            case ('text', _) | (_, 'application/json' | 'application/javascript'):
+                return mime_type, ResourceType.CODE
+            case _:
+                return mime_type, ResourceType.OTHER
 
 
 # Footnotes
