@@ -319,14 +319,14 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
         cursor.execute("""
             INSERT INTO notes (
-                id, title, body, user_created_time, user_updated_time,
-                is_todo, todo_completed, parent_id, latitude, longitude,
-                altitude, source_url, todo_due
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                id, title, body, created_time, updated_time,
+                user_created_time, user_updated_time, is_todo, todo_completed,
+                parent_id, latitude, longitude, altitude, source_url, todo_due
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             note_id, title, body, created_time, created_time,
-            0, 0, parent_folder_id, 0.0, 0.0,
-            0.0, "", 0
+            created_time, created_time, 0, 0,
+            parent_folder_id, 0.0, 0.0, 0.0, "", 0
         ))
         self.db_connection.commit()
         self.refreshed.emit()
