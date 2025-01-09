@@ -384,20 +384,21 @@ class NoteView(QWidget):
         """Handle a resource being uploaded"""
         print(f"Resource uploaded: {resource_path}")
 
-        if (note_id := self.get_current_note_id()) is not None:
+        if self.get_current_note_id() is not None:
             # Get the cursor position and insert markdown link
             cursor = self.content_area.editor.textCursor()
             pos = cursor.position()
-            
+
             # Create markdown link
-            resource_name = Path(resource_path).name
-            markdown_link = f"[{resource_name}]({resource_path})"
-            
+            resource_name = self.model.get_resource_title(resource_path)
+            markdown_link = f"![{resource_name}](:/{resource_path})"
+
+            # Copy the markdown link to the clipboard AI!
+
+
             # Insert at cursor position
             cursor.insertText(markdown_link)
-            
+
             # Move cursor after the inserted text
             cursor.setPosition(pos + len(markdown_link))
             self.content_area.editor.setTextCursor(cursor)
-
-
