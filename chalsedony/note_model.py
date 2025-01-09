@@ -622,8 +622,78 @@ class NoteModel(QObject):
             print(e)
         return folder_id
 
-
-# Implement a method that allows uploading a file as a Resource AI!
+    def upload_resource(self, file_path: Path, note_id: str, title: str = "") -> str:
+        """Upload a file as a resource attached to a note
+        
+        Args:
+            file_path: Path to the file to upload
+            note_id: ID of the note to attach the resource to
+            title: Optional title for the resource (defaults to filename)
+            
+        Returns:
+            ID of the newly created resource
+        """
+        if not file_path.exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+            
+        # Generate resource ID
+        resource_id = self.create_id()
+        created_time = int(time.time())
+        
+        # Get file info
+        file_size = file_path.stat().st_size
+        file_ext = file_path.suffix.lower()[1:]  # Remove dot from extension
+        mime_type = "application/octet-stream"  # Default MIME type
+        
+        # Try to get more specific MIME type
+        try:
+            import mimetypes
+            mime_type = mimetypes.guess_type(str(file_path))[0] or mime_type
+        except ImportError:
+            pass
+            
+        # Use filename as title if not provided
+        if not title:
+            title = file_path.name
+            
+        # Copy file to assets directory
+        asset_path = self.asset_dir / f"{resource_id}.{file_ext}"
+        asset_path.parent.mkdir(parents=True, exist_ok=True)
+        asset_path.write_bytes(file_path.read_bytes())
+        
+        # Insert resource record
+        cursor = self.db_connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO resources (
+                id, title, mime, filename, created_time, updated_time,
+                file_extension, size, blob_updated_time
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                resource_id,
+                title,
+                mime_type,
+                file_path.name,  # Original filename
+                created_time,
+                created_time,
+                file_ext,
+                file_size,
+                created_time,
+            ),
+        )
+        
+        # Link resource to note
+        cursor.execute(
+            """
+            INSERT INTO note_resources (note_id, resource_id)
+            VALUES (?, ?)
+            """,
+            (note_id, resource_id),
+        )
+        
+        self.db_connection.commit()
+        return resource_id
 
 
 
