@@ -4,7 +4,13 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QSplitter,
 )
-from PySide6.QtWebEngineCore import QWebEngineUrlScheme, QWebEnginePage
+from PySide6.QtWebEngineCore import (
+    QWebEngineUrlScheme,
+    QWebEnginePage,
+    QWebEngineUrlRequestJob,
+)
+import os
+import mimetypes
 from PySide6.QtCore import (
     QDir,
     QDirIterator,
@@ -102,8 +108,9 @@ class EditPreview(QWidget):
         return "\n".join(css_links)
 
     def _apply_html_template(self, html: str) -> str:
+        # Replace image URLs to use note: scheme
+        html = html.replace('src=":', 'src="note:/')
         css_includes = self._get_css_resources()
-        print(html)
         return f"""<!DOCTYPE html>
         <html>
         <head>
@@ -153,7 +160,8 @@ class EditPreview(QWidget):
         )
 
         html = md.convert(self.editor.toPlainText())
-        self.preview.setHtml(self._apply_html_template(html), QUrl("note:/"))
+        # Use note:// as base URL so relative paths are resolved correctly
+        self.preview.setHtml(self._apply_html_template(html), QUrl("note://"))
 
     def _get_editor_width(self) -> float:
         return float(self.editor.width())
@@ -234,16 +242,12 @@ class MDTextEdit(QTextEdit):
 class NoteLinkPage(QWebEnginePage):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self.ASSET_DIR = "/home/ryan/.config/joplin-desktop/resources/"
 
     def acceptNavigationRequest(
         self, url: QUrl | str, type: QWebEnginePage.NavigationType, isMainFrame: bool
     ) -> bool:
         """Handle link clicks in the preview"""
-        # Discard unused arguments
-        nav_type = type
-        _ = nav_type
-        _ = isMainFrame
-
         # Handle string input
         if isinstance(url, str):
             url = QUrl(url)
@@ -256,6 +260,31 @@ class NoteLinkPage(QWebEnginePage):
 
         # Allow normal navigation for other links
         return True
+
+    def requestedUrl(self) -> QUrl:
+        return QUrl("note://")
+
+    def requestHandler(self, request: QWebEngineUrlRequestJob) -> None:
+        url = request.requestUrl()
+        if url.scheme() == "note":
+            resource_id = url.path().strip("/")
+            # Find the first matching file with this ID prefix
+            for filename in os.listdir(self.ASSET_DIR):
+                if filename.startswith(resource_id):
+                    filepath = os.path.join(self.ASSET_DIR, filename)
+                    with open(filepath, 'rb') as f:
+                        data = f.read()
+                    
+                    # Determine mime type from file extension
+                    mime_type = mimetypes.guess_type(filepath)[0]
+                    if mime_type is None:
+                        mime_type = 'application/octet-stream'
+                    
+                    request.reply(mime_type.encode(), data)
+                    return
+
+        # If no matching file is found, let the default handler take over
+        request.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
 
 
 class WebPreview(QWebEngineView):
