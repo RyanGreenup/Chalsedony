@@ -243,6 +243,8 @@ class NoteLinkPage(QWebEnginePage):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.ASSET_DIR = "/home/ryan/.config/joplin-desktop/resources/"
+        # Register for URL scheme handling
+        self.setUrlRequestInterceptor(self)
 
     def acceptNavigationRequest(
         self, url: QUrl | str, type: QWebEnginePage.NavigationType, isMainFrame: bool
@@ -264,10 +266,9 @@ class NoteLinkPage(QWebEnginePage):
     def requestedUrl(self) -> QUrl:
         return QUrl("note://")
 
-    def requestHandler(self, request: QWebEngineUrlRequestJob) -> None:
-        url = request.requestUrl()
-        if url.scheme() == "note":
-            resource_id = url.path().strip("/")
+    def interceptRequest(self, info):
+        if info.requestUrl().scheme() == "note":
+            resource_id = info.requestUrl().path().strip("/")
             # Find the first matching file with this ID prefix
             for filename in os.listdir(self.ASSET_DIR):
                 if filename.startswith(resource_id):
@@ -280,11 +281,8 @@ class NoteLinkPage(QWebEnginePage):
                     if mime_type is None:
                         mime_type = 'application/octet-stream'
                     
-                    request.reply(mime_type.encode(), data)
+                    info.redirect(QUrl(f"file://{filepath}"))
                     return
-
-        # If no matching file is found, let the default handler take over
-        request.fail(QWebEngineUrlRequestJob.Error.RequestFailed)
 
 
 class WebPreview(QWebEngineView):
