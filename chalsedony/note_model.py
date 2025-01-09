@@ -443,5 +443,18 @@ class NoteModel(QObject):
         ), "Notes at root level (without parent folder) are not supported"
         return str(result[0])
 
+    def get_notes_by_parent_id(self, parent_id: str) -> List[Note]:
+        """Get all notes that belong to a specific folder
 
-    # Create a method to return all Notes with a given parent_id AI!
+        Args:
+            parent_id: The ID of the parent folder
+
+        Returns:
+            List of Note objects belonging to the specified folder
+        """
+        cursor = self.db_connection.cursor()
+        cursor.execute("SELECT * FROM notes WHERE parent_id = ?", (parent_id,))
+        return [Note(**dict(zip(
+            [col[0] for col in cursor.description], 
+            row
+        ))) for row in cursor.fetchall()]
