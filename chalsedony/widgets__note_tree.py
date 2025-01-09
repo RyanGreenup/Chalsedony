@@ -27,6 +27,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
     folder_duplicated = Signal(str)  # folder_id
+    folder_deleted = Signal(str)  # folder_id
     note_moved = Signal(str, str)  # (note_id, new_parent_folder_id)
     status_bar_message = Signal(str)  # Signal to send messages to status bar
     # Create a signal for creating a new note
@@ -119,6 +120,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             self.note_model.delete_note(item_data.id)
             self.note_deleted.emit(item_data.id)
             self.send_status_message(f"Deleted note: {item_data.title}")
+
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
@@ -163,17 +165,13 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
             # Add Duplicate Folder action
             duplicate_action = QAction("Duplicate Folder", self)
-            duplicate_action.triggered.connect(
-                lambda: self.duplicate_folder(item)
-            )
+            duplicate_action.triggered.connect(lambda: self.duplicate_folder(item))
             menu.addAction(duplicate_action)
 
             # Delete folder
-            duplicate_action = QAction("Duplicate Folder", self)
-            duplicate_action.triggered.connect(
-                lambda: self.duplicate_folder(item)
-            )
-            menu.addAction(duplicate_action)
+            delete_action = QAction("Delete Folder", self)
+            delete_action.triggered.connect(lambda: self.delete_folder(item))
+            menu.addAction(delete_action)
 
         # Add Cut action
         cut_action = QAction("Cut", self)
@@ -260,9 +258,13 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         """Duplicate a folder and its contents"""
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
         if item_data.type == ItemType.FOLDER:
-            new_folder_id = self.note_model.copy_folder_recursive(item_data.id)
-            self.folder_duplicated.emit(new_folder_id)
-            self.send_status_message(f"Duplicated folder: {item_data.title}")
+            self.folder_duplicated.emit(item_data.id)
+
+    def delete_folder(self, item: QTreeWidgetItem) -> None:
+        """Delete a folder and its contents"""
+        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        if item_data.type == ItemType.FOLDER:
+            self.folder_deleted.emit(item_data.id)
 
     def _is_child_of(
         self, child_item: QTreeWidgetItem, parent_item: QTreeWidgetItem
@@ -275,12 +277,14 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 return True
         return False
 
+    # AI: Items are marked as cut here
     def cut_selected_items(self) -> None:
         """Store the currently selected items for cutting"""
         self._cut_items = self.selectedItems()
         for item in self._cut_items:
             item.setBackground(0, self.palette().highlight())
 
+    # The highlighting is not removed from the first cut item, review and fix this AI!
     def clear_cut_items(self) -> None:
         """Clear the cut items selection"""
         try:
