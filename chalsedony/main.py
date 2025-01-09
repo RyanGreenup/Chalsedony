@@ -29,6 +29,7 @@ def main(
     database: Path = Path(
         os.path.expanduser("~/.config/joplin-desktop/database.sqlite")
     ),
+    assets: Path = Path(os.path.expanduser("~/.config/joplin-desktop/resources/")),
     dark_mode: Optional[bool] = None,
 ) -> None:
     """
@@ -37,6 +38,7 @@ def main(
     Args:
         dark_mode: Force dark mode on/off. If None, use system preference
         database: Path to the database file.
+        assets: Path to the assets folder
     """
     app = QApplication(sys.argv)
 
@@ -54,7 +56,7 @@ def main(
     # Apply the modern style sheet
     app.setStyleSheet(QSS_STYLE)
 
-    window = MainWindow(database)
+    window = MainWindow(database, assets)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     window.show()
     sys.exit(app.exec())

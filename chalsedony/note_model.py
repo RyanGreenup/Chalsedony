@@ -8,14 +8,10 @@ from typing import Dict, List, Optional
 from db_api import Note, Folder, FolderTreeItem, NoteSearchResult
 
 
-NOTES_FILE = Path("/tmp/notes.yml")
-API_URL = "http://eir:37242"  # TODO inherit from cli
-
-
 class NoteModel(QObject):
     refreshed = Signal()  # Notify view to refresh
 
-    def __init__(self, db_connection: Connection) -> None:
+    def __init__(self, db_connection: Connection, assets: Path) -> None:
         super().__init__()
         self.db_connection = db_connection
 

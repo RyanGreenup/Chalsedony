@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
     refresh = Signal()
     save_note_signal = Signal()  # Signal to trigger note save
 
-    def __init__(self, database: Path) -> None:
+    def __init__(self, database: Path, assets: Path) -> None:
         super().__init__()
         app = QApplication.instance()
         if app is None:
@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
 
         # Initialize model and view
-        self.note_model = NoteModel(self.db_connection)
+        self.note_model = NoteModel(self.db_connection, assets)
         self.note_view = NoteView(parent=self, model=self.note_model)
 
         # Connect signals to the view
