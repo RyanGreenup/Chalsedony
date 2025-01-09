@@ -163,6 +163,13 @@ class NoteTree(StatefulTree, KbdTreeWidget):
                 )
                 menu.addAction(move_to_root_action)
 
+            # Add Duplicate Folder action
+            duplicate_action = QAction("Duplicate Folder", self)
+            duplicate_action.triggered.connect(
+                lambda: self.duplicate_folder(item)
+            )
+            menu.addAction(duplicate_action)
+
         # Add Cut action
         cut_action = QAction("Cut", self)
         cut_action.triggered.connect(self.cut_selected_items)
@@ -243,6 +250,14 @@ class NoteTree(StatefulTree, KbdTreeWidget):
     def send_status_message(self, message: str) -> None:
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
+
+    def duplicate_folder(self, item: QTreeWidgetItem) -> None:
+        """Duplicate a folder and its contents"""
+        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        if item_data.type == ItemType.FOLDER:
+            new_folder_id = self.note_model.copy_folder_recursive(item_data.id)
+            self.folder_duplicated.emit(new_folder_id)
+            self.send_status_message(f"Duplicated folder: {item_data.title}")
 
     def _is_child_of(
         self, child_item: QTreeWidgetItem, parent_item: QTreeWidgetItem
