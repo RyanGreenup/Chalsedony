@@ -149,9 +149,6 @@ class EditPreview(QWidget):
                 "fenced_code",
                 "tables",
                 "footnotes",
-                WikiLinkExtension(
-                    base_url=""
-                ),  # TODO this is inconsistent, consider using scheme handler and prefixing with a url
             ]
         )
 
