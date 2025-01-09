@@ -17,6 +17,7 @@ class TreeItemData(NamedTuple):
 
     type: ItemType
     id: str
+    title: str
 
 
 class DeferredSelectionEvent(QEvent):
@@ -31,7 +32,20 @@ class DeferredSelectionEvent(QEvent):
 
 
 class TreeWidgetItem(QTreeWidgetItem):
-    """Custom QTreeWidgetItem that properly types the UserRole data"""
+    """
+    Custom QTreeWidgetItem that properly types the UserRole data
+
+    Implementation Details:
+
+    Even though the title is stored in the item text, we store it again in the
+    UserRole data because the text is merely a C++ pointer which can be invalidated
+    when the item is moved or deleted.
+
+    This allows us to retrieve the title and other data using typical python
+    memory behaviour without unexpected:
+
+        RuntimeError: Internal C++ object (TreeWidgetItem)
+    """
 
     def __init__(
         self,
@@ -44,7 +58,9 @@ class TreeWidgetItem(QTreeWidgetItem):
         self.setText(0, title)
         # Store data directly in the Qt UserRole
         self.setData(
-            0, Qt.ItemDataRole.UserRole, TreeItemData(type=item_type, id=item_id)
+            0,
+            Qt.ItemDataRole.UserRole,
+            TreeItemData(type=item_type, id=item_id, title=title),
         )
 
     @property

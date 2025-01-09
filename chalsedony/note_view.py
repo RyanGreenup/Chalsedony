@@ -120,6 +120,7 @@ class NoteView(QWidget):
         self.tree_widget.note_created.connect(
             lambda folder_id: self._on_note_created(folder_id)
         )
+        self.tree_widget.note_deleted.connect(self._on_note_deleted)
 
         # Receive signals
         # Receive signals from Model
@@ -163,7 +164,17 @@ class NoteView(QWidget):
         try:
             self.model.create_note(folder_id)
         except ValueError as e:
-            print(e)
+            status_message = f"Failed to create note: {e}"
+            print(status_message)
+            self.send_status_message(status_message)
+
+    def _on_note_deleted(self, note_id: str) -> None:
+        try:
+            self.model.delete_note(note_id)
+        except ValueError as e:
+            status_message = f"Failed to delete note: {e}"
+            print(status_message)
+            self.send_status_message(status_message)
 
     def _refresh(self) -> None:
         """
@@ -216,7 +227,8 @@ class NoteView(QWidget):
             return
 
         item = items[0]
-        item_type, item_id = item.data(0, Qt.ItemDataRole.UserRole)
+        item_type, item_id, item_title = item.data(0, Qt.ItemDataRole.UserRole)
+        _ = item_title  # Unused variable
         self._handle_note_selection(item_type, item_id)
 
     def _handle_note_selection(self, item_type: ItemType, item_id: str) -> None:

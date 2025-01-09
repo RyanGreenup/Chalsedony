@@ -344,7 +344,7 @@ class NoteModel(QObject):
 
     def delete_note(self, note_id: str) -> None:
         """Delete a note from the database
-        
+
         Args:
             note_id: ID of the note to delete
         """
@@ -406,8 +406,8 @@ class NoteModel(QObject):
         Returns:
             List of Folder objects representing the path from root to target folder
         """
-        path = []
-        current_id = folder_id
+        path: List[Folder] = []
+        current_id: str | None = folder_id
 
         while current_id:
             cursor = self.db_connection.cursor()
@@ -425,6 +425,3 @@ class NoteModel(QObject):
             current_id = folder.parent_id if folder.parent_id else None
 
         return "/".join([f.title for f in path])
-
-
-

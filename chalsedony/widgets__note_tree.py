@@ -101,7 +101,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
 
     def delete_note(self, item: QTreeWidgetItem) -> None:
         """Delete a note from the tree and database
-        
+
         Args:
             item: The tree item representing the note to delete
         """
