@@ -476,3 +476,5 @@ class NoteModel(QObject):
         cursor.execute(query, note_ids)
         self.db_connection.commit()
         self.refreshed.emit()
+
+    # Create a method that deletes a folder and all its children by using the methods above AI!
