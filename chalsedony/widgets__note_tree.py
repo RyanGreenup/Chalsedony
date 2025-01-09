@@ -284,7 +284,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         for item in self._cut_items:
             item.setBackground(0, self.palette().highlight())
 
-    # The highlighting is not removed from the first cut item, review and fix this AI!
+    # The highlighting is not removed from the first cut item, review and fix this, ensure that multiple items can be marked as cut AI!
     def clear_cut_items(self) -> None:
         """Clear the cut items selection"""
         try:
