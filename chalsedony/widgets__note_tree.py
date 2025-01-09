@@ -109,7 +109,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         if item_data.type == ItemType.NOTE:
             self.note_model.delete_note(item_data.id)
             self.note_deleted.emit(item_data.id)
-            self.send_status_message(f"Deleted note: {item.text(0)}")
+            self.send_status_message(f"Deleted note: {item_data.title}")
 
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
@@ -193,11 +193,14 @@ class NoteTree(StatefulTree, KbdTreeWidget):
     def create_note(self, clicked_item: QTreeWidgetItem) -> None:
         """Create a new note under the selected folder"""
         item_data: TreeItemData = clicked_item.data(0, Qt.ItemDataRole.UserRole)
-        if item_data.type == ItemType.FOLDER:
-            # Emit signal with folder ID to create note
-            self.note_created.emit(item_data.id)
-            full_title = self.note_model.get_folder_path(item_data.id)
-            self.send_status_message(f"Created new note in folder: {full_title}")
+        # Refactor this into a match case AI!
+        if item_data.type == ItemType.NOTE:
+            folder_id = self.note_model.get_note_parent_id(item_data.id)
+        elif item_data.type == ItemType.FOLDER:
+            folder_id = item_data.id
+        self.note_created.emit(folder_id)
+        full_title = self.note_model.get_folder_path(folder_id)
+        self.send_status_message(f"Created new note in folder: {full_title}")
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard shortcuts for cut/paste operations"""
