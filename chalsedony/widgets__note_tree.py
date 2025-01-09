@@ -204,10 +204,9 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             duplicate_action.triggered.connect(lambda: self.duplicate_item(item))
             menu.addAction(duplicate_action)
 
-            # Refactor this to be a context menu action that occurs for both notes and folders and calls delete_item AI!
-            # Delete folder
+            # Delete action for folders
             delete_action = QAction("Delete Folder", self)
-            delete_action.triggered.connect(lambda: self.delete_folder(item))
+            delete_action.triggered.connect(lambda: self.delete_item(item))
             menu.addAction(delete_action)
 
         # Add Cut action
@@ -229,11 +228,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             clear_cut_action.setShortcut("Esc")
             menu.addAction(clear_cut_action)
 
-        # Add Delete action for notes and folders
-        delete_action = QAction(f"Delete {item_type_enum.name.capitalize()}", self)
-        delete_action.triggered.connect(lambda: self.delete_item(item))
-        delete_action.setShortcut("Del")
-        menu.addAction(delete_action)
 
         menu.exec(self.viewport().mapToGlobal(position))
 
