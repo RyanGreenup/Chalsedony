@@ -160,6 +160,8 @@ class StatefulTree(QTreeWidget):
             # Item was deleted or doesn't exist, skip silently
             pass
 
+    # Create a method to get the selected items as a list of TreeItemData AI!
+
     def get_expanded_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all expanded items in the tree
 
