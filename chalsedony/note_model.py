@@ -75,7 +75,6 @@ class NoteModel(QObject):
         if refresh:
             self.refreshed.emit()
 
-
     def get_note_tree_structure(
         self, order_by: str = "order"
     ) -> Dict[str, FolderTreeItem]:
@@ -286,9 +285,15 @@ class NoteModel(QObject):
     @staticmethod
     def create_id() -> str:
         # return note_id = str(int(time.time() * 1000))  # Simple timestamp-based ID
-        return ''.join(f'{b:02x}' for b in bytes.fromhex(hex(int(time.time() * 1000000))[2:].zfill(16)) + os.urandom(8))
+        return "".join(
+            f"{b:02x}"
+            for b in bytes.fromhex(hex(int(time.time() * 1000000))[2:].zfill(16))
+            + os.urandom(8)
+        )
 
-    def create_note(self, parent_folder_id: str, title: str = "", body: str = "") -> str:
+    def create_note(
+        self, parent_folder_id: str, title: str | None = None, body: str = ""
+    ) -> str:
         """Create a new note in the specified folder
 
         Args:
@@ -303,21 +308,41 @@ class NoteModel(QObject):
         note_id = self.create_id()
         created_time = int(time.time())
 
+        if title is None:
+            title = "Untitled"
+
         cursor = self.db_connection.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO notes (
                 id, title, body, created_time, updated_time,
                 user_created_time, user_updated_time, is_todo, todo_completed,
                 parent_id, latitude, longitude, altitude, source_url, todo_due
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            note_id, title, body, created_time, created_time,
-            created_time, created_time, 0, 0,
-            parent_folder_id, 0.0, 0.0, 0.0, "", 0
-        ))
+        """,
+            (
+                note_id,
+                title,
+                body,
+                created_time,
+                created_time,
+                created_time,
+                created_time,
+                0,
+                0,
+                parent_folder_id,
+                0.0,
+                0.0,
+                0.0,
+                "",
+                0,
+            ),
+        )
         self.db_connection.commit()
         self.refreshed.emit()
         return note_id
+
+    # Create a method to delete a note AI!
 
     def update_folder(
         self,
@@ -363,31 +388,34 @@ class NoteModel(QObject):
 
         self.refreshed.emit()
 
-    def get_folder_path(self, folder_id: str) -> List[Folder]:
+    def get_folder_path(self, folder_id: str) -> str:
         """Get the materialized path of a folder from root to the specified folder
-        
+
         Args:
             folder_id: ID of the target folder
-            
+
         Returns:
             List of Folder objects representing the path from root to target folder
         """
         path = []
         current_id = folder_id
-        
+
         while current_id:
             cursor = self.db_connection.cursor()
             cursor.execute("SELECT * FROM folders WHERE id = ?", (current_id,))
             row = cursor.fetchone()
-            
+
             if not row:
                 break
-                
+
             # Convert tuple to dictionary using cursor description
             columns = [col[0] for col in cursor.description]
             folder = Folder(**dict(zip(columns, row)))
             path.insert(0, folder)  # Add to beginning to maintain root->child order
-            
+
             current_id = folder.parent_id if folder.parent_id else None
-            
-        return path
+
+        return "/".join([f.title for f in path])
+
+
+
