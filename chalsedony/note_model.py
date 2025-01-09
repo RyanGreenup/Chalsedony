@@ -797,6 +797,7 @@ class NoteModel(QObject):
         mime_type = mime_type or "application/octet-stream"
 
         # Determine resource type based on MIME type
+        # Modify this to use a match case statement AI!
         if mime_type.startswith("image/"):
             return mime_type, ResourceType.IMAGE
         elif mime_type.startswith("video/"):
