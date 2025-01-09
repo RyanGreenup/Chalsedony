@@ -458,3 +458,6 @@ class NoteModel(QObject):
             [col[0] for col in cursor.description], 
             row
         ))) for row in cursor.fetchall()]
+
+    
+    # Create a method to delete a list of note ids in a single SQL query AI!
