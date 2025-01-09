@@ -564,7 +564,26 @@ class NoteModel(QObject):
         self.refreshed.emit()
         return new_folder_id
 
-    # Implement a method to duplicate a note AI!
-    def duplicate_note(self) -> None:
-        print("TODO")
+    def duplicate_note(self, note_id: str) -> str:
+        """Duplicate an existing note with all its content
+        
+        Args:
+            note_id: ID of the note to duplicate
+            
+        Returns:
+            ID of the newly created note
+        """
+        # Get the original note
+        original_note = self.find_note_by_id(note_id)
+        if not original_note:
+            raise ValueError(f"Note {note_id} not found")
+            
+        # Create new note with same content but "(Copy)" in title
+        new_note_id = self.create_note(
+            parent_folder_id=original_note.parent_id,
+            title=f"{original_note.title} (Copy)",
+            body=original_note.body
+        )
+        
         self.refreshed.emit()
+        return new_note_id
