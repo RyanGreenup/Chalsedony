@@ -215,3 +215,7 @@ class StatefulTree(QTreeWidget):
                     pass
             return True
         return super().event(event)
+
+
+
+    # Create a method to highlight an item based on TreeItemData AI!
