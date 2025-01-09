@@ -120,7 +120,6 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             self.note_deleted.emit(item_data.id)
             self.send_status_message(f"Deleted note: {item_data.title}")
 
-    # Associate keybindings with the actions in the context menu AI!
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
@@ -144,6 +143,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         # Add Create Note action
         create_action = QAction("Create Note", self)
         create_action.triggered.connect(lambda: self.create_note(item))
+        create_action.setShortcut("Ctrl+N")
         menu.addAction(create_action)
 
         # Add folder-specific actions
@@ -151,6 +151,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             # Rename action
             rename_action = QAction("Rename Folder", self)
             rename_action.triggered.connect(lambda: self.request_folder_rename(item))
+            rename_action.setShortcut("F2")
             menu.addAction(rename_action)
 
             # Move to root action
@@ -164,23 +165,27 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         # Add Cut action
         cut_action = QAction("Cut", self)
         cut_action.triggered.connect(self.cut_selected_items)
+        cut_action.setShortcut("Ctrl+X")
         menu.addAction(cut_action)
 
         # Add Paste action if we have cut items
         if self._cut_items:
             paste_action = QAction("Paste", self)
             paste_action.triggered.connect(lambda: self.paste_items(item))
+            paste_action.setShortcut("Ctrl+V")
             menu.addAction(paste_action)
 
             # Add Clear Cut action
             clear_cut_action = QAction("Clear Cut", self)
             clear_cut_action.triggered.connect(self.clear_cut_items)
+            clear_cut_action.setShortcut("Esc")
             menu.addAction(clear_cut_action)
 
         # Add Delete action for notes
         if item_type_enum == ItemType.NOTE:
             delete_action = QAction("Delete Note", self)
             delete_action.triggered.connect(lambda: self.delete_note(item))
+            delete_action.setShortcut("Del")
             menu.addAction(delete_action)
 
         menu.exec(self.viewport().mapToGlobal(position))
