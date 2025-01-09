@@ -477,4 +477,30 @@ class NoteModel(QObject):
         self.db_connection.commit()
         self.refreshed.emit()
 
-    # Create a method that deletes a folder and all its children by using the methods above AI!
+    def delete_folder_recursive(self, folder_id: str) -> None:
+        """Delete a folder and all its child folders and notes recursively
+
+        Args:
+            folder_id: ID of the folder to delete
+        """
+        # Get all child folders
+        cursor = self.db_connection.cursor()
+        cursor.execute("SELECT id FROM folders WHERE parent_id = ?", (folder_id,))
+        child_folders = [row[0] for row in cursor.fetchall()]
+
+        # Recursively delete child folders
+        for child_id in child_folders:
+            self.delete_folder_recursive(child_id)
+
+        # Get all notes in this folder
+        cursor.execute("SELECT id FROM notes WHERE parent_id = ?", (folder_id,))
+        note_ids = [row[0] for row in cursor.fetchall()]
+
+        # Delete all notes in this folder
+        if note_ids:
+            self.delete_notes(note_ids)
+
+        # Finally delete the folder itself
+        cursor.execute("DELETE FROM folders WHERE id = ?", (folder_id,))
+        self.db_connection.commit()
+        self.refreshed.emit()
