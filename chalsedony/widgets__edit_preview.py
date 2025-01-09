@@ -111,6 +111,7 @@ class EditPreview(QWidget):
     def _apply_html_template(self, html: str) -> str:
         # Replace image URLs to use note: scheme
         html = html.replace('src=":', 'src="note:/')
+        print(html)
         css_includes = self._get_css_resources()
         return f"""<!DOCTYPE html>
         <html>
@@ -242,6 +243,8 @@ class MDTextEdit(QTextEdit):
 
 # TODO Refactor this so it simply talks to the model rather than looking at the filesystem
 # Consider using signals instead of talking to the model directly? Not sure on that
+# This will need the model anyway, it needs to get the resource_type to handle the link (e.g. open vs display image etc.)
+# handling all that with signals won't be ideal
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
     def __init__(self, asset_dir: Path) -> None:
         super().__init__()

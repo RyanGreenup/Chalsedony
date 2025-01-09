@@ -11,6 +11,7 @@ from db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
 
 class ResourceType(Enum):
     """Enum representing different types of resources that can be embedded in HTML"""
+
     IMAGE = "image"
     VIDEO = "video"
     AUDIO = "audio"
@@ -751,44 +752,47 @@ class NoteModel(QObject):
 
     def what_is_this(self, id: str) -> IdTable | None:
         """Determine the table a given ID belongs to, None if not found
-        
+
         Args:
             id: The ID to look up
-            
+
         Returns:
             IdTable enum indicating which table the ID belongs to, or None if not found
         """
         cursor = self.db_connection.cursor()
-        
+
         # Check notes table
         cursor.execute("SELECT id FROM notes WHERE id = ?", (id,))
         if cursor.fetchone():
             return IdTable.NOTE
-            
+
         # Check folders table
         cursor.execute("SELECT id FROM folders WHERE id = ?", (id,))
         if cursor.fetchone():
             return IdTable.FOLDER
-            
+
         # Check resources table
         cursor.execute("SELECT id FROM resources WHERE id = ?", (id,))
         if cursor.fetchone():
             return IdTable.RESOURCE
-            
+
         return None
 
-    def get_resource_mime_type(self, resource_id: str) -> Tuple[str | None, ResourceType]:
+    def get_resource_mime_type(
+        self, resource_id: str
+    ) -> Tuple[str | None, ResourceType]:
         """Get the MIME type and resource type by its ID
-        
+
         Args:
             resource_id: ID of the resource to look up
-            
+
         Returns:
             A tuple containing:
             - The MIME type string if found, None otherwise
             - The ResourceType enum indicating the type of resource
         """
         import mimetypes
+
         path = self.get_resource_path(resource_id)
         if not path:
             return None, ResourceType.OTHER
@@ -797,22 +801,28 @@ class NoteModel(QObject):
         mime_type = mime_type or "application/octet-stream"
 
         # Determine resource type based on MIME type
-        match mime_type.split('/')[0], mime_type:
-            case ('image', _):
+        match mime_type.split("/")[0], mime_type:
+            case ("image", _):
                 return mime_type, ResourceType.IMAGE
-            case ('video', _):
+            case ("video", _):
                 return mime_type, ResourceType.VIDEO
-            case ('audio', _):
+            case ("audio", _):
                 return mime_type, ResourceType.AUDIO
-            case (_, 'application/pdf' | 
-                     'application/msword' |
-                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'):
+            case (
+                _,
+                "application/pdf"
+                | "application/msword"
+                | "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ):
                 return mime_type, ResourceType.DOCUMENT
-            case (_, 'application/zip' |
-                     'application/x-tar' |
-                     'application/x-rar-compressed'):
+            case (
+                _,
+                "application/zip"
+                | "application/x-tar"
+                | "application/x-rar-compressed",
+            ):
                 return mime_type, ResourceType.ARCHIVE
-            case ('text', _) | (_, 'application/json' | 'application/javascript'):
+            case ("text", _) | (_, "application/json" | "application/javascript"):
                 return mime_type, ResourceType.CODE
             case _:
                 return mime_type, ResourceType.OTHER

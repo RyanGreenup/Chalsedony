@@ -77,6 +77,14 @@ class ItemType(Enum):
     FOLDER = "folder"
 
 
+class IdTable(Enum):
+    """Enum representing the table an ID belongs to"""
+
+    NOTE = "note"
+    FOLDER = "folder"
+    RESOURCE = "resource"
+
+
 class TreeItemData(NamedTuple):
     """Represents data stored in a tree widget item"""
 
