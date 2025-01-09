@@ -23,7 +23,6 @@ from widgets__stateful_tree import StatefulTree, TreeItemData
 
 class NoteTree(StatefulTree, KbdTreeWidget):
     note_created = Signal(str)  # folder_id
-    # AI: This is the signal to emit
     note_deleted = Signal(str)  # note_id
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
