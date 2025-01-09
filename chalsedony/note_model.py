@@ -283,6 +283,11 @@ class NoteModel(QObject):
         """
         self.update_folder(folder_id, parent_id="")
 
+    @staticmethod
+    def create_id() -> str:
+        # return note_id = str(int(time.time() * 1000))  # Simple timestamp-based ID
+        return ''.join(f'{b:02x}' for b in bytes.fromhex(hex(int(time.time() * 1000000))[2:].zfill(16)) + os.urandom(8))
+
     def create_note(self, parent_folder_id: str, title: str = "", body: str = "") -> str:
         """Create a new note in the specified folder
 
@@ -295,12 +300,25 @@ class NoteModel(QObject):
             The ID of the newly created note
         """
         # Generate a 32 character hex string ID
-        note_id = ''.join(f'{b:02x}' for b in bytes.fromhex(hex(int(time.time() * 1000000))[2:].zfill(16)) + os.urandom(8))
+        note_id = self.create_id()
         created_time = int(time.time())
-        
+
+# Resolve this error AI!
+#   chalsedony/note_model.py", line 307, in create_note
+#     cursor.execute("""
+#     ~~~~~~~~~~~~~~^^^^
+#         INSERT INTO notes (
+#         ^^^^^^^^^^^^^^^^^^^
+#     ...<7 lines>...
+#         0.0, "", 0
+#         ^^^^^^^^^^
+#     ))
+#     ^^
+# sqlite3.IntegrityError: NOT NULL constraint failed: notes.created_time
+
         cursor = self.db_connection.cursor()
         cursor.execute("""
-            INSERT INTO notes_normalized (
+            INSERT INTO notes (
                 id, title, body, user_created_time, user_updated_time,
                 is_todo, todo_completed, parent_id, latitude, longitude,
                 altitude, source_url, todo_due
