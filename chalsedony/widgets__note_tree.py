@@ -37,6 +37,14 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         self._dragged_item: QTreeWidgetItem | None = None
         self._cut_items: list[QTreeWidgetItem] = []
         self.setup_ui()
+        self.create_keybinings()
+
+    def create_keybinings(self) -> None:
+        self.key_actions = {
+            Qt.Key.Key_X: self.cut_selected_items,
+            Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
+            Qt.Key.Key_Escape: self.clear_cut_items if self._cut_items else None,
+        }
 
     def setup_ui(self) -> None:
         self.setAnimated(True)
@@ -111,6 +119,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
             self.note_deleted.emit(item_data.id)
             self.send_status_message(f"Deleted note: {item_data.title}")
 
+    # Associate keybindings with the actions in the context menu AI!
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
@@ -195,7 +204,7 @@ class NoteTree(StatefulTree, KbdTreeWidget):
         item_data: TreeItemData = clicked_item.data(0, Qt.ItemDataRole.UserRole)
         match item_data.type:
             case ItemType.NOTE:
-                folder_id = self.note_model.get_note_parent_id(item_data.id)
+                folder_id = self.note_model.get_folder_id_from_note(item_data.id)
             case ItemType.FOLDER:
                 folder_id = item_data.id
         self.note_created.emit(folder_id)
@@ -205,20 +214,12 @@ class NoteTree(StatefulTree, KbdTreeWidget):
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle keyboard shortcuts for cut/paste operations"""
         if self.currentItem():
-            match event.key():
-                case Qt.Key.Key_X:  # Cut
-                    self.cut_selected_items()
-                    event.accept()
-                    return
-                case Qt.Key.Key_P:  # Paste
-                    self.paste_items(self.currentItem())
-                    event.accept()
-                    return
-                case Qt.Key.Key_Escape:  # Clear cut items
-                    if self._cut_items:
-                        self.clear_cut_items()
-                        event.accept()
-                        return
+            key = Qt.Key(event.key())
+            action = self.key_actions.get(key)
+            if action:
+                action()
+                event.accept()
+                return
 
         # Let parent class handle other keys
         super().keyPressEvent(event)
