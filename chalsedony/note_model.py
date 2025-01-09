@@ -588,5 +588,33 @@ class NoteModel(QObject):
         self.refreshed.emit()
         return new_note_id
 
+    def create_folder(self, title: str, parent_id: Optional[str] = None) -> str:
+        """Create a new folder
 
-    # Write a method to create a new folder AI!
+        Args:
+            title: Title of the new folder
+            parent_id: ID of the parent folder (None for root)
+
+        Returns:
+            ID of the newly created folder
+        """
+        folder_id = self.create_id()
+        created_time = int(time.time())
+
+        cursor = self.db_connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO folders (id, title, created_time, updated_time, parent_id)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                folder_id,
+                title,
+                created_time,
+                created_time,
+                parent_id if parent_id is not None else "",
+            ),
+        )
+        self.db_connection.commit()
+        self.refreshed.emit()
+        return folder_id
