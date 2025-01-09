@@ -1,4 +1,5 @@
 import time
+import os
 from PySide6.QtCore import QObject, Signal
 from utils__get_first_markdown_heading import get_markdown_heading
 from sqlite3 import Connection
@@ -282,12 +283,6 @@ class NoteModel(QObject):
         """
         self.update_folder(folder_id, parent_id="")
 
-# Current IDs look like this:
-# 79bec23a22ec43c196469569d24992af
-# 11aa099966a24158a94263927ae2587f
-# 1db5549fb0b74faeb9c1659d42589c97
-# Modify the create_note method to follow this same patter for the id AI!
-
     def create_note(self, parent_folder_id: str, title: str = "", body: str = "") -> str:
         """Create a new note in the specified folder
 
@@ -299,7 +294,8 @@ class NoteModel(QObject):
         Returns:
             The ID of the newly created note
         """
-        note_id = str(int(time.time() * 1000))  # Simple timestamp-based ID
+        # Generate a 32 character hex string ID
+        note_id = ''.join(f'{b:02x}' for b in bytes.fromhex(hex(int(time.time() * 1000000))[2:].zfill(16)) + os.urandom(8))
         created_time = int(time.time())
         
         cursor = self.db_connection.cursor()
