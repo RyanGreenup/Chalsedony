@@ -362,4 +362,3 @@ class NoteModel(QObject):
 # 
 # CREATE TABLE notes_normalized (id TEXT NOT NULL, title TEXT NOT NULL DEFAULT "", body TEXT NOT NULL DEFAULT "", user_created_time INT NOT NULL DEFAULT 0, user_updated_time INT NOT NULL DEFAULT 0, is_todo INT NOT NULL DEFAULT 0, todo_completed INT NOT NULL DEFAULT 0, parent_id TEXT NOT NULL DEFAULT "", latitude NUMERIC NOT NULL DEFAULT 0, longitude NUMERIC NOT NULL DEFAULT 0, altitude NUMERIC NOT NULL DEFAULT 0, source_url TEXT NOT NULL DEFAULT "", todo_due INT NOT NULL DEFAULT 0);
 # 
-# Write a method to create a note AI!
