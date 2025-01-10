@@ -24,6 +24,7 @@ from PySide6.QtCore import (
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from bs4 import BeautifulSoup, Tag
 import markdown
+import pymdownx.superfences
 
 from db_api import IdTable
 from note_model import NoteModel, ResourceType
@@ -169,6 +170,18 @@ class EditPreview(QWidget):
         Converts the editor from markdown to HTML and sets the preview HTML content.
         """
         # Convert markdown to HTML
+        extension_configs = {
+            "pymdownx.superfences": {
+                "custom_fences": [
+                    {
+                        'name': 'mermaid',
+                        'class': 'mermaid',
+                        'format': pymdownx.superfences.fence_div_format
+                    }
+                ]
+            }
+        }
+
         md = markdown.Markdown(
             extensions=[
                 "fenced_code",
@@ -181,7 +194,8 @@ class EditPreview(QWidget):
                 "pymdownx.blocks.tab",
                 "pymdownx.superfences",
                 "pymdownx.highlight",
-            ]
+            ],
+            extension_configs=extension_configs
         )
 
         html = md.convert(self.editor.toPlainText())
