@@ -18,6 +18,7 @@
         <file>js/pdfjs.worker.js</file>
         <file>js/dataTables.js</file>
         <file>js/datatables_init.js</file>
+        <file>js/mermaid.min.js</file>
     </qresource>
     <qresource prefix="/">
         <file>css/fonts.css</file>
