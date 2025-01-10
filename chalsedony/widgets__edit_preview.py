@@ -336,11 +336,6 @@ class NoteLinkPage(QWebEnginePage):
             # Extract ID from URL by removing scheme and host
             id = url.toString().replace("note://", "").strip("/")
 
-            print(f"-----------> Navigation request: {url}")
-            print(f"-----------> Extracted ID: {id}")
-
-
-
             if (id_type := self.note_model.what_is_this(id)) is not None:
                 match id_type:
                     case IdTable.NOTE:
