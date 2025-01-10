@@ -505,19 +505,19 @@ class WebPreview(QWebEngineView):
                                         summary_link["title"] = title
                                         summary_link["data-from-md"] = ""
                                         summary_link["data-resource-id"] = resource_id
-                                        summary_link["type"] = mime_type_string
+                                        if mime_type_string:
+                                            summary_link["type"] = mime_type_string
 
                                         # Create PDF preview container
                                         pdf_container = soup.new_tag(
                                             "div",
                                             **{
                                                 "class": "pdfjs_preview",
-                                                "data-src": f":/{resource_id}"
-                                            }
+                                                "data-src": f":/{resource_id}",
+                                            },
                                         )
                                         placeholder = soup.new_tag(
-                                            "div",
-                                            **{"class": "placeholder"}
+                                            "div", **{"class": "placeholder"}
                                         )
                                         placeholder.string = "Loading PDF preview..."
                                         pdf_container.append(placeholder)
