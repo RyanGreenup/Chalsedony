@@ -9,7 +9,6 @@ from typing import Dict, List, Optional, Tuple
 from db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
 
 
-# AI: THe resource Type is defined here
 class ResourceType(Enum):
     """Enum representing different types of resources that can be embedded in HTML"""
 
@@ -780,7 +779,6 @@ class NoteModel(QObject):
         return None
 
 
-    # AI: THis method returns the mime type
     def get_resource_mime_type(
         self, resource_id: str
     ) -> Tuple[str | None, ResourceType]:
@@ -803,7 +801,6 @@ class NoteModel(QObject):
         mime_type, _ = mimetypes.guess_type(str(path))
         mime_type = mime_type or "application/octet-stream"
 
-        # AI: The return type is a string and a ResourceType
         # Determine resource type based on MIME type
         match mime_type.split("/")[0], mime_type:
             case ("image", _):

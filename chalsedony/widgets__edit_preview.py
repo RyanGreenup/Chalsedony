@@ -278,7 +278,24 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                     case IdTable.RESOURCE:
                         print("Clicked a link to a resource ({resource_id})")
                         match self.note_model.get_resource_mime_type(resource_id):
-                            # Finish this match statement by checking the ResourceType (we don't care aobut the string) AI!
+                            case (_, ResourceType.IMAGE):
+                                # For images, redirect to the file directly
+                                if filepath := self.note_model.get_resource_path(resource_id):
+                                    info.redirect(QUrl(f"file://{filepath}"))
+                                    return
+                            case (_, ResourceType.VIDEO):
+                                # For videos, redirect to the file directly
+                                if filepath := self.note_model.get_resource_path(resource_id):
+                                    info.redirect(QUrl(f"file://{filepath}"))
+                                    return
+                            case (_, ResourceType.AUDIO):
+                                # For audio, redirect to the file directly
+                                if filepath := self.note_model.get_resource_path(resource_id):
+                                    info.redirect(QUrl(f"file://{filepath}"))
+                                    return
+                            case _:
+                                # For other resource types, block the request
+                                info.block(True)
 
 
 class NoteLinkPage(QWebEnginePage):
