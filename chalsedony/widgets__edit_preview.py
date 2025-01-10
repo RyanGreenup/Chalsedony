@@ -117,6 +117,7 @@ class EditPreview(QWidget):
     def _apply_html_template(self, html: str) -> str:
         # Replace image URLs to use note: scheme
         html = html.replace('src=":', 'src="note:/')
+        print(html)
         # Allow direct file:// URLs to pass through
         css_includes = self._get_css_resources()
         return f"""<!DOCTYPE html>
@@ -333,6 +334,7 @@ class NoteLinkPage(QWebEnginePage):
         if url.scheme() == "note":
             id = url.path().strip("/")
             if (id_type := self.note_model.what_is_this(id)) is not None:
+                # AI: Here is an example of a match case statement
                 match id_type:
                     case IdTable.NOTE:
                         note_id = id
@@ -386,6 +388,19 @@ class NoteLinkPage(QWebEnginePage):
 
     def requestedUrl(self) -> QUrl:
         return QUrl("note://")
+
+    # AI!
+    # Write a method that rewrites html links based on the type of the target, links will be of the form:
+    #
+    # <a href=":/{id}">{title}</a>
+    #
+    # for example:
+    #
+    # <a href=":/00062b3d306bac56744eb39da620c744">My Note</a>
+    #
+    # We can handle the rewrite logic later, for now just layout the logic to rewrite the links into arbitrary html.
+
+
 
 
 class WebPreview(QWebEngineView):
