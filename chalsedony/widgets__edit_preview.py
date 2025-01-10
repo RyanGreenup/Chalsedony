@@ -26,6 +26,9 @@ import markdown
 
 from db_api import IdTable
 from note_model import NoteModel, ResourceType
+
+import subprocess
+import platform
 import static_resources_rc  # pyright: ignore # noqa
 import katex_resources_rc  # pyright: ignore   # noqa
 import katex_fonts_rc  # pyright: ignore # noqa
@@ -258,6 +261,7 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
     - Handles note and folder links appropriately
     - Uses the NoteModel to resolve resource IDs to actual file paths
     """
+
     def __init__(self, note_model: NoteModel) -> None:
         super().__init__()
         self.note_model = note_model
@@ -283,11 +287,15 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
             if table := self.note_model.what_is_this(resource_id):
                 match table:
                     case IdTable.NOTE:
-                        print(f"Request is a note: {resource_id}, this isn't handled yet, in the future it may transclude the note")
+                        print(
+                            f"Request is a note: {resource_id}, this isn't handled yet, in the future it may transclude the note"
+                        )
                         note_id = resource_id
                         _ = note_id
                     case IdTable.FOLDER:
-                        print(f"Request is a folder: {resource_id}, this isn't handled yet, in the future it may include a list of the folder contents ")
+                        print(
+                            f"Request is a folder: {resource_id}, this isn't handled yet, in the future it may include a list of the folder contents "
+                        )
                         folder_id = resource_id
                         _ = folder_id
                     case IdTable.RESOURCE:
@@ -295,8 +303,10 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                             # Allow direct access to resource files
                             url = QUrl.fromLocalFile(str(filepath))
                             print(f"---> Redirecting to resource file: {url}")
-                            if str(filepath).endswith(('.mp4')):
-                                print("Proprietary video file, this may not display correctly, try converting to webm")
+                            if str(filepath).endswith((".mp4")):
+                                print(
+                                    "Proprietary video file, this may not display correctly, try converting to webm"
+                                )
                             info.redirect(url)
                             return
                     case _:
@@ -338,13 +348,16 @@ class NoteLinkPage(QWebEnginePage):
                         def try_open(resource_path: Path | None) -> None:
                             if resource_path is not None:
                                 from PySide6.QtWidgets import QApplication
+
                                 clipboard = QApplication.clipboard()
                                 clipboard.setText(str(resource_path))
                                 open_file(resource_path)
                             else:
                                 print(f"Resource ID: {resource_id} does not exist")
 
-                        match self.note_model.get_resource_mime_type(resource_id)[1]:  # Get just the ResourceType
+                        match self.note_model.get_resource_mime_type(resource_id)[
+                            1
+                        ]:  # Get just the ResourceType
                             case ResourceType.IMAGE:
                                 print(f"Image resource clicked: {resource_id}")
                                 try_open(resource_path)
@@ -363,7 +376,9 @@ class NoteLinkPage(QWebEnginePage):
 
             else:
                 # This would depend if we can safely create a new note with the ID, not sure on the impact of changing note ids
-                print(f"Note ID: {id} does not exist, in the future this may create a new note with that ID")
+                print(
+                    f"Note ID: {id} does not exist, in the future this may create a new note with that ID"
+                )
             return False  # Prevent default navigation
 
         # Allow normal navigation for other links
@@ -376,20 +391,16 @@ class NoteLinkPage(QWebEnginePage):
 class WebPreview(QWebEngineView):
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setPage(NoteLinkPage(parent=self, note_model = note_model))
-
-
-import subprocess
-import platform
+        self.setPage(NoteLinkPage(parent=self, note_model=note_model))
 
 
 def open_file(file_path: Path | str) -> None:
     if isinstance(file_path, Path):
         file_path = str(file_path)
     """Open a file with the system's default application"""
-    if platform.system() == 'Windows':
-        os.startfile(file_path)  # pyright:ignore
-    elif platform.system() == 'Darwin':  # macOS
-        subprocess.run(['open', file_path])
+    if platform.system() == "Windows":
+        os.startfile(file_path)  # type:ignore [attr-defined]
+    elif platform.system() == "Darwin":  # macOS
+        subprocess.run(["open", file_path])
     else:  # Linux and other Unix systems
-        subprocess.run(['xdg-open', file_path])
+        subprocess.run(["xdg-open", file_path])

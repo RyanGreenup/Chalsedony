@@ -778,7 +778,6 @@ class NoteModel(QObject):
 
         return None
 
-
     def get_resource_mime_type(
         self, resource_id: str
     ) -> Tuple[str | None, ResourceType]:
