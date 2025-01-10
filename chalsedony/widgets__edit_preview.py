@@ -530,6 +530,7 @@ class WebPreview(QWebEngineView):
                                         )
                                     case ResourceType.AUDIO:
                                         link["href"] = f"note://{resource_id}"
+                                        # Implement Audio in a similar way to Video, by adding a link wrapping in details and allowing the user to play it AI!
                                     case ResourceType.DOCUMENT:
                                         link["href"] = f"note://{resource_id}"
                                     case ResourceType.ARCHIVE:
