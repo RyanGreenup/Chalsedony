@@ -305,14 +305,19 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                                         info.block(True)
                                         return
                                     
-                                    # Set proper MIME type for video
+                                    # Get MIME type and extension
                                     mime_type, _ = self.note_model.get_resource_mime_type(resource_id)
-                                    info.setHttpHeader(b"Content-Type", mime_type.encode())
+                                    extension = filepath.suffix.lower()
                                     
-                                    # Redirect to the file
-                                    redirect_path = f"file://{filepath}"
+                                    # Set proper headers
+                                    info.setHttpHeader(b"Content-Type", mime_type.encode())
+                                    info.setHttpHeader(b"Accept-Ranges", b"bytes")
+                                    info.setHttpHeader(b"Cache-Control", b"max-age=3600")
+                                    
+                                    # Redirect to the file with proper URL encoding
+                                    redirect_path = QUrl.fromLocalFile(str(filepath)).toString()
                                     info.redirect(QUrl(redirect_path))
-                                    print(f"Redirecting video to: {redirect_path}")
+                                    print(f"Redirecting video to: {redirect_path} with type: {mime_type}")
                                     return
                             case (_, ResourceType.AUDIO):
                                 # For audio, redirect to the file directly
