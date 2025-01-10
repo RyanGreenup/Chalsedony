@@ -25,7 +25,7 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 import markdown
 
 from db_api import IdTable
-from note_model import NoteModel
+from note_model import NoteModel, ResourceType
 import static_resources_rc  # pyright: ignore # noqa
 import katex_resources_rc  # pyright: ignore   # noqa
 import katex_fonts_rc  # pyright: ignore # noqa
@@ -251,6 +251,7 @@ class MDTextEdit(QTextEdit):
 # handling all that with signals won't be ideal
 # Also need to handle note selection with signals for backlinks etc.
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
+    # Write a docstring describing what this does in the context of the application (i.e. letting us see images etc.) AI!
     def __init__(self, note_model: NoteModel) -> None:
         super().__init__()
         self.note_model = note_model
