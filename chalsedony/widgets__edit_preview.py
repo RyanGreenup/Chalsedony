@@ -117,6 +117,7 @@ class EditPreview(QWidget):
     def _apply_html_template(self, html: str) -> str:
         # Replace image URLs to use note: scheme
         html = html.replace('src=":', 'src="note:/')
+        html = self.preview.rewrite_html_links(html)
         print(html)
         # Allow direct file:// URLs to pass through
         css_includes = self._get_css_resources()
@@ -388,90 +389,111 @@ class NoteLinkPage(QWebEnginePage):
     def requestedUrl(self) -> QUrl:
         return QUrl("note://")
 
-    def rewrite_html_links(self, html: str) -> str:
-        """Rewrite HTML links to use the note:// scheme based on their target type.
-        
-        Args:
-            html: The input HTML containing links in the format <a href=":/{id}">{title}</a>
-            
-        Returns:
-            HTML with rewritten links using appropriate schemes based on target type
-        """
-        from bs4 import BeautifulSoup
-        
-        soup = BeautifulSoup(html, 'html.parser')
-        
-        for link in soup.find_all('a', href=True):
-            href = link['href']
-            if href.startswith(':/'):
-                resource_id = href[2:]  # Remove the :/ prefix
-                if (id_type := self.note_model.what_is_this(resource_id)) is not None:
-                    match id_type:
-                        case IdTable.NOTE:
-                            link['href'] = f'note://{resource_id}'
-                        case IdTable.FOLDER:
-                            link['href'] = f'note://{resource_id}'
-                        case IdTable.RESOURCE:
-                            if filepath := self.note_model.get_resource_path(resource_id):
-                                # Handle different resource types appropriately
-                                mime_type = self.note_model.get_resource_mime_type(resource_id)[1]
-                                match mime_type:
-                                    case ResourceType.IMAGE:
-                                        link['href'] = f'note://{resource_id}'
-                                    case ResourceType.VIDEO:
-                                        # Get the link text and title
-                                        link_text = link.string or "Video"
-                                        title = link.get('title', '')
-                                        mime_type_string = self.note_model.get_resource_mime_type(resource_id)[0]
-                                        
-                                        # Create new video element
-                                        video_tag = soup.new_tag('video', 
-                                            **{'class': 'media-player media-video', 
-                                               'controls': ''})
-                                        source_tag = soup.new_tag('source', 
-                                            src=f':/{resource_id}',
-                                            type=f'video/{mime_type_string}')
-                                        video_tag.append(source_tag)
-                                        
-                                        # Create new paragraph container
-                                        p_tag = soup.new_tag('p', 
-                                            **{'class': 'maps-to-line',
-                                               'source-line': '123',
-                                               'source-line-end': '124'})
-                                        
-                                        # Update the original link attributes
-                                        link['data-from-md'] = ''
-                                        link['data-resource-id'] = resource_id
-                                        link['title'] = title
-                                        link['type'] = f'video/{mime_type_string}'
-                                        link['href'] = resource_id
-                                        
-                                        # Build the new structure
-                                        p_tag.append(link)
-                                        p_tag.append(video_tag)
-                                        
-                                        # Replace the original link with the new structure
-                                        link.replace_with(p_tag)
-                                    case ResourceType.AUDIO:
-                                        link['href'] = f'note://{resource_id}'
-                                    case ResourceType.DOCUMENT:
-                                        link['href'] = f'note://{resource_id}'
-                                    case ResourceType.ARCHIVE:
-                                        link['href'] = f'note://{resource_id}'
-                                    case ResourceType.CODE:
-                                        link['href'] = f'note://{resource_id}'
-                                    case ResourceType.OTHER:
-                                        link['href'] = f'note://{resource_id}'
-        
-        return str(soup)
-
-
-
 
 class WebPreview(QWebEngineView):
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setPage(NoteLinkPage(parent=self, note_model=note_model))
+        self.note_model = note_model
+
+    def rewrite_html_links(self, html: str) -> str:
+        """Rewrite HTML links to use the note:// scheme based on their target type.
+
+        Args:
+            html: The input HTML containing links in the format <a href=":/{id}">{title}</a>
+
+        Returns:
+            HTML with rewritten links using appropriate schemes based on target type
+        """
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html, "html.parser")
+
+        for link in soup.find_all("a", href=True):
+            href = link["href"]
+            if href.startswith(":/"):
+                resource_id = href[2:]  # Remove the :/ prefix
+                if (id_type := self.note_model.what_is_this(resource_id)) is not None:
+                    match id_type:
+                        case IdTable.NOTE:
+                            link["href"] = f"note://{resource_id}"
+                        case IdTable.FOLDER:
+                            link["href"] = f"note://{resource_id}"
+                        case IdTable.RESOURCE:
+                            if filepath := self.note_model.get_resource_path(
+                                resource_id
+                            ):
+                                # Filepath isn't used, but it may be useful in the future
+                                _ = filepath
+                                # Handle different resource types appropriately
+                                mime_type = self.note_model.get_resource_mime_type(
+                                    resource_id
+                                )[1]
+                                match mime_type:
+                                    case ResourceType.IMAGE:
+                                        link["href"] = f"note://{resource_id}"
+                                    case ResourceType.VIDEO:
+                                        # Get the link text and title
+                                        link_text = link.string or "Video"
+                                        # TODO the link_text should be preserved
+                                        _ = link_text
+                                        title = link.get("title", "")
+                                        mime_type_string = (
+                                            self.note_model.get_resource_mime_type(
+                                                resource_id
+                                            )[0]
+                                        )
+
+                                        # Create new video element
+                                        video_tag = soup.new_tag(
+                                            "video",
+                                            **{
+                                                "class": "media-player media-video",
+                                                "controls": "",
+                                            },
+                                        )
+                                        source_tag = soup.new_tag(
+                                            "source",
+                                            src=f":/{resource_id}",
+                                            type=f"video/{mime_type_string}",
+                                        )
+                                        video_tag.append(source_tag)
+
+                                        # Create new paragraph container
+                                        p_tag = soup.new_tag(
+                                            "p",
+                                            **{
+                                                "class": "maps-to-line",
+                                                "source-line": "123",
+                                                "source-line-end": "124",
+                                            },
+                                        )
+
+                                        # Update the original link attributes
+                                        link["data-from-md"] = ""
+                                        link["data-resource-id"] = resource_id
+                                        link["title"] = title
+                                        link["type"] = f"video/{mime_type_string}"
+                                        link["href"] = resource_id
+
+                                        # Build the new structure
+                                        p_tag.append(link)
+                                        p_tag.append(video_tag)
+
+                                        # Replace the original link with the new structure
+                                        link.replace_with(p_tag)
+                                    case ResourceType.AUDIO:
+                                        link["href"] = f"note://{resource_id}"
+                                    case ResourceType.DOCUMENT:
+                                        link["href"] = f"note://{resource_id}"
+                                    case ResourceType.ARCHIVE:
+                                        link["href"] = f"note://{resource_id}"
+                                    case ResourceType.CODE:
+                                        link["href"] = f"note://{resource_id}"
+                                    case ResourceType.OTHER:
+                                        link["href"] = f"note://{resource_id}"
+
+        return str(soup)
 
 
 def open_file(file_path: Path | str) -> None:
