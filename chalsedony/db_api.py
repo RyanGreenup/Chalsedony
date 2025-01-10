@@ -92,7 +92,6 @@ class TreeItemData(NamedTuple):
     id: str
 
 
-# AI: The resource model is defined here
 class Resource(BaseModel):
     """Model representing a resource/asset in the database"""
 
