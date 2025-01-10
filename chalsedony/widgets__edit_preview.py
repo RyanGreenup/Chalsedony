@@ -245,6 +245,7 @@ class MDTextEdit(QTextEdit):
 # Consider using signals instead of talking to the model directly? Not sure on that
 # This will need the model anyway, it needs to get the resource_type to handle the link (e.g. open vs display image etc.)
 # handling all that with signals won't be ideal
+# Also need to handle note selection with signals for backlinks etc.
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
     def __init__(self, asset_dir: Path) -> None:
         super().__init__()
