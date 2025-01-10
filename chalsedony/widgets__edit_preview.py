@@ -157,10 +157,6 @@ class EditPreview(QWidget):
             <script src="qrc:/katex/katex.min.js"></script>
             <script src="qrc:/katex/contrib/auto-render.min.js"></script>
             <script src="qrc:/katex/config.js"></script>
-            <script>
-                // Configure PDF.js before loading
-                pdfjsLib.GlobalWorkerOptions.workerSrc = 'qrc:/js/pdfjs.worker.js';
-            </script>
             <script src="qrc:/js/pdfjs.js"></script>
             <script src="qrc:/js/my_pdfjs_init.js"></script>
             <script src="qrc:/js/asciinema-player.min.js"></script>

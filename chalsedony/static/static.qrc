@@ -14,8 +14,8 @@
         <file>js/theme-controller.js</file>
         <file>js/wait_for_css.js</file>
         <file>js/pdfjs.js</file>
-        <file>js/pdfjs.worker.js</file>
         <file>js/my_pdfjs_init.js</file>
+        <file>js/pdfjs.worker.js</file>
         <file>js/dataTables.js</file>
         <file>js/datatables_init.js</file>
     </qresource>
