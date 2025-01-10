@@ -4,7 +4,12 @@ from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QSplitter,
+    QInputDialog,
 )
+from PySide6.QtGui import QImage
+from PySide6.QtCore import Signal
+import tempfile
+import os
 from PySide6.QtWebEngineCore import (
     QWebEngineUrlScheme,
     QWebEnginePage,
@@ -288,14 +293,36 @@ class EditPreview(QWidget):
 
 
 class MDTextEdit(QTextEdit):
+    # Signal emitted when an image is pasted: (filepath, title)
+    imageUploadRequested = Signal(str, str)
+    
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         # Enable rich text paste handling
         self.setAcceptRichText(True)
+        # Create a persistent temp directory for pasted images
+        self.temp_dir = tempfile.mkdtemp(prefix='chalsedony_')
 
     def insertFromMimeData(self, source: QMimeData) -> None:
         """Handle paste events and transform HTML content using markdownify"""
-        if source.hasHtml():
+        if source.hasImage():
+            image = QImage(source.imageData())
+            if not image.isNull():
+                # Prompt for image title
+                title, ok = QInputDialog.getText(
+                    self,
+                    "Image Title",
+                    "Enter a title for the pasted image:"
+                )
+                if ok and title:
+                    # Save image to temp file
+                    temp_path = os.path.join(self.temp_dir, f"pasted_image_{id(image)}.png")
+                    image.save(temp_path, "PNG")
+                    # Emit signal for upload
+                    self.imageUploadRequested.emit(temp_path, title)
+                return
+                
+        elif source.hasHtml():
             # Get the HTML content
             html = source.html()
 
