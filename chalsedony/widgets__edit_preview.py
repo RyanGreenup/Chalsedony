@@ -357,6 +357,7 @@ class NoteLinkPage(QWebEnginePage):
                             else:
                                 print(f"Resource ID: {resource_id} does not exist")
 
+                        # AI: Here is an example of how to match mime types
                         match self.note_model.get_resource_mime_type(resource_id)[
                             1
                         ]:  # Get just the ResourceType
@@ -414,6 +415,8 @@ class NoteLinkPage(QWebEnginePage):
                             link['href'] = f'note://{resource_id}'
                         case IdTable.RESOURCE:
                             if filepath := self.note_model.get_resource_path(resource_id):
+
+                                # Improve this to match the mime types AI!
                                 link['href'] = f'note://{resource_id}'
         
         return str(soup)
