@@ -158,6 +158,7 @@ class EditPreview(QWidget):
                 "fenced_code",
                 "tables",
                 "footnotes",
+                "pymdownx.tasklist",
             ]
         )
 
