@@ -179,6 +179,8 @@ class EditPreview(QWidget):
                 "md_in_html",
                 "pymdownx.blocks.admonition",
                 "pymdownx.blocks.tab",
+                "pymdownx.superfences",
+                "'pymdownx.highlight'",
             ]
         )
 
