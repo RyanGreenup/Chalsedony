@@ -269,7 +269,7 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
 
     def interceptRequest(self, info: QWebEngineUrlRequestInfo) -> None:
         url = info.requestUrl()
-        
+
         # Handle local file URLs
         if url.scheme() == "file":
             file_path = url.toLocalFile()
@@ -279,7 +279,7 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
             else:
                 info.block(True)
                 return
-                
+
         # Handle note:// URLs
         if url.scheme() == "note":
             resource_id = url.toString().replace("note://", "")
@@ -296,7 +296,9 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                     case IdTable.RESOURCE:
                         if filepath := self.note_model.get_resource_path(resource_id):
                             # Allow direct access to resource files
-                            info.redirect(QUrl.fromLocalFile(str(filepath)))
+                            url = QUrl.fromLocalFile(str(filepath))
+                            print(f"---> Redirecting to resource file: {url}")
+                            info.redirect(url)
                             return
                     case _:
                         info.block(True)
