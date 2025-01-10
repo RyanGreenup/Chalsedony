@@ -432,7 +432,7 @@ class WebPreview(QWebEngineView):
                                 match mime_type:
                                     case ResourceType.IMAGE:
                                         link["href"] = f"note://{resource_id}"
-                                    # Insert the SVG_VIDEO icon, this is just a string, simply put it in the correct location
+                                    # Insert the SVG_VIDEO icon, this is just a string, simply put it in the correct location AI!
                                     case ResourceType.VIDEO:
                                         # Get the link text and title
                                         link_text = link.string or "Video"
