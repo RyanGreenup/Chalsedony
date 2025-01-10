@@ -569,11 +569,12 @@ class WebPreview(QWebEngineView):
                                                 soup, summary_link, audio_tag
                                             )
                                         )
+                                    case ResourceType.CODE:
+                                        # Implement code by using a code block, create a link and wrap in details similar to Video and pdf AI!
+                                        link["href"] = f"note://{resource_id}"
                                     case ResourceType.DOCUMENT:
                                         link["href"] = f"note://{resource_id}"
                                     case ResourceType.ARCHIVE:
-                                        link["href"] = f"note://{resource_id}"
-                                    case ResourceType.CODE:
                                         link["href"] = f"note://{resource_id}"
                                     case ResourceType.OTHER:
                                         link["href"] = f"note://{resource_id}"
