@@ -5,7 +5,6 @@
         <file>js/auto-render.min.js</file>
         <file>js/controllers</file>
         <file>js/csrf-helper.js</file>
-        <file>js/dataTables.js</file>
         <file>js/jquery.min.js</file>
         <file>js/katex.min.js</file>
         <file>js/keyboard-shortcuts.js</file>
@@ -14,6 +13,10 @@
         <file>js/tags-dnd.js</file>
         <file>js/theme-controller.js</file>
         <file>js/wait_for_css.js</file>
+        <file>js/pdfjs.js</file>
+        <file>js/my_pdfjs_init.js</file>
+        <file>js/dataTables.js</file>
+        <file>js/datatables_init.js</file>
     </qresource>
     <qresource prefix="/">
         <file>css/fonts.css</file>
@@ -38,6 +41,7 @@
         <file>css/tailwind.css</file>
         <file>css/code.css</file>
         <file>css/tasklist.css</file>
+        <file>css/my_pdfjs_styling.css</file>
     </qresource>
 </RCC>
 

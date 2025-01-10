@@ -118,7 +118,6 @@ class EditPreview(QWidget):
         # Replace image URLs to use note: scheme
         html = self.preview.rewrite_html_links(html)
         html = html.replace('src=":', 'src="note:/')
-        print(html)
         # Allow direct file:// URLs to pass through
         css_includes = self._get_css_resources()
         return f"""<!DOCTYPE html>
@@ -127,6 +126,12 @@ class EditPreview(QWidget):
             <meta charset="utf-8">
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
             <link rel="stylesheet" href="qrc:/katex/katex.min.css">
+            <script src="qrc:/js/jquery.min.js"></script>
+            <script src="qrc:/js/dataTables.js"></script>
+            <script src="qrc:/js/pdfjs.js"></script>
+            <script src="qrc:/js/datatables_init.js"></script>
+
+
             {css_includes}
             <style>
                 body {{
@@ -152,6 +157,8 @@ class EditPreview(QWidget):
             <script src="qrc:/katex/katex.min.js"></script>
             <script src="qrc:/katex/contrib/auto-render.min.js"></script>
             <script src="qrc:/katex/config.js"></script>
+            <script src="qrc:/js/my_pdfjs_init.js"></script>
+            <script src="qrc:/js/asciinema-player.min.js"></script>
         </body>
         </html>
         """
@@ -167,12 +174,16 @@ class EditPreview(QWidget):
                 "tables",
                 "footnotes",
                 "pymdownx.tasklist",
+                # Allow md in html
+                "md_in_html",
             ]
         )
 
         html = md.convert(self.editor.toPlainText())
         # Use note:// as base URL so relative paths are resolved correctly
-        self.preview.setHtml(self._apply_html_template(html), QUrl("note://"))
+        html = self._apply_html_template(html)
+        print(html)
+        self.preview.setHtml(html, QUrl("note://"))
 
     def _get_editor_width(self) -> float:
         return float(self.editor.width())
