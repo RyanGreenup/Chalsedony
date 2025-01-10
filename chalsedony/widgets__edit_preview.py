@@ -251,7 +251,18 @@ class MDTextEdit(QTextEdit):
 # handling all that with signals won't be ideal
 # Also need to handle note selection with signals for backlinks etc.
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
-    # Write a docstring describing what this does in the context of the application (i.e. letting us see images etc.) AI!
+    """Intercepts and handles resource requests in the markdown preview.
+
+    This class processes requests for resources referenced in markdown content,
+    such as images, videos, and audio files. It handles the special 'note://'
+    scheme used to reference resources within the application's note system.
+
+    The interceptor:
+    - Redirects image/video/audio requests to their actual file paths
+    - Blocks requests for unsupported resource types
+    - Handles note and folder links appropriately
+    - Uses the NoteModel to resolve resource IDs to actual file paths
+    """
     def __init__(self, note_model: NoteModel) -> None:
         super().__init__()
         self.note_model = note_model
