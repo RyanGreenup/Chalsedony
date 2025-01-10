@@ -597,10 +597,15 @@ class WebPreview(QWebEngineView):
                                                 "data-src": f":/{resource_id}",
                                             },
                                         )
+                                        # TODO syntax highlighting isn't working, fix this
                                         # Get file extension for syntax highlighting
-                                        filepath = self.note_model.get_resource_path(resource_id)
+                                        filepath = self.note_model.get_resource_path(
+                                            resource_id
+                                        )
                                         ext = filepath.suffix[1:] if filepath else None
-                                        lang_class = get_language_class(ext) if ext else None
+                                        lang_class = (
+                                            get_language_class(ext) if ext else None
+                                        )
 
                                         code_tag = soup.new_tag("code")
                                         if lang_class:
@@ -608,15 +613,23 @@ class WebPreview(QWebEngineView):
 
                                         if filepath:
                                             try:
-                                                with open(filepath, 'r', encoding='utf-8') as f:
+                                                with open(
+                                                    filepath, "r", encoding="utf-8"
+                                                ) as f:
                                                     code_content = f.read()
                                                 code_tag.string = code_content
                                             except Exception as e:
-                                                error_div = soup.new_tag("div", **{"class": "error"})
-                                                error_div.string = f"Error loading code: {str(e)}"
+                                                error_div = soup.new_tag(
+                                                    "div", **{"class": "error"}
+                                                )
+                                                error_div.string = (
+                                                    f"Error loading code: {str(e)}"
+                                                )
                                                 code_tag.append(error_div)
                                         else:
-                                            error_div = soup.new_tag("div", **{"class": "error"})
+                                            error_div = soup.new_tag(
+                                                "div", **{"class": "error"}
+                                            )
                                             error_div.string = "Code file not found"
                                             code_tag.append(error_div)
 
