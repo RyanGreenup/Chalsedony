@@ -476,8 +476,14 @@ class WebPreview(QWebEngineView):
                                         link["type"] = f"video/{mime_type_string}"
                                         link["href"] = resource_id
 
-                                        # Build the new structure
-                                        p_tag.append(link)
+                                        # Create a copy of the link to preserve original
+                                        link_copy = soup.new_tag('a')
+                                        link_copy.string = link.string
+                                        link_copy['href'] = link['href']
+                                        link_copy['title'] = link.get('title', '')
+                                        
+                                        # Build the new structure with the copy
+                                        p_tag.append(link_copy)
                                         p_tag.append(video_tag)
 
                                         # Replace the original link with the new structure
