@@ -298,9 +298,10 @@ class MDTextEdit(QTextEdit):
         if source.hasHtml():
             # Get the HTML content
             html = source.html()
-            
+
             try:
                 from markdownify import markdownify as md
+
                 # Convert HTML to markdown
                 markdown_text = md(
                     html,
@@ -313,13 +314,14 @@ class MDTextEdit(QTextEdit):
                     keep_inline_images_in=["img"],  # Keep image tags
                     wrap_width=0,  # Don't wrap text
                 )
-                
+
                 # Insert the transformed text
                 self.insertPlainText(markdown_text)
             except ImportError:
                 # Fallback to plain text if markdownify not available
                 from bs4 import BeautifulSoup
-                soup = BeautifulSoup(html, 'html.parser')
+
+                soup = BeautifulSoup(html, "html.parser")
                 self.insertPlainText(soup.get_text())
         else:
             # Fall back to default behavior for non-HTML content

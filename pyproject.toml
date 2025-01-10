@@ -16,6 +16,7 @@ pymdown-extensions = "^10.14"
 mimetype = "^0.1.5"
 markdown = "^3.7"
 pygments = "^2.19.1"
+markdownify = "^0.14.1"
 
 
 [build-system]
