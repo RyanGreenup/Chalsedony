@@ -332,22 +332,33 @@ class NoteLinkPage(QWebEnginePage):
                         print(f"Folder link clicked! ID: {folder_id}")
                     case IdTable.RESOURCE:
                         resource_id = id
+                        resource_path = self.note_model.get_resource_path(resource_id)
                         print(f"Resource link clicked! ID: {resource_id}")
+
+                        def try_open(resource_path: Path | None) -> None:
+                            # Copy the resource_path to the  clipboard AI!
+
+                            if resource_path is not None:
+                                open_file(resource_path)
+                            else:
+                                print(f"Resource ID: {resource_id} does not exist")
+
                         match self.note_model.get_resource_mime_type(resource_id)[1]:  # Get just the ResourceType
                             case ResourceType.IMAGE:
                                 print(f"Image resource clicked: {resource_id}")
+                                try_open(resource_path)
                             case ResourceType.VIDEO:
-                                print(f"Video resource clicked: {resource_id}")
+                                try_open(resource_path)
                             case ResourceType.AUDIO:
-                                print(f"Audio resource clicked: {resource_id}")
+                                try_open(resource_path)
                             case ResourceType.DOCUMENT:
-                                print(f"Document resource clicked: {resource_id}")
+                                try_open(resource_path)
                             case ResourceType.ARCHIVE:
-                                print(f"Archive resource clicked: {resource_id}")
+                                try_open(resource_path)
                             case ResourceType.CODE:
-                                print(f"Code resource clicked: {resource_id}")
+                                try_open(resource_path)
                             case ResourceType.OTHER:
-                                print(f"Other resource clicked: {resource_id}")
+                                try_open(resource_path)
 
             else:
                 # This would depend if we can safely create a new note with the ID, not sure on the impact of changing note ids
@@ -371,10 +382,12 @@ import subprocess
 import platform
 
 
-def open_file(file_path):
+def open_file(file_path: Path | str) -> None:
+    if isinstance(file_path, Path):
+        file_path = str(file_path)
     """Open a file with the system's default application"""
     if platform.system() == 'Windows':
-        os.startfile(file_path)
+        os.startfile(file_path)  # pyright:ignore
     elif platform.system() == 'Darwin':  # macOS
         subprocess.run(['open', file_path])
     else:  # Linux and other Unix systems
