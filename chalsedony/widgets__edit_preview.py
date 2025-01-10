@@ -175,9 +175,9 @@ class EditPreview(QWidget):
             "pymdownx.superfences": {
                 "custom_fences": [
                     {
-                        'name': 'mermaid',
-                        'class': 'mermaid',
-                        'format': pymdownx.superfences.fence_div_format
+                        "name": "mermaid",
+                        "class": "mermaid",
+                        "format": pymdownx.superfences.fence_div_format,
                     }
                 ]
             }
@@ -196,7 +196,7 @@ class EditPreview(QWidget):
                 "pymdownx.superfences",
                 "pymdownx.highlight",
             ],
-            extension_configs=extension_configs
+            extension_configs=extension_configs,
         )
 
         html = md.convert(self.editor.toPlainText())
