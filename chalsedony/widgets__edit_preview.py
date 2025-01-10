@@ -161,6 +161,7 @@ class EditPreview(QWidget):
             <script src="qrc:/js/pdfjs.js"></script>
             <script src="qrc:/js/my_pdfjs_init.js"></script>
             <script src="qrc:/js/asciinema-player.min.js"></script>
+            <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
         </body>
         </html>
         """
