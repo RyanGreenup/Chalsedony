@@ -20,6 +20,7 @@ from PySide6.QtCore import (
     QPropertyAnimation,
     QEasingCurve,
     QUrl,
+    QMimeData,
 )
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from bs4 import BeautifulSoup, Tag
@@ -289,6 +290,53 @@ class EditPreview(QWidget):
 class MDTextEdit(QTextEdit):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        # Enable rich text paste handling
+        self.setAcceptRichText(True)
+
+    def insertFromMimeData(self, source: QMimeData) -> None:
+        """Handle paste events and transform HTML content"""
+        if source.hasHtml():
+            # Get the HTML content
+            html = source.html()
+            
+            # Convert HTML to plain text with basic formatting
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html, 'html.parser')
+            
+            # Transform specific HTML elements
+            for element in soup.find_all(['b', 'strong']):
+                element.replace_with(f'**{element.get_text()}**')
+                
+            for element in soup.find_all(['i', 'em']):
+                element.replace_with(f'*{element.get_text()}*')
+                
+            for element in soup.find_all('a'):
+                if element.get('href'):
+                    element.replace_with(f'[{element.get_text()}]({element["href"]})')
+                    
+            for element in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
+                level = int(element.name[1])
+                element.replace_with(f'\n{"#" * level} {element.get_text()}\n')
+                
+            for element in soup.find_all('code'):
+                element.replace_with(f'`{element.get_text()}`')
+                
+            for element in soup.find_all('pre'):
+                if element.code:
+                    lang = element.code.get('class', [''])[0].replace('language-', '')
+                    code_content = element.code.get_text()
+                    element.replace_with(f'\n```{lang}\n{code_content}\n```\n')
+                else:
+                    element.replace_with(f'\n```\n{element.get_text()}\n```\n')
+                    
+            # Convert remaining HTML to plain text
+            plain_text = soup.get_text()
+            
+            # Insert the transformed text
+            self.insertPlainText(plain_text)
+        else:
+            # Fall back to default behavior for non-HTML content
+            super().insertFromMimeData(source)
 
     def verticalScrollFraction(self) -> float:
         """Return the current vertical scroll position as a fraction (0-1)"""
