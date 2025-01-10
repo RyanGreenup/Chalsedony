@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple
 from db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
 
 
-# AI: This has been extended to include pdf files
+# AI: This has been extended to include HTML files
 class ResourceType(Enum):
     """Enum representing different types of resources that can be embedded in HTML"""
 
@@ -21,6 +21,7 @@ class ResourceType(Enum):
     CODE = "code"
     OTHER = "other"
     PDF = "pdf"  # Specifically for PDF files
+    HTML = "pdf"  # Specifically for HTML files
 
 
 class NoteModel(QObject):
@@ -803,6 +804,7 @@ class NoteModel(QObject):
         mime_type = mime_type or "application/octet-stream"
 
         # Determine resource type based on MIME type
+        # Extend this to match html files AI!
         match mime_type.split("/")[0], mime_type:
             case ("image", _):
                 return mime_type, ResourceType.IMAGE
