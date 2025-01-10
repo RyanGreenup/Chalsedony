@@ -413,13 +413,14 @@ class NoteLinkPage(QWebEnginePage):
                             link['href'] = f'note://{resource_id}'
                         case IdTable.RESOURCE:
                             if filepath := self.note_model.get_resource_path(resource_id):
-
                                 # Handle different resource types appropriately
                                 mime_type = self.note_model.get_resource_mime_type(resource_id)[1]
                                 match mime_type:
                                     case ResourceType.IMAGE:
                                         link['href'] = f'note://{resource_id}'
                                     case ResourceType.VIDEO:
+                                        # AI! Change the html from a link to this output:
+                                        # <p class="maps-to-line" source-line="123" source-line-end="124"> <a data-from-md="" data-resource-id="{resource_id}" title="{title}" type="video/{mime_type_string}" href="{resource_id}" >{link_text}</a > <video class="media-player media-video" controls=""> <source src=":/{resource_id}" type="video/mp4" /> </video> </p>
                                         link['href'] = f'note://{resource_id}'
                                     case ResourceType.AUDIO:
                                         link['href'] = f'note://{resource_id}'
