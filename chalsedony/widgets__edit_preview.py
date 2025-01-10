@@ -590,6 +590,7 @@ class WebPreview(QWebEngineView):
                                             summary_link["type"] = mime_type_string
 
                                         # Create code block container
+                                        # Read the text in with python directly AI!
                                         code_container = soup.new_tag(
                                             "pre",
                                             **{
