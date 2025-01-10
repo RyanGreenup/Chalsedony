@@ -299,10 +299,20 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                                 # For videos, redirect to the file directly
                                 print("Found a video")
                                 if filepath := self.note_model.get_resource_path(resource_id):
+                                    # Ensure the file exists
+                                    if not filepath.exists():
+                                        print(f"Video file not found: {filepath}")
+                                        info.block(True)
+                                        return
+                                    
+                                    # Set proper MIME type for video
+                                    mime_type, _ = self.note_model.get_resource_mime_type(resource_id)
+                                    info.setHttpHeader(b"Content-Type", mime_type.encode())
+                                    
+                                    # Redirect to the file
                                     redirect_path = f"file://{filepath}"
                                     info.redirect(QUrl(redirect_path))
-                                    print(f"The redirect is {redirect_path}")
-                                    print(f"which is located at {filepath}")
+                                    print(f"Redirecting video to: {redirect_path}")
                                     return
                             case (_, ResourceType.AUDIO):
                                 # For audio, redirect to the file directly
