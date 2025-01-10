@@ -334,6 +334,21 @@ class NoteLinkPage(QWebEnginePage):
         # Handle the navigation request
         if url.scheme() == "note":
             id = url.path().strip("/")
+
+            print(f"-----------> Navigation request: {url}")
+            print(f"-----------> Navigation request: {url.path()}")
+            print(f"-----------> Navigation request: {url.path().strip('/')}")
+
+#             # AI! Here is the stdout
+#               -----------> Navigation request: PySide6.QtCore.QUrl('note://eb0c694b8f5d448ab76d3978a1aeddb3')
+#               -----------> Navigation request: 
+#               -----------> Navigation request: 
+#
+#                   It seems that the path removes everything when it should have extracted: 'eb0c694b8f5d448ab76d3978a1aeddb3'
+#                   Fix this so the ID can be extracted correctly
+
+
+
             if (id_type := self.note_model.what_is_this(id)) is not None:
                 match id_type:
                     case IdTable.NOTE:
