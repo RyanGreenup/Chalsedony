@@ -16,11 +16,11 @@ class ResourceType(Enum):
     IMAGE = "image"
     VIDEO = "video"
     AUDIO = "audio"
-    DOCUMENT = "document"
+    DOCUMENT = "document"  # For general documents like Word files
     ARCHIVE = "archive"
     CODE = "code"
     OTHER = "other"
-    PDF = "pdf"
+    PDF = "pdf"  # Specifically for PDF files
 
 
 class NoteModel(QObject):
@@ -803,7 +803,6 @@ class NoteModel(QObject):
         mime_type = mime_type or "application/octet-stream"
 
         # Determine resource type based on MIME type
-        # Improve this to match pdf files AI!
         match mime_type.split("/")[0], mime_type:
             case ("image", _):
                 return mime_type, ResourceType.IMAGE
@@ -811,10 +810,11 @@ class NoteModel(QObject):
                 return mime_type, ResourceType.VIDEO
             case ("audio", _):
                 return mime_type, ResourceType.AUDIO
+            case (_, "application/pdf"):
+                return mime_type, ResourceType.PDF
             case (
                 _,
-                "application/pdf"
-                | "application/msword"
+                "application/msword"
                 | "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             ):
                 return mime_type, ResourceType.DOCUMENT
