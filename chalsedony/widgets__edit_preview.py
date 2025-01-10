@@ -173,7 +173,7 @@ class EditPreview(QWidget):
         """
         # Get current scroll position before updating
         scroll_fraction = self.editor.verticalScrollFraction()
-        
+
         # Convert markdown to HTML
         extension_configs = {
             "pymdownx.superfences": {
@@ -204,14 +204,23 @@ class EditPreview(QWidget):
         )
 
         html = md.convert(self.editor.toPlainText())
-        print(html)  # TODO DEV PRINT
         # Use note:// as base URL so relative paths are resolved correctly
         html = self._apply_html_template(html)
+
+        # Connect to load finished signal to ensure scroll happens after content loads
+        def restore_scroll(success: bool) -> None:
+            if success:
+                js = f"window.scrollTo(0, document.documentElement.scrollHeight * {scroll_fraction});"
+                self.preview.page().runJavaScript(js)
+
+        # Disconnect any previous connections to avoid multiple handlers
+        try:
+            self.preview.page().loadFinished.disconnect()
+        except Exception:
+            pass
+
+        self.preview.page().loadFinished.connect(restore_scroll)
         self.preview.setHtml(html, QUrl("note://"))
-        
-        # Restore scroll position after update
-        js = f"window.scrollTo(0, document.documentElement.scrollHeight * {scroll_fraction});"
-        self.preview.page().runJavaScript(js)
 
     def _get_editor_width(self) -> float:
         return float(self.editor.width())
