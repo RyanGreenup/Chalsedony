@@ -183,7 +183,6 @@ class EditPreview(QWidget):
         html = md.convert(self.editor.toPlainText())
         # Use note:// as base URL so relative paths are resolved correctly
         html = self._apply_html_template(html)
-        print(html)
         self.preview.setHtml(html, QUrl("note://"))
 
     def _get_editor_width(self) -> float:
@@ -339,6 +338,8 @@ class NoteLinkPage(QWebEnginePage):
         self, url: QUrl | str, type: QWebEnginePage.NavigationType, isMainFrame: bool
     ) -> bool:
         """Handle link clicks in the preview"""
+        _ = isMainFrame  # Unused
+        _ = type  # Unused
         # Handle string input
         if isinstance(url, str):
             url = QUrl(url)
