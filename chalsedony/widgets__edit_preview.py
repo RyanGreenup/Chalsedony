@@ -294,46 +294,33 @@ class MDTextEdit(QTextEdit):
         self.setAcceptRichText(True)
 
     def insertFromMimeData(self, source: QMimeData) -> None:
-        """Handle paste events and transform HTML content"""
+        """Handle paste events and transform HTML content using markdownify"""
         if source.hasHtml():
             # Get the HTML content
             html = source.html()
             
-            # Convert HTML to plain text with basic formatting
-            from bs4 import BeautifulSoup
-            soup = BeautifulSoup(html, 'html.parser')
-            
-            # Transform specific HTML elements
-            for element in soup.find_all(['b', 'strong']):
-                element.replace_with(f'**{element.get_text()}**')
+            try:
+                from markdownify import markdownify as md
+                # Convert HTML to markdown
+                markdown_text = md(
+                    html,
+                    heading_style="ATX",  # Use # for headings
+                    code_language="guess",  # Try to detect code language
+                    strip=["style", "script"],  # Remove unwanted tags
+                    autolinks=True,  # Convert URLs to links
+                    default_title=True,  # Use title attribute for links
+                    escape_underscores=False,  # Don't escape underscores
+                    keep_inline_images_in=["img"],  # Keep image tags
+                    wrap_width=0,  # Don't wrap text
+                )
                 
-            for element in soup.find_all(['i', 'em']):
-                element.replace_with(f'*{element.get_text()}*')
-                
-            for element in soup.find_all('a'):
-                if element.get('href'):
-                    element.replace_with(f'[{element.get_text()}]({element["href"]})')
-                    
-            for element in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
-                level = int(element.name[1])
-                element.replace_with(f'\n{"#" * level} {element.get_text()}\n')
-                
-            for element in soup.find_all('code'):
-                element.replace_with(f'`{element.get_text()}`')
-                
-            for element in soup.find_all('pre'):
-                if element.code:
-                    lang = element.code.get('class', [''])[0].replace('language-', '')
-                    code_content = element.code.get_text()
-                    element.replace_with(f'\n```{lang}\n{code_content}\n```\n')
-                else:
-                    element.replace_with(f'\n```\n{element.get_text()}\n```\n')
-                    
-            # Convert remaining HTML to plain text
-            plain_text = soup.get_text()
-            
-            # Insert the transformed text
-            self.insertPlainText(plain_text)
+                # Insert the transformed text
+                self.insertPlainText(markdown_text)
+            except ImportError:
+                # Fallback to plain text if markdownify not available
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(html, 'html.parser')
+                self.insertPlainText(soup.get_text())
         else:
             # Fall back to default behavior for non-HTML content
             super().insertFromMimeData(source)
