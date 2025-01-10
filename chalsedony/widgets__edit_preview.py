@@ -570,8 +570,47 @@ class WebPreview(QWebEngineView):
                                             )
                                         )
                                     case ResourceType.CODE:
-                                        # Implement code by using a code block, create a link and wrap in details similar to Video and pdf AI!
-                                        link["href"] = f"note://{resource_id}"
+                                        # Get the link text and title
+                                        link_text = link.string or "Code File"
+                                        title = link.get("title", "")
+                                        mime_type_string = (
+                                            self.note_model.get_resource_mime_type(
+                                                resource_id
+                                            )[0]
+                                        )
+
+                                        # Create the link for the summary
+                                        summary_link = soup.new_tag("a")
+                                        summary_link.string = link_text
+                                        summary_link["href"] = f"note://{resource_id}"
+                                        summary_link["title"] = title
+                                        summary_link["data-from-md"] = ""
+                                        summary_link["data-resource-id"] = resource_id
+                                        if mime_type_string:
+                                            summary_link["type"] = mime_type_string
+
+                                        # Create code block container
+                                        code_container = soup.new_tag(
+                                            "pre",
+                                            **{
+                                                "class": "code-block",
+                                                "data-src": f":/{resource_id}",
+                                            },
+                                        )
+                                        code_tag = soup.new_tag("code")
+                                        placeholder = soup.new_tag(
+                                            "div", **{"class": "placeholder"}
+                                        )
+                                        placeholder.string = "Loading code file..."
+                                        code_tag.append(placeholder)
+                                        code_container.append(code_tag)
+
+                                        # Replace the original link with the new structure
+                                        link.replace_with(
+                                            wrap_in_details(
+                                                soup, summary_link, code_container
+                                            )
+                                        )
                                     case ResourceType.DOCUMENT:
                                         link["href"] = f"note://{resource_id}"
                                     case ResourceType.ARCHIVE:
