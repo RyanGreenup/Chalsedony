@@ -298,6 +298,11 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                             # Allow direct access to resource files
                             url = QUrl.fromLocalFile(str(filepath))
                             print(f"---> Redirecting to resource file: {url}")
+                            
+                            # Set appropriate MIME type for video files
+                            if str(filepath).endswith(('.mp4', '.webm', '.ogg')):
+                                info.setHttpHeader(b"Content-Type", b"video/mp4")
+                            
                             info.redirect(url)
                             return
                     case _:
