@@ -169,7 +169,11 @@ class EditPreview(QWidget):
     def update_preview_local(self) -> None:
         """
         Converts the editor from markdown to HTML and sets the preview HTML content.
+        Preserves the current scroll position during updates.
         """
+        # Get current scroll position before updating
+        scroll_fraction = self.editor.verticalScrollFraction()
+        
         # Convert markdown to HTML
         extension_configs = {
             "pymdownx.superfences": {
@@ -204,6 +208,10 @@ class EditPreview(QWidget):
         # Use note:// as base URL so relative paths are resolved correctly
         html = self._apply_html_template(html)
         self.preview.setHtml(html, QUrl("note://"))
+        
+        # Restore scroll position after update
+        js = f"window.scrollTo(0, document.documentElement.scrollHeight * {scroll_fraction});"
+        self.preview.page().runJavaScript(js)
 
     def _get_editor_width(self) -> float:
         return float(self.editor.width())
