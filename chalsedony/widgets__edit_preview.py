@@ -597,17 +597,16 @@ class WebPreview(QWebEngineView):
                                                 "data-src": f":/{resource_id}",
                                             },
                                         )
+                                        # Get file extension for syntax highlighting
+                                        filepath = self.note_model.get_resource_path(resource_id)
+                                        ext = filepath.suffix[1:] if filepath else None
+                                        lang_class = get_language_class(ext) if ext else None
+
                                         code_tag = soup.new_tag("code")
+                                        if lang_class:
+                                            code_tag["class"] = lang_class
 
-                                        # AI! Read the code file content directly
-                                        # Make sure the included code is in html like this:
-                                        #     ```html
-                                        #     <pre><code class="language-python">
-                                        #     {code_content}
-                                        #     </code></pre>
-                                        #     ```
-
-                                        if filepath := self.note_model.get_resource_path(resource_id):
+                                        if filepath:
                                             try:
                                                 with open(filepath, 'r', encoding='utf-8') as f:
                                                     code_content = f.read()
@@ -639,7 +638,6 @@ class WebPreview(QWebEngineView):
         return str(soup)
 
 
-# AI: Using this class
 def get_language_class(ext: str) -> str | None:
     ext = ext.lower()
     lang_string = None
