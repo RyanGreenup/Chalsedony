@@ -598,8 +598,15 @@ class WebPreview(QWebEngineView):
                                             },
                                         )
                                         code_tag = soup.new_tag("code")
-                                        
-                                        # Read the code file content directly
+
+                                        # AI! Read the code file content directly
+                                        # Make sure the included code is in html like this:
+                                        #     ```html
+                                        #     <pre><code class="language-python">
+                                        #     {code_content}
+                                        #     </code></pre>
+                                        #     ```
+
                                         if filepath := self.note_model.get_resource_path(resource_id):
                                             try:
                                                 with open(filepath, 'r', encoding='utf-8') as f:
@@ -613,7 +620,7 @@ class WebPreview(QWebEngineView):
                                             error_div = soup.new_tag("div", **{"class": "error"})
                                             error_div.string = "Code file not found"
                                             code_tag.append(error_div)
-                                            
+
                                         code_container.append(code_tag)
 
                                         # Replace the original link with the new structure
@@ -630,6 +637,43 @@ class WebPreview(QWebEngineView):
                                         link["href"] = f"note://{resource_id}"
 
         return str(soup)
+
+
+# AI: Using this class
+def get_language_class(ext: str) -> str | None:
+    ext = ext.lower()
+    lang_string = None
+    match ext:
+        case "py" | "python":
+            lang_string = "python"
+        case "js" | "javascript":
+            lang_string = "javascript"
+        case "html":
+            lang_string = "html"
+        case "r" | "rmd":
+            lang_string = "r"
+        case "sh":
+            lang_string = "bash"
+        case "css":
+            lang_string = "css"
+        case "cpp" | "c":
+            lang_string = "cpp"
+        case "java":
+            lang_string = "java"
+        case "json":
+            lang_string = "json"
+        case "sql":
+            lang_string = "sql"
+        case "yaml" | "yml":
+            lang_string = "yaml"
+        case "xml":
+            lang_string = "xml"
+        case "md":
+            lang_string = "markdown"
+        case "tex":
+            lang_string = "latex"
+
+    return f"language-{lang_string}"
 
 
 def wrap_in_details(soup: BeautifulSoup, summary_link: Tag, content_tag: Tag) -> Tag:
