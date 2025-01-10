@@ -489,14 +489,45 @@ class WebPreview(QWebEngineView):
                                             )
                                         )
                                     case ResourceType.PDF:
-                                        # PDF files need to be transformed into this:
-                                        # <div class="pdfjs_preview" data-src=":/{resource_id}">
-                                        #     <div class="placeholder">Displayed if PDF.js is supported</div>
-                                        # </div>
-                                        # and then wrap_in_details.
-                                        # This is similar to how the video is handled. including the link etc.
-                                        # Implement this AI!
-                                        link["href"] = f"note://{resource_id}"
+                                        # Get the link text and title
+                                        link_text = link.string or "PDF Document"
+                                        title = link.get("title", "")
+                                        mime_type_string = (
+                                            self.note_model.get_resource_mime_type(
+                                                resource_id
+                                            )[0]
+                                        )
+
+                                        # Create the link for the summary
+                                        summary_link = soup.new_tag("a")
+                                        summary_link.string = link_text
+                                        summary_link["href"] = f"note://{resource_id}"
+                                        summary_link["title"] = title
+                                        summary_link["data-from-md"] = ""
+                                        summary_link["data-resource-id"] = resource_id
+                                        summary_link["type"] = mime_type_string
+
+                                        # Create PDF preview container
+                                        pdf_container = soup.new_tag(
+                                            "div",
+                                            **{
+                                                "class": "pdfjs_preview",
+                                                "data-src": f":/{resource_id}"
+                                            }
+                                        )
+                                        placeholder = soup.new_tag(
+                                            "div",
+                                            **{"class": "placeholder"}
+                                        )
+                                        placeholder.string = "Loading PDF preview..."
+                                        pdf_container.append(placeholder)
+
+                                        # Replace the original link with the new structure
+                                        link.replace_with(
+                                            wrap_in_details(
+                                                soup, summary_link, pdf_container
+                                            )
+                                        )
                                     case ResourceType.AUDIO:
                                         link["href"] = f"note://{resource_id}"
                                     case ResourceType.DOCUMENT:
