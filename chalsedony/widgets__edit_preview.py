@@ -177,10 +177,13 @@ class EditPreview(QWidget):
                 "pymdownx.tasklist",
                 # Allow md in html
                 "md_in_html",
+                "pymdownx.blocks.admonition",
+                "pymdownx.blocks.tab",
             ]
         )
 
         html = md.convert(self.editor.toPlainText())
+        print(html)  # TODO DEV PRINT
         # Use note:// as base URL so relative paths are resolved correctly
         html = self._apply_html_template(html)
         self.preview.setHtml(html, QUrl("note://"))
