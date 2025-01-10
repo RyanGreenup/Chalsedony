@@ -419,9 +419,39 @@ class NoteLinkPage(QWebEnginePage):
                                     case ResourceType.IMAGE:
                                         link['href'] = f'note://{resource_id}'
                                     case ResourceType.VIDEO:
-                                        # AI! Change the html from a link to this output:
-                                        # <p class="maps-to-line" source-line="123" source-line-end="124"> <a data-from-md="" data-resource-id="{resource_id}" title="{title}" type="video/{mime_type_string}" href="{resource_id}" >{link_text}</a > <video class="media-player media-video" controls=""> <source src=":/{resource_id}" type="video/mp4" /> </video> </p>
-                                        link['href'] = f'note://{resource_id}'
+                                        # Get the link text and title
+                                        link_text = link.string or "Video"
+                                        title = link.get('title', '')
+                                        mime_type_string = self.note_model.get_resource_mime_type(resource_id)[0]
+                                        
+                                        # Create new video element
+                                        video_tag = soup.new_tag('video', 
+                                            **{'class': 'media-player media-video', 
+                                               'controls': ''})
+                                        source_tag = soup.new_tag('source', 
+                                            src=f':/{resource_id}',
+                                            type=f'video/{mime_type_string}')
+                                        video_tag.append(source_tag)
+                                        
+                                        # Create new paragraph container
+                                        p_tag = soup.new_tag('p', 
+                                            **{'class': 'maps-to-line',
+                                               'source-line': '123',
+                                               'source-line-end': '124'})
+                                        
+                                        # Update the original link attributes
+                                        link['data-from-md'] = ''
+                                        link['data-resource-id'] = resource_id
+                                        link['title'] = title
+                                        link['type'] = f'video/{mime_type_string}'
+                                        link['href'] = resource_id
+                                        
+                                        # Build the new structure
+                                        p_tag.append(link)
+                                        p_tag.append(video_tag)
+                                        
+                                        # Replace the original link with the new structure
+                                        link.replace_with(p_tag)
                                     case ResourceType.AUDIO:
                                         link['href'] = f'note://{resource_id}'
                                     case ResourceType.DOCUMENT:
