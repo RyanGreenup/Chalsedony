@@ -333,7 +333,21 @@ class NoteLinkPage(QWebEnginePage):
                     case IdTable.RESOURCE:
                         resource_id = id
                         print(f"Resource link clicked! ID: {resource_id}")
-                        match self.model.get_resource_mime_type(resource_id):
+                        match self.note_model.get_resource_mime_type(resource_id)[1]:  # Get just the ResourceType
+                            case ResourceType.IMAGE:
+                                print(f"Image resource clicked: {resource_id}")
+                            case ResourceType.VIDEO:
+                                print(f"Video resource clicked: {resource_id}")
+                            case ResourceType.AUDIO:
+                                print(f"Audio resource clicked: {resource_id}")
+                            case ResourceType.DOCUMENT:
+                                print(f"Document resource clicked: {resource_id}")
+                            case ResourceType.ARCHIVE:
+                                print(f"Archive resource clicked: {resource_id}")
+                            case ResourceType.CODE:
+                                print(f"Code resource clicked: {resource_id}")
+                            case ResourceType.OTHER:
+                                print(f"Other resource clicked: {resource_id}")
                             # Finish this match case statement, look only at the ResourceType, we don't care about the first string in the tuple AI!
 
             else:
