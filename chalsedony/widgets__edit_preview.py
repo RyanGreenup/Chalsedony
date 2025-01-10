@@ -432,13 +432,9 @@ class WebPreview(QWebEngineView):
                                 match mime_type:
                                     case ResourceType.IMAGE:
                                         link["href"] = f"note://{resource_id}"
-                                    # Improve this case so the video is in a details tag and the summary of that tag is the link, make sure it's open by default AI!
                                     case ResourceType.VIDEO:
-
                                         # Get the link text and title
                                         link_text = link.string or "Video"
-                                        # TODO the link_text should be preserved
-                                        _ = link_text
                                         title = link.get("title", "")
                                         mime_type_string = (
                                             self.note_model.get_resource_mime_type(
@@ -446,7 +442,20 @@ class WebPreview(QWebEngineView):
                                             )[0]
                                         )
 
-                                        # Create new video element
+                                        # Create details/summary structure
+                                        details_tag = soup.new_tag("details", open="")
+                                        summary_tag = soup.new_tag("summary")
+                                        
+                                        # Create the link for the summary
+                                        summary_link = soup.new_tag("a")
+                                        summary_link.string = link_text
+                                        summary_link["href"] = f"note://{resource_id}"
+                                        summary_link["title"] = title
+                                        summary_link["data-from-md"] = ""
+                                        summary_link["data-resource-id"] = resource_id
+                                        summary_link["type"] = f"video/{mime_type_string}"
+                                        
+                                        # Create video element
                                         video_tag = soup.new_tag(
                                             "video",
                                             **{
@@ -461,35 +470,13 @@ class WebPreview(QWebEngineView):
                                         )
                                         video_tag.append(source_tag)
 
-                                        # Create new paragraph container
-                                        p_tag = soup.new_tag(
-                                            "p",
-                                            **{
-                                                "class": "maps-to-line",
-                                                "source-line": "123",
-                                                "source-line-end": "124",
-                                            },
-                                        )
-
-                                        # Update the original link attributes
-                                        link["data-from-md"] = ""
-                                        link["data-resource-id"] = resource_id
-                                        link["title"] = title
-                                        link["type"] = f"video/{mime_type_string}"
-                                        link["href"] = resource_id
-
-                                        # Create a copy of the link to preserve original
-                                        link_copy = soup.new_tag("a")
-                                        link_copy.string = link.string
-                                        link_copy["href"] = link["href"]
-                                        link_copy["title"] = link.get("title", "")
-
-                                        # Build the new structure with the copy
-                                        p_tag.append(link_copy)
-                                        p_tag.append(video_tag)
+                                        # Build the structure
+                                        summary_tag.append(summary_link)
+                                        details_tag.append(summary_tag)
+                                        details_tag.append(video_tag)
 
                                         # Replace the original link with the new structure
-                                        link.replace_with(p_tag)
+                                        link.replace_with(details_tag)
                                     case ResourceType.AUDIO:
                                         link["href"] = f"note://{resource_id}"
                                     case ResourceType.DOCUMENT:
