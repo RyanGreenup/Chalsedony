@@ -20,6 +20,7 @@ class ResourceType(Enum):
     CODE = "code"
     OTHER = "other"
     PDF = "pdf"  # Specifically for PDF files
+    HTML = "html"  # For HTML files
 
 
 class NoteModel(QObject):
@@ -802,10 +803,11 @@ class NoteModel(QObject):
         mime_type = mime_type or "application/octet-stream"
 
         # Determine resource type based on MIME type
-        # Extend this to match html files AI!
         match mime_type.split("/")[0], mime_type:
             case ("image", _):
                 return mime_type, ResourceType.IMAGE
+            case (_, "text/html"):
+                return mime_type, ResourceType.HTML
             case ("video", _):
                 return mime_type, ResourceType.VIDEO
             case ("audio", _):
