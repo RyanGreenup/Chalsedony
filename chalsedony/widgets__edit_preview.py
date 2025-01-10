@@ -24,6 +24,8 @@ from PySide6.QtCore import (
 from PySide6.QtWebEngineWidgets import QWebEngineView
 import markdown
 
+from db_api import IdTable
+from note_model import NoteModel
 import static_resources_rc  # pyright: ignore # noqa
 import katex_resources_rc  # pyright: ignore   # noqa
 import katex_fonts_rc  # pyright: ignore # noqa
@@ -50,10 +52,11 @@ register_scheme("qrc")
 class EditPreview(QWidget):
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
 
-    def __init__(self, asset_dir: Path, parent: QWidget | None = None) -> None:
+    def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._splitter_animation: QPropertyAnimation | None = None
-        self.asset_dir = asset_dir
+        self.note_model = note_model
+        self.asset_dir = note_model.asset_dir
         self.setup_ui()
 
     def setup_ui(self) -> None:
@@ -65,7 +68,7 @@ class EditPreview(QWidget):
         self.splitter.setHandleWidth(15)
 
         self.editor = MDTextEdit()
-        self.preview = WebPreview(asset_dir=self.asset_dir)
+        self.preview = WebPreview(note_model=self.note_model)
 
         # The background should be transparent to match the UI
         self.preview.setStyleSheet("background: transparent;")
@@ -248,9 +251,9 @@ class MDTextEdit(QTextEdit):
 # handling all that with signals won't be ideal
 # Also need to handle note selection with signals for backlinks etc.
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
-    def __init__(self, asset_dir: Path) -> None:
+    def __init__(self, note_model: NoteModel) -> None:
         super().__init__()
-        self.ASSET_DIR = str(asset_dir)
+        self.note_model = note_model
 
     def interceptRequest(self, info: QWebEngineUrlRequestInfo) -> None:
         if info.requestUrl().scheme() == "note":
@@ -259,24 +262,30 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
             print(f"Intercepted request for resource: {resource_id}")  # Debug print
 
             # Find the first matching file with this ID prefix
-            for filename in os.listdir(self.ASSET_DIR):
-                if filename.startswith(resource_id):
-                    filepath = os.path.join(self.ASSET_DIR, filename)
-                    info.redirect(QUrl(f"file://{filepath}"))
-                    print(f"Redirecting to: {filepath}")  # Debug print
-                    return
-
-            print(
-                f"No matching file found for resource ID: {resource_id}"
-            )  # Debug print
+            if table := self.note_model.what_is_this(resource_id):
+                match table:
+                    case IdTable.NOTE:
+                        if filepath := self.note_model.get_resource_path(resource_id) is not None:
+                            info.redirect(QUrl(f"file://{filepath}"))
+                            print(f"Redirecting to: {filepath}")  # Debug print
+                            return
+                        else:
+                            print(
+                                f"No matching file found for resource ID: {resource_id}"
+                            )  # Debug print
+                    case IdTable.FOLDER:
+                        print(f"clicked a link to a folder ({resource_id}), should decide what to do with that, probably focus on clicked")
+                    case IdTable.RESOURCE:
+                        print("Clicked a link to a resource ({resource_id})")
+                        match self.note_model.get_resource_mime_type(resource_id):
+                            # Finish this match statement by checking the ResourceType (we don't care aobut the string) AI!
 
 
 class NoteLinkPage(QWebEnginePage):
-    def __init__(self, asset_dir: Path, parent: QWidget | None = None) -> None:
+    def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.asset_dir = asset_dir
         # Create and set the URL interceptor
-        self.interceptor = NoteUrlRequestInterceptor(self.asset_dir)
+        self.interceptor = NoteUrlRequestInterceptor(note_model)
         self.setUrlRequestInterceptor(self.interceptor)
 
     def acceptNavigationRequest(
@@ -301,6 +310,6 @@ class NoteLinkPage(QWebEnginePage):
 
 
 class WebPreview(QWebEngineView):
-    def __init__(self, asset_dir: Path, parent: QWidget | None = None) -> None:
+    def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setPage(NoteLinkPage(parent=self, asset_dir=asset_dir))
+        self.setPage(NoteLinkPage(parent=self, note_model = note_model))
