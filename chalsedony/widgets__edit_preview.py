@@ -369,7 +369,8 @@ class WebPreview(QWebEngineView):
 
 
 import subprocess
-imp
+import platform
+
 
 def open_file(file_path):
     if platform.system() == 'Windows':
