@@ -348,7 +348,6 @@ class NoteLinkPage(QWebEnginePage):
                                 print(f"Code resource clicked: {resource_id}")
                             case ResourceType.OTHER:
                                 print(f"Other resource clicked: {resource_id}")
-                            # Finish this match case statement, look only at the ResourceType, we don't care about the first string in the tuple AI!
 
             else:
                 # This would depend if we can safely create a new note with the ID, not sure on the impact of changing note ids
