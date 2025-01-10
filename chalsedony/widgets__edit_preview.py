@@ -245,11 +245,6 @@ class MDTextEdit(QTextEdit):
         return scrollbar.value() / scrollbar.maximum()
 
 
-# TODO Refactor this so it simply talks to the model rather than looking at the filesystem
-# Consider using signals instead of talking to the model directly? Not sure on that
-# This will need the model anyway, it needs to get the resource_type to handle the link (e.g. open vs display image etc.)
-# handling all that with signals won't be ideal
-# Also need to handle note selection with signals for backlinks etc.
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
     """Intercepts and handles resource requests in the markdown preview.
 
@@ -288,21 +283,20 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
             if table := self.note_model.what_is_this(resource_id):
                 match table:
                     case IdTable.NOTE:
-                        if filepath := self.note_model.get_resource_path(resource_id):
-                            info.redirect(QUrl.fromLocalFile(str(filepath)))
-                            return
+                        print(f"Request is a note: {resource_id}, this isn't handled yet, in the future it may transclude the note")
+                        note_id = resource_id
+                        _ = note_id
                     case IdTable.FOLDER:
-                        print(f"Redirecting a link to a folder {resource_id}")
+                        print(f"Request is a folder: {resource_id}, this isn't handled yet, in the future it may include a list of the folder contents ")
+                        folder_id = resource_id
+                        _ = folder_id
                     case IdTable.RESOURCE:
                         if filepath := self.note_model.get_resource_path(resource_id):
                             # Allow direct access to resource files
                             url = QUrl.fromLocalFile(str(filepath))
                             print(f"---> Redirecting to resource file: {url}")
-                            
-                            # Set appropriate MIME type for video files
-                            if str(filepath).endswith(('.mp4', '.webm', '.ogg')):
-                                info.setHttpHeader(b"Content-Type", b"video/mp4")
-                            
+                            if str(filepath).endswith(('.mp4')):
+                                print("Proprietary video file, this may not display correctly, try converting to webm")
                             info.redirect(url)
                             return
                     case _:
@@ -315,6 +309,7 @@ class NoteLinkPage(QWebEnginePage):
         # Create and set the URL interceptor
         self.interceptor = NoteUrlRequestInterceptor(note_model)
         self.setUrlRequestInterceptor(self.interceptor)
+        self.note_model = note_model
 
     def acceptNavigationRequest(
         self, url: QUrl | str, type: QWebEnginePage.NavigationType, isMainFrame: bool
@@ -326,8 +321,24 @@ class NoteLinkPage(QWebEnginePage):
 
         # Handle the navigation request
         if url.scheme() == "note":
-            note_id = url.path().strip("/")
-            print(f"Note link clicked! ID: {note_id}")
+            id = url.path().strip("/")
+            if (id_type := self.note_model.what_is_this(id)) is not None:
+                match id_type:
+                    case IdTable.NOTE:
+                        note_id = id
+                        print(f"Note link clicked! ID: {note_id}")
+                    case IdTable.FOLDER:
+                        folder_id = id
+                        print(f"Folder link clicked! ID: {folder_id}")
+                    case IdTable.RESOURCE:
+                        resource_id = id
+                        print(f"Resource link clicked! ID: {resource_id}")
+                        match self.model.get_resource_mime_type(resource_id):
+                            # Finish this match case statement, look only at the ResourceType, we don't care about the first string in the tuple AI!
+
+            else:
+                # This would depend if we can safely create a new note with the ID, not sure on the impact of changing note ids
+                print(f"Note ID: {id} does not exist, in the future this may create a new note with that ID")
             return False  # Prevent default navigation
 
         # Allow normal navigation for other links

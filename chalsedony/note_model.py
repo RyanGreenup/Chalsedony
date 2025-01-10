@@ -9,6 +9,7 @@ from typing import Dict, List, Optional, Tuple
 from db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
 
 
+# AI: The ResourceType is defined here
 class ResourceType(Enum):
     """Enum representing different types of resources that can be embedded in HTML"""
 
@@ -779,6 +780,7 @@ class NoteModel(QObject):
         return None
 
 
+    # AI: This method returns the resource type
     def get_resource_mime_type(
         self, resource_id: str
     ) -> Tuple[str | None, ResourceType]:
