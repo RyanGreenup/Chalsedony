@@ -366,3 +366,18 @@ class WebPreview(QWebEngineView):
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setPage(NoteLinkPage(parent=self, note_model = note_model))
+
+
+import subprocess
+imp
+
+def open_file(file_path):
+    if platform.system() == 'Windows':
+        # Use startfile for Windows
+        os.startfile(file_path)
+    elif platform.system() == 'Darwin':  # macOS
+        # Use open command on macOS
+        subprocess.call(('open', file_path))
+    else:  # Linux and other Unix systems
+        # Use xdg-open on Linux (and hope it works on others too)
+        subprocess.call(('xdg-open', file_path))
