@@ -529,8 +529,46 @@ class WebPreview(QWebEngineView):
                                             )
                                         )
                                     case ResourceType.AUDIO:
-                                        link["href"] = f"note://{resource_id}"
-                                        # Implement Audio in a similar way to Video, by adding a link wrapping in details and allowing the user to play it AI!
+                                        # Get the link text and title
+                                        link_text = link.string or "Audio"
+                                        title = link.get("title", "")
+                                        mime_type_string = (
+                                            self.note_model.get_resource_mime_type(
+                                                resource_id
+                                            )[0]
+                                        )
+
+                                        # Create the link for the summary
+                                        summary_link = soup.new_tag("a")
+                                        summary_link.string = link_text
+                                        summary_link["href"] = f"note://{resource_id}"
+                                        summary_link["title"] = title
+                                        summary_link["data-from-md"] = ""
+                                        summary_link["data-resource-id"] = resource_id
+                                        if mime_type_string:
+                                            summary_link["type"] = mime_type_string
+
+                                        # Create audio element
+                                        audio_tag = soup.new_tag(
+                                            "audio",
+                                            **{
+                                                "class": "media-player media-audio",
+                                                "controls": "",
+                                            },
+                                        )
+                                        source_tag = soup.new_tag(
+                                            "source",
+                                            src=f":/{resource_id}",
+                                            type=f"{mime_type_string}",
+                                        )
+                                        audio_tag.append(source_tag)
+
+                                        # Replace the original link with the new structure
+                                        link.replace_with(
+                                            wrap_in_details(
+                                                soup, summary_link, audio_tag
+                                            )
+                                        )
                                     case ResourceType.DOCUMENT:
                                         link["href"] = f"note://{resource_id}"
                                     case ResourceType.ARCHIVE:
