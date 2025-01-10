@@ -445,7 +445,7 @@ class WebPreview(QWebEngineView):
                                         # Create details/summary structure
                                         details_tag = soup.new_tag("details", open="")
                                         summary_tag = soup.new_tag("summary")
-                                        
+
                                         # Create the link for the summary
                                         summary_link = soup.new_tag("a")
                                         summary_link.string = link_text
@@ -453,8 +453,10 @@ class WebPreview(QWebEngineView):
                                         summary_link["title"] = title
                                         summary_link["data-from-md"] = ""
                                         summary_link["data-resource-id"] = resource_id
-                                        summary_link["type"] = f"video/{mime_type_string}"
-                                        
+                                        summary_link["type"] = (
+                                            f"video/{mime_type_string}"
+                                        )
+
                                         # Create video element
                                         video_tag = soup.new_tag(
                                             "video",
