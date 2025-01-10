@@ -493,6 +493,9 @@ class WebPreview(QWebEngineView):
                                         # <div class="pdfjs_preview" data-src=":/{resource_id}">
                                         #     <div class="placeholder">Displayed if PDF.js is supported</div>
                                         # </div>
+                                        # and then wrap_in_details.
+                                        # This is similar to how the video is handled. including the link etc.
+                                        # Implement this AI!
                                         link["href"] = f"note://{resource_id}"
                                     case ResourceType.AUDIO:
                                         link["href"] = f"note://{resource_id}"
