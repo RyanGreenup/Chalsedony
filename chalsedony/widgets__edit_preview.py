@@ -114,7 +114,7 @@ class EditPreview(QWidget):
     def _apply_html_template(self, html: str) -> str:
         # Replace image URLs to use note: scheme
         html = html.replace('src=":', 'src="note:/')
-        print(html)
+        # Allow direct file:// URLs to pass through
         css_includes = self._get_css_resources()
         return f"""<!DOCTYPE html>
         <html>
@@ -268,65 +268,38 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
         self.note_model = note_model
 
     def interceptRequest(self, info: QWebEngineUrlRequestInfo) -> None:
-        if info.requestUrl().scheme() == "note":
-            # Extract the resource ID without any leading slashes
-            resource_id = info.requestUrl().toString().replace("note://", "")
-            print(f"Intercepted request for resource: {resource_id}")  # Debug print
+        url = info.requestUrl()
+        
+        # Handle local file URLs
+        if url.scheme() == "file":
+            file_path = url.toLocalFile()
+            if os.path.exists(file_path):
+                # Allow direct access to local files
+                return
+            else:
+                info.block(True)
+                return
+                
+        # Handle note:// URLs
+        if url.scheme() == "note":
+            resource_id = url.toString().replace("note://", "")
+            print(f"Intercepted request for resource: {resource_id}")
 
-            # Find the first matching file with this ID prefix
             if table := self.note_model.what_is_this(resource_id):
                 match table:
                     case IdTable.NOTE:
-                        if filepath := self.note_model.get_resource_path(resource_id) is not None:
-                            info.redirect(QUrl(f"file://{filepath}"))
-                            print(f"Redirecting to: {filepath}")  # Debug print
+                        if filepath := self.note_model.get_resource_path(resource_id):
+                            info.redirect(QUrl.fromLocalFile(str(filepath)))
                             return
-                        else:
-                            print(
-                                f"No matching file found for resource ID: {resource_id}"
-                            )  # Debug print
                     case IdTable.FOLDER:
-                        print(f"Redirecting a link to a folder {resource_id}, should decide what to do with that, probably focus on clicked")
+                        print(f"Redirecting a link to a folder {resource_id}")
                     case IdTable.RESOURCE:
-                        print("Redirecting a link to a resource {resource_id}")
-                        match self.note_model.get_resource_mime_type(resource_id):
-                            case (_, ResourceType.IMAGE):
-                                # For images, redirect to the file directly
-                                if filepath := self.note_model.get_resource_path(resource_id):
-                                    info.redirect(QUrl(f"file://{filepath}"))
-                                    return
-                            case (_, ResourceType.VIDEO):
-                                # For videos, redirect to the file directly
-                                print("Found a video")
-                                if filepath := self.note_model.get_resource_path(resource_id):
-                                    # Ensure the file exists
-                                    if not filepath.exists():
-                                        print(f"Video file not found: {filepath}")
-                                        info.block(True)
-                                        return
-
-                                    # Get MIME type and extension
-                                    mime_type, _ = self.note_model.get_resource_mime_type(resource_id)
-                                    extension = filepath.suffix.lower()
-
-                                    # Set proper headers
-                                    info.setHttpHeader(b"Content-Type", mime_type.encode())
-                                    info.setHttpHeader(b"Accept-Ranges", b"bytes")
-                                    info.setHttpHeader(b"Cache-Control", b"max-age=3600")
-
-                                    # Redirect to the file with proper URL encoding
-                                    redirect_path = QUrl.fromLocalFile(str(filepath)).toString()
-                                    info.redirect(QUrl(redirect_path))
-                                    print(f"Redirecting video to: {redirect_path} with type: {mime_type}")
-                                    return
-                            case (_, ResourceType.AUDIO):
-                                # For audio, redirect to the file directly
-                                if filepath := self.note_model.get_resource_path(resource_id):
-                                    info.redirect(QUrl(f"file://{filepath}"))
-                                    return
-                            case _:
-                                # For other resource types, block the request
-                                info.block(True)
+                        if filepath := self.note_model.get_resource_path(resource_id):
+                            # Allow direct access to resource files
+                            info.redirect(QUrl.fromLocalFile(str(filepath)))
+                            return
+                    case _:
+                        info.block(True)
 
 
 class NoteLinkPage(QWebEnginePage):
