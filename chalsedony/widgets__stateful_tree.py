@@ -75,14 +75,21 @@ class TreeItems:
     def __init__(self) -> None:
         self.items: Dict[str, TreeWidgetItem] = {}  # Use f"{type}:{id}" as key
 
+    @staticmethod
+    def get_key(item_data: TreeItemData) -> str:
+        """Get the key for the items dict"""
+        return f"{item_data.type}:{item_data.id}"
+
     def add_item(self, item: TreeWidgetItem) -> None:
         """Add an item to the dict"""
         data = item.item_data
-        self.items[f"{data.type}:{data.id}"] = item
+        key = self.get_key(data)
+        self.items[key] = item
 
-    def get_item(self, item_data: TreeItemData) -> TreeWidgetItem:
+    def get_item(self, item_data: TreeItemData) -> TreeWidgetItem | None:
         """Get an item from the dict"""
-        return self.items[f"{item_data.type}:{item_data.id}"]
+        key = self.get_key(item_data)
+        return self.items.get(key)
 
 
 class TreeState(TypedDict):
@@ -139,9 +146,9 @@ class StatefulTree(QTreeWidget):
             item_data: The TreeItemData containing the item's type and ID
         """
         try:
-            item = self.tree_items.get_item(item_data)
-            item.setBackground(0, QApplication.palette().highlight())
-            item.setForeground(0, QApplication.palette().highlightedText())
+            if item := self.tree_items.get_item(item_data):
+                item.setBackground(0, QApplication.palette().highlight())
+                item.setForeground(0, QApplication.palette().highlightedText())
         except KeyError:
             # Item was deleted or doesn't exist, skip silently
             pass
@@ -153,9 +160,9 @@ class StatefulTree(QTreeWidget):
             item_data: The TreeItemData containing the item's type and ID
         """
         try:
-            item = self.tree_items.get_item(item_data)
-            item.setBackground(0, QApplication.palette().base())
-            item.setForeground(0, QApplication.palette().text())
+            if item := self.tree_items.get_item(item_data):
+                item.setBackground(0, QApplication.palette().base())
+                item.setForeground(0, QApplication.palette().text())
         except KeyError:
             # Item was deleted or doesn't exist, skip silently
             pass
@@ -209,7 +216,8 @@ class StatefulTree(QTreeWidget):
 
         # Restore expanded state first
         for item_data in state["expanded_items"]:
-            self.tree_items.get_item(item_data).setExpanded(True)
+            if item := self.tree_items.get_item(item_data):
+                item.setExpanded(True)
 
         # Create and post custom event for deferred selection
         # This is required for drag and drop to work correctly
@@ -225,8 +233,8 @@ class StatefulTree(QTreeWidget):
             item_data: The TreeItemData containing the item's type and ID
         """
         try:
-            item = self.tree_items.get_item(item_data)
-            self.setCurrentItem(item)
+            if item := self.tree_items.get_item(item_data):
+                self.setCurrentItem(item)
         except KeyError:
             # Item was deleted or doesn't exist, skip silently
             pass
@@ -238,14 +246,15 @@ class StatefulTree(QTreeWidget):
             # Handle our deferred selection event
             for item_data in event.item_data_list:
                 try:
-                    item = self.tree_items.get_item(item_data)
-                    item.setSelected(True)
+                    if item := self.tree_items.get_item(item_data):
+                        item.setSelected(True)
                 except KeyError:
                     # Item was deleted, skip it
                     continue
             if event.current_item:
                 try:
-                    self.setCurrentItem(self.tree_items.get_item(event.current_item))
+                    if item := self.tree_items.get_item(event.current_item):
+                        self.setCurrentItem(item)
                 except KeyError:
                     # Current item was deleted, skip it
                     pass
