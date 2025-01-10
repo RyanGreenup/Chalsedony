@@ -22,6 +22,7 @@ from PySide6.QtCore import (
     QUrl,
 )
 from PySide6.QtWebEngineWidgets import QWebEngineView
+from bs4 import BeautifulSoup, Tag
 import markdown
 
 from db_api import IdTable
@@ -455,10 +456,6 @@ class WebPreview(QWebEngineView):
                                             )[0]
                                         )
 
-                                        # Create details/summary structure
-                                        details_tag = soup.new_tag("details", open="")
-                                        summary_tag = soup.new_tag("summary")
-
                                         # Create the link for the summary
                                         summary_link = soup.new_tag("a")
                                         summary_link.string = link_text
@@ -485,13 +482,12 @@ class WebPreview(QWebEngineView):
                                         )
                                         video_tag.append(source_tag)
 
-                                        # Build the structure
-                                        summary_tag.append(summary_link)
-                                        details_tag.append(summary_tag)
-                                        details_tag.append(video_tag)
-
                                         # Replace the original link with the new structure
-                                        link.replace_with(details_tag)
+                                        link.replace_with(
+                                            wrap_in_details(
+                                                soup, summary_link, video_tag
+                                            )
+                                        )
                                     case ResourceType.AUDIO:
                                         link["href"] = f"note://{resource_id}"
                                     case ResourceType.DOCUMENT:
@@ -504,6 +500,15 @@ class WebPreview(QWebEngineView):
                                         link["href"] = f"note://{resource_id}"
 
         return str(soup)
+
+
+def wrap_in_details(soup: BeautifulSoup, summary_link: Tag, content_tag: Tag) -> Tag:
+    details_tag = soup.new_tag("details", open="")
+    summary_tag = soup.new_tag("summary")
+    summary_tag.append(summary_link)
+    details_tag.append(summary_tag)
+    details_tag.append(content_tag)
+    return details_tag
 
 
 def open_file(file_path: Path | str) -> None:
