@@ -371,11 +371,11 @@ import subprocess
 import platform
 
 
-# Finish this function AI!
 def open_file(file_path):
+    """Open a file with the system's default application"""
     if platform.system() == 'Windows':
-        # Open the file with the default application
+        os.startfile(file_path)
     elif platform.system() == 'Darwin':  # macOS
-        # Open the file with the default application
+        subprocess.run(['open', file_path])
     else:  # Linux and other Unix systems
-        # Open the file with the default application
+        subprocess.run(['xdg-open', file_path])
