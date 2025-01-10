@@ -9,7 +9,6 @@ from typing import Dict, List, Optional, Tuple
 from db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
 
 
-# AI: This has been extended to include HTML files
 class ResourceType(Enum):
     """Enum representing different types of resources that can be embedded in HTML"""
 
@@ -21,7 +20,6 @@ class ResourceType(Enum):
     CODE = "code"
     OTHER = "other"
     PDF = "pdf"  # Specifically for PDF files
-    HTML = "pdf"  # Specifically for HTML files
 
 
 class NoteModel(QObject):
