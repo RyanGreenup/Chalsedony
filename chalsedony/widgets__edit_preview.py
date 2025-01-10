@@ -180,7 +180,7 @@ class EditPreview(QWidget):
                 "pymdownx.blocks.admonition",
                 "pymdownx.blocks.tab",
                 "pymdownx.superfences",
-                "'pymdownx.highlight'",
+                "pymdownx.highlight",
             ]
         )
 
