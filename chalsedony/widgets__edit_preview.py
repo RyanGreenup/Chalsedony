@@ -389,16 +389,34 @@ class NoteLinkPage(QWebEnginePage):
     def requestedUrl(self) -> QUrl:
         return QUrl("note://")
 
-    # AI!
-    # Write a method that rewrites html links based on the type of the target, links will be of the form:
-    #
-    # <a href=":/{id}">{title}</a>
-    #
-    # for example:
-    #
-    # <a href=":/00062b3d306bac56744eb39da620c744">My Note</a>
-    #
-    # We can handle the rewrite logic later, for now just layout the logic to rewrite the links into arbitrary html.
+    def rewrite_html_links(self, html: str) -> str:
+        """Rewrite HTML links to use the note:// scheme based on their target type.
+        
+        Args:
+            html: The input HTML containing links in the format <a href=":/{id}">{title}</a>
+            
+        Returns:
+            HTML with rewritten links using appropriate schemes based on target type
+        """
+        from bs4 import BeautifulSoup
+        
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        for link in soup.find_all('a', href=True):
+            href = link['href']
+            if href.startswith(':/'):
+                resource_id = href[2:]  # Remove the :/ prefix
+                if (id_type := self.note_model.what_is_this(resource_id)) is not None:
+                    match id_type:
+                        case IdTable.NOTE:
+                            link['href'] = f'note://{resource_id}'
+                        case IdTable.FOLDER:
+                            link['href'] = f'note://{resource_id}'
+                        case IdTable.RESOURCE:
+                            if filepath := self.note_model.get_resource_path(resource_id):
+                                link['href'] = f'note://{resource_id}'
+        
+        return str(soup)
 
 
 
