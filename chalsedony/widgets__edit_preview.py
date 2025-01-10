@@ -590,7 +590,6 @@ class WebPreview(QWebEngineView):
                                             summary_link["type"] = mime_type_string
 
                                         # Create code block container
-                                        # Read the text in with python directly AI!
                                         code_container = soup.new_tag(
                                             "pre",
                                             **{
@@ -599,11 +598,22 @@ class WebPreview(QWebEngineView):
                                             },
                                         )
                                         code_tag = soup.new_tag("code")
-                                        placeholder = soup.new_tag(
-                                            "div", **{"class": "placeholder"}
-                                        )
-                                        placeholder.string = "Loading code file..."
-                                        code_tag.append(placeholder)
+                                        
+                                        # Read the code file content directly
+                                        if filepath := self.note_model.get_resource_path(resource_id):
+                                            try:
+                                                with open(filepath, 'r', encoding='utf-8') as f:
+                                                    code_content = f.read()
+                                                code_tag.string = code_content
+                                            except Exception as e:
+                                                error_div = soup.new_tag("div", **{"class": "error"})
+                                                error_div.string = f"Error loading code: {str(e)}"
+                                                code_tag.append(error_div)
+                                        else:
+                                            error_div = soup.new_tag("div", **{"class": "error"})
+                                            error_div.string = "Code file not found"
+                                            code_tag.append(error_div)
+                                            
                                         code_container.append(code_tag)
 
                                         # Replace the original link with the new structure
