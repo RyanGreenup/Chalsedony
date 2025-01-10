@@ -334,7 +334,6 @@ class NoteLinkPage(QWebEnginePage):
         if url.scheme() == "note":
             id = url.path().strip("/")
             if (id_type := self.note_model.what_is_this(id)) is not None:
-                # AI: Here is an example of a match case statement
                 match id_type:
                     case IdTable.NOTE:
                         note_id = id
@@ -357,7 +356,6 @@ class NoteLinkPage(QWebEnginePage):
                             else:
                                 print(f"Resource ID: {resource_id} does not exist")
 
-                        # AI: Here is an example of how to match mime types
                         match self.note_model.get_resource_mime_type(resource_id)[
                             1
                         ]:  # Get just the ResourceType
@@ -416,8 +414,23 @@ class NoteLinkPage(QWebEnginePage):
                         case IdTable.RESOURCE:
                             if filepath := self.note_model.get_resource_path(resource_id):
 
-                                # Improve this to match the mime types AI!
-                                link['href'] = f'note://{resource_id}'
+                                # Handle different resource types appropriately
+                                mime_type = self.note_model.get_resource_mime_type(resource_id)[1]
+                                match mime_type:
+                                    case ResourceType.IMAGE:
+                                        link['href'] = f'note://{resource_id}'
+                                    case ResourceType.VIDEO:
+                                        link['href'] = f'note://{resource_id}'
+                                    case ResourceType.AUDIO:
+                                        link['href'] = f'note://{resource_id}'
+                                    case ResourceType.DOCUMENT:
+                                        link['href'] = f'note://{resource_id}'
+                                    case ResourceType.ARCHIVE:
+                                        link['href'] = f'note://{resource_id}'
+                                    case ResourceType.CODE:
+                                        link['href'] = f'note://{resource_id}'
+                                    case ResourceType.OTHER:
+                                        link['href'] = f'note://{resource_id}'
         
         return str(soup)
 
