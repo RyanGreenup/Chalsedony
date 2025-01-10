@@ -286,9 +286,9 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                                 f"No matching file found for resource ID: {resource_id}"
                             )  # Debug print
                     case IdTable.FOLDER:
-                        print(f"clicked a link to a folder ({resource_id}), should decide what to do with that, probably focus on clicked")
+                        print(f"Redirecting a link to a folder {resource_id}, should decide what to do with that, probably focus on clicked")
                     case IdTable.RESOURCE:
-                        print("Clicked a link to a resource ({resource_id})")
+                        print("Redirecting a link to a resource {resource_id}")
                         match self.note_model.get_resource_mime_type(resource_id):
                             case (_, ResourceType.IMAGE):
                                 # For images, redirect to the file directly
@@ -304,16 +304,16 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                                         print(f"Video file not found: {filepath}")
                                         info.block(True)
                                         return
-                                    
+
                                     # Get MIME type and extension
                                     mime_type, _ = self.note_model.get_resource_mime_type(resource_id)
                                     extension = filepath.suffix.lower()
-                                    
+
                                     # Set proper headers
                                     info.setHttpHeader(b"Content-Type", mime_type.encode())
                                     info.setHttpHeader(b"Accept-Ranges", b"bytes")
                                     info.setHttpHeader(b"Cache-Control", b"max-age=3600")
-                                    
+
                                     # Redirect to the file with proper URL encoding
                                     redirect_path = QUrl.fromLocalFile(str(filepath)).toString()
                                     info.redirect(QUrl(redirect_path))
