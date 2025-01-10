@@ -336,9 +336,10 @@ class NoteLinkPage(QWebEnginePage):
                         print(f"Resource link clicked! ID: {resource_id}")
 
                         def try_open(resource_path: Path | None) -> None:
-                            # Copy the resource_path to the  clipboard AI!
-
                             if resource_path is not None:
+                                from PySide6.QtWidgets import QApplication
+                                clipboard = QApplication.clipboard()
+                                clipboard.setText(str(resource_path))
                                 open_file(resource_path)
                             else:
                                 print(f"Resource ID: {resource_id} does not exist")
