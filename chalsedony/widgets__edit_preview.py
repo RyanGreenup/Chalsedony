@@ -129,7 +129,6 @@ class EditPreview(QWidget):
             <link rel="stylesheet" href="qrc:/katex/katex.min.css">
             <script src="qrc:/js/jquery.min.js"></script>
             <script src="qrc:/js/dataTables.js"></script>
-            <script src="qrc:/js/pdfjs.js"></script>
             <script src="qrc:/js/datatables_init.js"></script>
 
 
@@ -158,6 +157,7 @@ class EditPreview(QWidget):
             <script src="qrc:/katex/katex.min.js"></script>
             <script src="qrc:/katex/contrib/auto-render.min.js"></script>
             <script src="qrc:/katex/config.js"></script>
+            <script src="qrc:/js/pdfjs.js"></script>
             <script src="qrc:/js/my_pdfjs_init.js"></script>
             <script src="qrc:/js/asciinema-player.min.js"></script>
         </body>
@@ -488,6 +488,12 @@ class WebPreview(QWebEngineView):
                                                 soup, summary_link, video_tag
                                             )
                                         )
+                                    case ResourceType.PDF:
+                                        # PDF files need to be transformed into this:
+                                        # <div class="pdfjs_preview" data-src=":/{resource_id}">
+                                        #     <div class="placeholder">Displayed if PDF.js is supported</div>
+                                        # </div>
+                                        link["href"] = f"note://{resource_id}"
                                     case ResourceType.AUDIO:
                                         link["href"] = f"note://{resource_id}"
                                     case ResourceType.DOCUMENT:
