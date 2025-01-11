@@ -83,7 +83,18 @@ class NoteListWidget(KbdListWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
 
-    # Use the text_matches_filter function to take in some text and filter out results from the list AI!
+    def filter_items(self, filter_text: str) -> None:
+        """Filter list items using n-gram comparison"""
+        for i in range(self.count()):
+            item = self.item(i)
+            if item:
+                matches = text_matches_filter(
+                    filter_text, 
+                    item.text(),
+                    n=2,
+                    match_all=True
+                )
+                item.setHidden(not matches)
 
     def _show_context_menu(self, position: QPoint) -> None:
         """Show context menu with note ID copy option"""
