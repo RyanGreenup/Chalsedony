@@ -4,6 +4,7 @@ from PySide6.QtGui import QAction
 from typing import Dict
 from db_api import NoteSearchResult
 from selection_dialog import SelectionDialog
+from utils__ngram_filter import text_matches_filter
 
 
 class CommandPalette(SelectionDialog):
@@ -58,6 +59,19 @@ class NotePalette(SelectionDialog):
         # Select first item
         if self.list.count() > 0:
             self.list.setCurrentRow(0)
+
+    # Modify this to use the text_matches_filter function AI!
+    def filter_items(self, text: str) -> None:
+        """Filter items based on search text"""
+        had_visible = False
+        for i in range(self.list.count()):
+            item = self.list.item(i)
+            if item:
+                is_visible = text.lower() in item.text().lower()
+                item.setHidden(not is_visible)
+                if is_visible and not had_visible:
+                    self.list.setCurrentItem(item)
+                    had_visible = True
 
 
 class NoteSelectionPalette(NotePalette):

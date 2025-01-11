@@ -21,6 +21,7 @@ def generate_ngrams(text: str, n: int = 2) -> Set[str]:
     return ngrams
 
 
+# AI: Use this function to filter items in the list
 def text_matches_filter(
     filter_text: str, target_text: str, n: int = 2, match_all: bool = True
 ) -> bool:
