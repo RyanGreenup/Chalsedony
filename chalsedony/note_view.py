@@ -27,7 +27,7 @@ from note_model import NoteModel
 from widgets__stateful_tree import TreeItemData
 from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
-from widgets__search_tab import SearchSidebar
+from widgets__search_tab import NoteListWidget, SearchSidebar
 
 
 class NoteView(QWidget):
@@ -127,6 +127,7 @@ class NoteView(QWidget):
         self.content_area.setObjectName("contentArea")
 
         # Right sidebar
+        # Modify this right sidebar to have three NoteListWidgets vertically above each other as splitter environments AI!
         self.right_sidebar = QFrame()
         self.right_sidebar.setObjectName("rightSidebar")
         self.right_sidebar.setFrameShape(QFrame.Shape.StyledPanel)
