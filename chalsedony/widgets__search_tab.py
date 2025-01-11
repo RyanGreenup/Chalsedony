@@ -1,3 +1,4 @@
+from typing import List
 from PySide6.QtGui import QAction
 from utils__ngram_filter import text_matches_filter
 from PySide6.QtWidgets import (
@@ -64,18 +65,14 @@ class SearchSidebar(QWidget):
 
     def populate_notes_list(self, search_query: str = "") -> None:
         """Populate the all notes list view with optional search filtering"""
-        self.search_sidebar_list.clear()
-
         if search_query:
             # Use full text search
             results = self.model.search_notes(search_query)
-            for result in results:
-                self.search_sidebar_list.add_item(result)
+            self.search_sidebar_list.populate_notes_list(results)
         else:
             # Show all notes
             notes = self.model.get_all_notes()
-            for note in notes:
-                self.search_sidebar_list.add_item(note)
+            self.search_sidebar_list.populate_notes_list(notes)
 
 
 class NoteListWidget(KbdListWidget):
@@ -83,6 +80,13 @@ class NoteListWidget(KbdListWidget):
         super().__init__()
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
+
+    def populate_notes_list(self, note_items: List[NoteSearchResult]) -> None:
+        """Populate the all notes list view with optional search filtering"""
+        self.clear()
+        # Use full text search
+        for result in note_items:
+            self.add_item(result)
 
     def filter_items(self, filter_text: str) -> None:
         """Filter list items using n-gram comparison"""
