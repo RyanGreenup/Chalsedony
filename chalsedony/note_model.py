@@ -51,15 +51,15 @@ class NoteModel(QObject):
             List of NoteSearchResult containing note IDs and titles
         """
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, title FROM notes")
+        cursor.execute("SELECT id, title FROM notes ORDER BY updated_time ASC")
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
     def get_note_meta_by_id(self, note_id: str) -> NoteSearchResult:
         """Get note metadata by ID
-        
+
         Args:
             note_id: ID of the note to look up
-            
+
         Returns:
             NoteSearchResult containing the note's ID and title
         """

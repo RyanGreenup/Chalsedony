@@ -66,7 +66,7 @@ class NotePalette(SelectionDialog):
         for i in range(self.list.count()):
             item = self.list.item(i)
             if item:
-                is_visible = text_matches_filter(text, item.text(), match_all=False)
+                is_visible = text_matches_filter(text, item.text(), match_all=True)
                 item.setHidden(not is_visible)
                 if is_visible and not had_visible:
                     self.list.setCurrentItem(item)

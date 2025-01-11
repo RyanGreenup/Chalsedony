@@ -244,9 +244,6 @@ class NoteView(QWidget):
         is_animated = self.tree_widget.isAnimated()
         self.tree_widget.setAnimated(False)
 
-        # TODO When the user moves items in the tree they will be lost using this treeStateHandler
-        # This needs to be rconsidered so that the items in the tree widget are folded based on their id
-        # For now, we'll hold off on this until the underlying data is more stable
         try:
             # Disable animations before any tree operations
             self.tree_widget.setAnimated(False)
@@ -481,8 +478,7 @@ class NoteView(QWidget):
 
     def insert_note_link(self, note_id: str) -> None:
         """Insert a link to a note at the current cursor position in the editor"""
-        # TODO this doesn't need the content
-        note = self.model.find_note_by_id(note_id)
+        note = self.model.get_note_meta_by_id(note_id)
         if note:
             text = f"[{note.title}](note:{note.id})"
             self.insert_text_at_cursor(text, copy=True)

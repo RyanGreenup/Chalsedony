@@ -1,6 +1,7 @@
 -- This is adapted directly from Joplin. This is used to promote cross-compatibility between the two applications.
 
-PRAGMA journal_mode=WAL;
+
+--
 
 CREATE TABLE folders (id TEXT PRIMARY KEY, title TEXT NOT NULL DEFAULT "", created_time INT NOT NULL, updated_time INT NOT NULL, user_created_time INT NOT NULL DEFAULT 0, user_updated_time INT NOT NULL DEFAULT 0, encryption_cipher_text TEXT NOT NULL DEFAULT "", encryption_applied INT NOT NULL DEFAULT 0, parent_id TEXT NOT NULL DEFAULT "", is_shared INT NOT NULL DEFAULT 0, share_id TEXT NOT NULL DEFAULT "", master_key_id TEXT NOT NULL DEFAULT "", icon TEXT NOT NULL DEFAULT "", `user_data` TEXT NOT NULL DEFAULT "", `deleted_time` INT NOT NULL DEFAULT 0);
 CREATE INDEX folders_title ON folders (title);
@@ -125,3 +126,14 @@ CREATE VIEW tags_with_note_count AS
 				AND notes.deleted_time = 0
 			GROUP BY tags.id
 /* tags_with_note_count(id,title,created_time,updated_time,note_count,todo_completed_count) */;
+
+
+-- I added this
+PRAGMA journal_mode=WAL;
+
+CREATE TRIGGER update_notes_updated_time
+AFTER UPDATE ON notes
+FOR EACH ROW
+BEGIN
+    UPDATE notes SET updated_time = strftime('%s', 'now') WHERE id = OLD.id;
+END;
