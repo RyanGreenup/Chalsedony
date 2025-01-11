@@ -277,11 +277,14 @@ class NoteView(QWidget):
 
     def _on_create_folder_requested(self, title: str, parent_id: str) -> None:
         try:
-            self.model.create_folder(title, parent_id)
+            folder_id = self.model.create_folder(title, parent_id)
         except ValueError as e:
             status_message = f"Failed to create folder: {e}"
             print(status_message)
             self.send_status_message(status_message)
+            return
+        # TODO this is not being selected
+        self._handle_note_selection(TreeItemData(ItemType.FOLDER, folder_id, title))
 
     def save_current_note(self) -> None:
         """Save the current note with title update from heading"""
@@ -308,11 +311,17 @@ class NoteView(QWidget):
 
     def _on_note_created(self, folder_id: str) -> None:
         try:
-            self.model.create_note(folder_id)
+            note_id = self.model.create_note(folder_id)
         except ValueError as e:
             status_message = f"Failed to create note: {e}"
             print(status_message)
             self.send_status_message(status_message)
+            return
+        self._handle_note_selection(
+            TreeItemData(
+                ItemType.NOTE, note_id, "Title Note Needed to select on Note Creation"
+            )
+        )
 
     def _on_note_deleted(self, note_id: str) -> None:
         try:
