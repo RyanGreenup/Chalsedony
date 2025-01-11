@@ -231,9 +231,20 @@ class NoteView(QWidget):
         self.forwardlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
         self.forwardlinks_list.note_selected.connect(self._handle_note_selection)
 
-    # Impplement this to call _handle_note_selection, first verify that everything exists, be very careful to avoid seg faults AI!
     def _handle_note_selection_from_list(self, item: QItemSelection | None) -> None:
         """Handle note selection from the list view"""
+        if not item or item.isEmpty():
+            return
+            
+        # Get the first selected index
+        indexes = item.indexes()
+        if not indexes:
+            return
+            
+        # Get the TreeItemData from the first index
+        item_data = indexes[0].data(Qt.ItemDataRole.UserRole)
+        if isinstance(item_data, TreeItemData):
+            self._handle_note_selection(item_data)
 
     def note_selection_palette(self) -> None:
         """Open a note selection palette dialog"""
