@@ -15,6 +15,7 @@ from widgets__stateful_tree import TreeItemData
 from note_model import NoteModel
 from db_api import ItemType, NoteSearchResult
 from widgets__kbd_widgets import KbdListWidget
+from copy import deepcopy
 
 
 class SearchSidebar(QWidget):
@@ -46,22 +47,7 @@ class SearchSidebar(QWidget):
     def _connect_signals(self) -> None:
         """Connect internal signals"""
         self.search_input.textChanged.connect(self.search_text_changed)
-        self.search_sidebar_list.itemSelectionChanged.connect(
-            self._on_list_selection_changed
-        )
-
-    def _on_list_selection_changed(self) -> None:
-        """Handle selection from the all notes list"""
-        selected = self.search_sidebar_list.selectedItems()
-        if selected:
-            note_id = selected[0].data(Qt.ItemDataRole.UserRole)
-            if note_id:
-                item_data = TreeItemData(
-                    ItemType.NOTE,
-                    note_id,
-                    title="Title omitted, not needed in the search_tab emission",
-                )
-                self.note_selected.emit(item_data)
+        self.search_sidebar_list.item_selection_changed.connect(self.note_selected.emit)
 
     def populate_notes_list(self, search_query: str = "") -> None:
         """Populate the all notes list view with optional search filtering"""
@@ -79,19 +65,48 @@ class NoteListWidget(KbdListWidget):
     # This is used to select a note even when follow_mode is disabled, otherwise notes update when moving through the tree
     note_selected = Signal(TreeItemData)  # The selected Item,
     status_bar_message = Signal(str)  # Signal to send messages to status bar
+    # This is the typical method used when moving between the items
+    # Avoid this as the UI is bad, also MUST block signals when populating the list
+    # otherwise the UI will update on every item added added and C++ will double free or sig fault
+    item_selection_changed = Signal(TreeItemData)  # The selected Item,
 
     def __init__(self) -> None:
         super().__init__()
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
         self.create_keybinings()
+        self._connect_signals()
+        self.itemClicked.connect(self._on_item_clicked)
+
+    def _connect_signals(self) -> None:
+        """Connect internal signals"""
+        self.currentItemChanged.connect(self._on_list_selection_changed)
+
+    def _on_list_selection_changed(self) -> None:
+        """Handle selection from the all notes list"""
+        selected = self.currentItem()
+        if selected:
+            note_id = deepcopy(selected.data(Qt.ItemDataRole.UserRole))
+            del selected
+            if note_id:
+                item_data = TreeItemData(
+                    ItemType.NOTE,
+                    deepcopy(note_id),
+                    title="Title omitted, not needed in the search_tab emission",
+                )
+                self.item_selection_changed.emit(item_data)
 
     def populate_notes_list(self, note_items: List[NoteSearchResult]) -> None:
         """Populate the all notes list view with optional search filtering"""
         self.clear()
-        # Use full text search
-        for result in note_items:
-            self.add_item(result)
+        # Block signals
+        self.blockSignals(True)
+        try:
+            for result in note_items:
+                self.add_item(result)
+        finally:
+            # Unblock signals
+            self.blockSignals(False)
 
     def filter_items(self, filter_text: str) -> None:
         """Filter list items using n-gram comparison"""
@@ -171,3 +186,10 @@ class NoteListWidget(KbdListWidget):
     def send_status_message(self, message: str) -> None:
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
+
+    def _on_item_clicked(self, item: QListWidgetItem) -> None:
+        """Handle item click to emit note_selected signal"""
+        if item:
+            title = item.text()
+            item_id = item.data(Qt.ItemDataRole.UserRole)
+            self.note_selected.emit(TreeItemData(ItemType.NOTE, item_id, title=title))

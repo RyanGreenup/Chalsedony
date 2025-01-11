@@ -11,11 +11,13 @@ from PySide6.QtWidgets import (
 )
 
 from command_palette import NoteSelectionPalette, NoteLinkPalette
+from widgets__backlinks import BackLinksWidget, ForwardLinksWidget
 
 
 from pathlib import Path
 from db_api import ItemType
 from PySide6.QtCore import (
+    QItemSelection,
     QTimer,
     Qt,
     Signal,
@@ -126,13 +128,8 @@ class NoteView(QWidget):
         self.content_area = EditPreview(self.model)
         self.content_area.setObjectName("contentArea")
 
-        # Right sidebar
-        self.right_sidebar = QFrame()
-        self.right_sidebar.setObjectName("rightSidebar")
-        self.right_sidebar.setFrameShape(QFrame.Shape.StyledPanel)
-        right_layout = QVBoxLayout()
-        right_layout.setContentsMargins(0, 0, 0, 0)
-        self.right_sidebar.setLayout(right_layout)
+        # Right sidebar with three vertical note lists
+        self.setup_ui_right_sidebar()
 
         # Add frames to splitter
         self.main_splitter.addWidget(self.left_sidebar)
@@ -141,6 +138,33 @@ class NoteView(QWidget):
 
         # Set initial sizes (similar proportions to the previous stretch factors)
         self.main_splitter.setSizes([100, 300, 100])
+
+    def setup_ui_right_sidebar(self) -> None:
+        self.right_sidebar = QFrame()
+        self.right_sidebar.setObjectName("rightSidebar")
+        self.right_sidebar.setFrameShape(QFrame.Shape.StyledPanel)
+        right_layout = QVBoxLayout()
+        right_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Create vertical splitter for note lists
+        self.right_splitter = QSplitter(Qt.Orientation.Vertical)
+        self.right_splitter.setHandleWidth(15)
+
+        # Create three note list widgets
+        self.backlinks_list = BackLinksWidget(self.model)
+        self.forwardlinks_list = ForwardLinksWidget(self.model)
+        # self.bottom_note_list = NoteListWidget()
+
+        # Add them to the splitter
+        self.right_splitter.addWidget(self.backlinks_list)
+        self.right_splitter.addWidget(self.forwardlinks_list)
+        # self.right_splitter.addWidget(self.bottom_note_list)
+
+        # Set equal initial sizes
+        self.right_splitter.setSizes([100, 100])
+
+        right_layout.addWidget(self.right_splitter)
+        self.right_sidebar.setLayout(right_layout)
 
     def _connect_signals(self) -> None:
         """Connect UI signals to handlers"""
@@ -199,6 +223,24 @@ class NoteView(QWidget):
         self.tree_search.textChanged.connect(
             self.search_tab.search_sidebar_list.filter_items
         )
+
+        self.backlinks_list.note_selected.connect(self._handle_note_selection)
+        self.forwardlinks_list.note_selected.connect(self._handle_note_selection)
+
+    def _handle_note_selection_from_list(self, item: QItemSelection | None) -> None:
+        """Handle note selection from the list view"""
+        if not item or item.isEmpty():
+            return
+
+        # Get the first selected index
+        indexes = item.indexes()
+        if not indexes:
+            return
+
+        # Get the TreeItemData from the first index
+        item_data = indexes[0].data(Qt.ItemDataRole.UserRole)
+        if isinstance(item_data, TreeItemData):
+            self._handle_note_selection(item_data)
 
     def note_selection_palette(self) -> None:
         """Open a note selection palette dialog"""
@@ -322,7 +364,11 @@ class NoteView(QWidget):
         self, item_data: TreeItemData, change_tree: bool = True
     ) -> None:
         """Common handler for note selection from either tree or list"""
+        print(f"Selected note: {item_data.title} -- {item_data.id}")
         # Safely disconnect textChanged signal to prevent update loop
+        if self.current_note_id == item_data.id:
+            print("Attempting to select the same note")
+            return
         try:
             self.content_area.editor.textChanged.disconnect(
                 self._on_editor_text_changed
@@ -330,6 +376,8 @@ class NoteView(QWidget):
         except TypeError:
             # Signal was not connected
             pass
+        except Exception as e:
+            print(f"Error disconnecting signal: {e}")
 
         try:
             match item_data.type:
@@ -340,6 +388,8 @@ class NoteView(QWidget):
                         self.content_area.editor.setPlainText(note.body or "")
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
+                        self.backlinks_list.populate(item_data.id)
+                        self.forwardlinks_list.populate(item_data.id)
                 case ItemType.FOLDER:
                     self.current_note_id = None
                     self.content_area.editor.clear()
