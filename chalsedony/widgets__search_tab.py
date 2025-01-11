@@ -79,12 +79,26 @@ class NoteListWidget(KbdListWidget):
     # This is used to select a note even when follow_mode is disabled, otherwise notes update when moving through the tree
     note_selected = Signal(TreeItemData)  # The selected Item,
     status_bar_message = Signal(str)  # Signal to send messages to status bar
+    # This is the typical method used when moving between the items
+    item_selection_changed = Signal(TreeItemData)  # The selected Item,
 
     def __init__(self) -> None:
         super().__init__()
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
         self.create_keybinings()
+        self._connect_signals()
+
+    def _connect_signals(self) -> None:
+        def get_item_data(item: QListWidgetItem) -> TreeItemData:
+            return TreeItemData(
+                ItemType.NOTE,
+                item.data(Qt.ItemDataRole.UserRole),
+                title=item.text(),
+            )
+        # AI! Fix this error
+        # TypeError: NoteListWidget._connect_signals.<locals>.<lambda>() missing 1 required positional argument: 'item'
+        self.itemSelectionChanged.connect(lambda item: self.item_selection_changed.emit(get_item_data(item)))
 
     def populate_notes_list(self, note_items: List[NoteSearchResult]) -> None:
         """Populate the all notes list view with optional search filtering"""
