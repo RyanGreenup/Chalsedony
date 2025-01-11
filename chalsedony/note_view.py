@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QTreeWidgetItem,
 )
+from utils__ngram_filter import text_matches_filter
 
 
 from pathlib import Path
@@ -395,12 +396,11 @@ class NoteView(QWidget):
         """Return the ID of the currently selected note"""
         return self.current_note_id
 
-    # Improve this method to use the text_matches_filter function AI!
     def _filter_tree(self, text: str) -> None:
-        """Filter the tree view based on search text"""
+        """Filter the tree view based on search text using n-gram comparison"""
         def filter_items(item: QTreeWidgetItem) -> bool:
-            # Get if this item matches
-            item_matches = text.lower() in item.text(0).lower()
+            # Get if this item matches using n-gram comparison
+            item_matches = text_matches_filter(text, item.text(0), n=2, match_all=False)
             
             # Check all children
             child_matches = False
