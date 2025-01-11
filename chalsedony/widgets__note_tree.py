@@ -103,7 +103,7 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             Qt.Key.Key_Delete: lambda: self.delete_item(self.currentItem()),
             Qt.Key.Key_C: lambda: self.copy_id(self.currentItem()),
             Qt.Key.Key_Y: lambda: self.duplicate_item(self.currentItem()),
-            # Add a Keybinding to emit the note_selected signal for the current item AI!
+            Qt.Key.Key_Return: lambda: self.note_selected.emit(self.currentItem().data(0, Qt.ItemDataRole.UserRole)),
         }
 
     def setup_ui(self) -> None:
