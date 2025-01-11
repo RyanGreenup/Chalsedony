@@ -158,6 +158,7 @@ class NoteView(QWidget):
 
         # Connect tree search
         self.tree_search.textChanged.connect(self._filter_tree)
+        self.tree_search.textChanged.connect(self.search_tab.search_sidebar_list.filter_items)
 
     def _on_create_folder_requested(self, title: str, parent_id: str) -> None:
         try:
