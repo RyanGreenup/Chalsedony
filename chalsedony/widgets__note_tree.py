@@ -67,6 +67,8 @@ class TreeWithFilter(QTreeWidget):
 class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
     note_created = Signal(str)  # folder_id
     note_deleted = Signal(str)  # note_id
+    # This is used to select a note even when follow_mode is disabled, otherwise notes update when moving through the tree
+    note_selected = Signal(TreeItemData)  # The selected Item,
     duplicate_note = Signal(str)  # note_id
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
     folder_moved = Signal(str, str)  # (folder_id, new_parent_id)
@@ -101,6 +103,7 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             Qt.Key.Key_Delete: lambda: self.delete_item(self.currentItem()),
             Qt.Key.Key_C: lambda: self.copy_id(self.currentItem()),
             Qt.Key.Key_Y: lambda: self.duplicate_item(self.currentItem()),
+            # Add a Keybinding to emit the note_selected signal for the current item AI!
         }
 
     def setup_ui(self) -> None:
