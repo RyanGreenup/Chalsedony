@@ -1,5 +1,6 @@
 from typing import Set
 
+
 def generate_ngrams(text: str, n: int = 2) -> Set[str]:
     """Generate n-grams from text.
 
@@ -11,15 +12,18 @@ def generate_ngrams(text: str, n: int = 2) -> Set[str]:
         Set of n-grams
     """
     # Convert to lowercase and remove extra whitespace
-    text = ' '.join(text.lower().split())
+    text = " ".join(text.lower().split())
 
     # Generate n-grams including spaces
     ngrams = set()
     for i in range(len(text) - n + 1):
-        ngrams.add(text[i:i + n])
+        ngrams.add(text[i : i + n])
     return ngrams
 
-def text_matches_filter(filter_text: str, target_text: str, n: int = 2, match_all: bool = True) -> bool:
+
+def text_matches_filter(
+    filter_text: str, target_text: str, n: int = 2, match_all: bool = True
+) -> bool:
     """Check if target text matches filter text using n-gram comparison.
 
     Args:
@@ -46,7 +50,8 @@ def text_matches_filter(filter_text: str, target_text: str, n: int = 2, match_al
     target_ngrams = generate_ngrams(target_text, n)
 
     # Check if all or any filter n-grams are present in target
-    return all(ng in target_ngrams for ng in filter_ngrams) if match_all else any(ng in target_ngrams for ng in filter_ngrams)
-
-
-
+    return (
+        all(ng in target_ngrams for ng in filter_ngrams)
+        if match_all
+        else any(ng in target_ngrams for ng in filter_ngrams)
+    )

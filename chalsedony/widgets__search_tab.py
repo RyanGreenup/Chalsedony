@@ -90,10 +90,7 @@ class NoteListWidget(KbdListWidget):
             item = self.item(i)
             if item:
                 matches = text_matches_filter(
-                    filter_text, 
-                    item.text(),
-                    n=2,
-                    match_all=True
+                    filter_text, item.text(), n=2, match_all=True
                 )
                 item.setHidden(not matches)
 

@@ -1,6 +1,6 @@
 from typing import Callable
 from PySide6.QtCore import Qt, QPoint, Signal
-from PySide6.QtWidgets import QTreeWidgetItem, QStyle
+from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QTreeWidget
 from widgets__kbd_widgets import KbdTreeWidget
 
 from PySide6.QtGui import (
@@ -11,7 +11,6 @@ from PySide6.QtGui import (
     QKeyEvent,
 )
 from PySide6.QtWidgets import (
-    QTreeWidget,
     QWidget,
     QMenu,
     QApplication,
@@ -20,9 +19,52 @@ from PySide6.QtWidgets import (
 from note_model import NoteModel
 from db_api import FolderTreeItem, ItemType
 from widgets__stateful_tree import StatefulTree, TreeItemData
+from utils__ngram_filter import text_matches_filter
 
 
-class NoteTree(StatefulTree, KbdTreeWidget):
+class TreeWithFilter(QTreeWidget):
+    """Base tree widget class with filtering functionality"""
+
+    def filter_tree(self, text: str) -> None:
+        """Filter the tree view based on search text using n-gram comparison"""
+
+        def filter_items(item: QTreeWidgetItem) -> bool:
+            # Get if this item matches using n-gram comparison
+            item_matches = text_matches_filter(text, item.text(0), n=2, match_all=True)
+
+            # Check all children
+            child_matches = False
+            visible_children = 0
+            for i in range(item.childCount()):
+                child = item.child(i)
+                if filter_items(child):
+                    child_matches = True
+                    visible_children += 1
+
+            # For folders (items with children), hide if no visible children and no match
+            if item.childCount() > 0:
+                item.setHidden(not (item_matches or visible_children > 0))
+            else:
+                # For notes (leaf items), hide if no match
+                item.setHidden(not item_matches)
+
+            return item_matches or child_matches
+
+        # If empty show all items
+        if not text:
+            for i in range(self.topLevelItemCount()):
+                item = self.topLevelItem(i)
+                item.setHidden(False)
+                for j in range(item.childCount()):
+                    item.child(j).setHidden(False)
+            return
+
+        # Filter from top level
+        for i in range(self.topLevelItemCount()):
+            filter_items(self.topLevelItem(i))
+
+
+class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
     note_created = Signal(str)  # folder_id
     note_deleted = Signal(str)  # note_id
     duplicate_note = Signal(str)  # note_id
