@@ -9,14 +9,15 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QPoint, Signal, Qt
 
+from widgets__stateful_tree import TreeItemData
 from note_model import NoteModel
-from db_api import NoteSearchResult
+from db_api import ItemType, NoteSearchResult
 from widgets__kbd_widgets import KbdListWidget
 
 
 class SearchSidebar(QWidget):
     search_text_changed = Signal(str)  # Emits search query text
-    note_selected = Signal(str)  # Emits selected note ID
+    note_selected = Signal(TreeItemData)  # TreeItemData: Note ID and type
 
     def __init__(self, model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -53,7 +54,12 @@ class SearchSidebar(QWidget):
         if selected:
             note_id = selected[0].data(Qt.ItemDataRole.UserRole)
             if note_id:
-                self.note_selected.emit(note_id)
+                item_data = TreeItemData(
+                    ItemType.NOTE,
+                    note_id,
+                    title="Title omitted, not needed in the search_tab emission",
+                )
+                self.note_selected.emit(item_data)
 
     def populate_notes_list(self, search_query: str = "") -> None:
         """Populate the all notes list view with optional search filtering"""

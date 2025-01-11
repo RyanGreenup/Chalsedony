@@ -10,6 +10,7 @@ from PySide6.QtGui import QImage
 from PySide6.QtCore import Signal
 import tempfile
 import os
+from widgets__stateful_tree import TreeItemData
 from utils_html_to_markdown import html_to_markdown
 from PySide6.QtWebEngineCore import (
     QWebEngineUrlScheme,
@@ -32,7 +33,7 @@ from bs4 import BeautifulSoup, Tag
 import markdown
 import pymdownx.superfences
 
-from db_api import IdTable
+from db_api import IdTable, ItemType
 from note_model import NoteModel, ResourceType
 
 import subprocess
@@ -326,7 +327,6 @@ class MDTextEdit(QTextEdit):
         cursor.setPosition(pos + len(text))
         self.setTextCursor(cursor)
 
-    # Improve this to handle drag and drop of images AI!
     def insertFromMimeData(self, source: QMimeData) -> None:
         """Handle paste events and transform HTML content using markdownify"""
         if source.hasImage():
@@ -430,86 +430,9 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                         info.block(True)
 
 
-class NoteLinkPage(QWebEnginePage):
-    def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
-        # Create and set the URL interceptor
-        self.interceptor = NoteUrlRequestInterceptor(note_model)
-        self.setUrlRequestInterceptor(self.interceptor)
-        self.note_model = note_model
-
-    def acceptNavigationRequest(
-        self, url: QUrl | str, type: QWebEnginePage.NavigationType, isMainFrame: bool
-    ) -> bool:
-        """Handle link clicks in the preview"""
-        _ = isMainFrame  # Unused
-        _ = type  # Unused
-        # Handle string input
-        if isinstance(url, str):
-            url = QUrl(url)
-
-        # Handle the navigation request
-        if url.scheme() == "note":
-            # Extract ID from URL by removing scheme and host
-            id = url.toString().replace("note://", "").strip("/")
-
-            if (id_type := self.note_model.what_is_this(id)) is not None:
-                match id_type:
-                    case IdTable.NOTE:
-                        note_id = id
-                        print(f"Note link clicked! ID: {note_id}")
-                    case IdTable.FOLDER:
-                        folder_id = id
-                        print(f"Folder link clicked! ID: {folder_id}")
-                    case IdTable.RESOURCE:
-                        resource_id = id
-                        resource_path = self.note_model.get_resource_path(resource_id)
-                        print(f"Resource link clicked! ID: {resource_id}")
-
-                        def try_open(resource_path: Path | None) -> None:
-                            if resource_path is not None:
-                                from PySide6.QtWidgets import QApplication
-
-                                clipboard = QApplication.clipboard()
-                                clipboard.setText(str(resource_path))
-                                open_file(resource_path)
-                            else:
-                                print(f"Resource ID: {resource_id} does not exist")
-
-                        match self.note_model.get_resource_mime_type(resource_id)[
-                            1
-                        ]:  # Get just the ResourceType
-                            case ResourceType.IMAGE:
-                                print(f"Image resource clicked: {resource_id}")
-                                try_open(resource_path)
-                            case ResourceType.VIDEO:
-                                try_open(resource_path)
-                            case ResourceType.AUDIO:
-                                try_open(resource_path)
-                            case ResourceType.DOCUMENT:
-                                try_open(resource_path)
-                            case ResourceType.ARCHIVE:
-                                try_open(resource_path)
-                            case ResourceType.CODE:
-                                try_open(resource_path)
-                            case ResourceType.OTHER:
-                                try_open(resource_path)
-
-            else:
-                # This would depend if we can safely create a new note with the ID, not sure on the impact of changing note ids
-                print(
-                    f"Note ID: {id} does not exist, in the future this may create a new note with that ID"
-                )
-            return False  # Prevent default navigation
-
-        # Allow normal navigation for other links
-        return True
-
-    def requestedUrl(self) -> QUrl:
-        return QUrl("note://")
-
-
 class WebPreview(QWebEngineView):
+    note_selected = Signal(TreeItemData)  # TreeItemData: Note ID and type
+
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setPage(NoteLinkPage(parent=self, note_model=note_model))
@@ -754,6 +677,93 @@ class WebPreview(QWebEngineView):
                                         link["href"] = f"note://{resource_id}"
 
         return str(soup)
+
+
+class NoteLinkPage(QWebEnginePage):
+    def __init__(self, note_model: NoteModel, parent: WebPreview) -> None:
+        super().__init__(parent)
+        # Create and set the URL interceptor
+        self.interceptor = NoteUrlRequestInterceptor(note_model)
+        self.setUrlRequestInterceptor(self.interceptor)
+        self.note_model = note_model
+        self._parent: WebPreview = parent
+
+    def parent(self) -> WebPreview:
+        return self._parent
+
+    def acceptNavigationRequest(
+        self, url: QUrl | str, type: QWebEnginePage.NavigationType, isMainFrame: bool
+    ) -> bool:
+        """Handle link clicks in the preview"""
+        _ = isMainFrame  # Unused
+        _ = type  # Unused
+        # Handle string input
+        if isinstance(url, str):
+            url = QUrl(url)
+
+        # Handle the navigation request
+        if url.scheme() == "note":
+            # Extract ID from URL by removing scheme and host
+            id = url.toString().replace("note://", "").strip("/")
+
+            if (id_type := self.note_model.what_is_this(id)) is not None:
+                match id_type:
+                    case IdTable.NOTE:
+                        note_id = id
+                        item_data = TreeItemData(
+                            ItemType.NOTE, note_id, "Title Omitted, not needed Here"
+                        )
+                        self.parent().note_selected.emit(item_data)
+                        print(f"Note link clicked! ID: {note_id}")
+                    case IdTable.FOLDER:
+                        folder_id = id
+                        print(f"Folder link clicked! ID: {folder_id}")
+                    case IdTable.RESOURCE:
+                        resource_id = id
+                        resource_path = self.note_model.get_resource_path(resource_id)
+                        print(f"Resource link clicked! ID: {resource_id}")
+
+                        def try_open(resource_path: Path | None) -> None:
+                            if resource_path is not None:
+                                from PySide6.QtWidgets import QApplication
+
+                                clipboard = QApplication.clipboard()
+                                clipboard.setText(str(resource_path))
+                                open_file(resource_path)
+                            else:
+                                print(f"Resource ID: {resource_id} does not exist")
+
+                        match self.note_model.get_resource_mime_type(resource_id)[
+                            1
+                        ]:  # Get just the ResourceType
+                            case ResourceType.IMAGE:
+                                print(f"Image resource clicked: {resource_id}")
+                                try_open(resource_path)
+                            case ResourceType.VIDEO:
+                                try_open(resource_path)
+                            case ResourceType.AUDIO:
+                                try_open(resource_path)
+                            case ResourceType.DOCUMENT:
+                                try_open(resource_path)
+                            case ResourceType.ARCHIVE:
+                                try_open(resource_path)
+                            case ResourceType.CODE:
+                                try_open(resource_path)
+                            case ResourceType.OTHER:
+                                try_open(resource_path)
+
+            else:
+                # This would depend if we can safely create a new note with the ID, not sure on the impact of changing note ids
+                print(
+                    f"Note ID: {id} does not exist, in the future this may create a new note with that ID"
+                )
+            return False  # Prevent default navigation
+
+        # Allow normal navigation for other links
+        return True
+
+    def requestedUrl(self) -> QUrl:
+        return QUrl("note://")
 
 
 def get_language_class(ext: str) -> str | None:

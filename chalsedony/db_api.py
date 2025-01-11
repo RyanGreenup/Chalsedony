@@ -85,13 +85,6 @@ class IdTable(Enum):
     RESOURCE = "resource"
 
 
-class TreeItemData(NamedTuple):
-    """Represents data stored in a tree widget item"""
-
-    type: ItemType
-    id: str
-
-
 class Resource(BaseModel):
     """Model representing a resource/asset in the database"""
 

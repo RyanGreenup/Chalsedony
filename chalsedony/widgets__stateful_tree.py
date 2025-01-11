@@ -177,7 +177,6 @@ class StatefulTree(QTreeWidget):
             return cast(TreeWidgetItem, current).item_data
         return None
 
-
     def get_selected_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all selected items in the tree
 
@@ -243,6 +242,9 @@ class StatefulTree(QTreeWidget):
         Args:
             item_data: The TreeItemData containing the item's type and ID
         """
+        if current_data := self.get_current_item_data():
+            if item_data == current_data:
+                return
         try:
             if item := self.tree_items.get_item(item_data):
                 self.setCurrentItem(item)

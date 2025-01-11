@@ -15,4 +15,4 @@ def html_to_markdown(html: str) -> str:
         wrap_width=0,  # Don't wrap text
     )
 
-    return markdown_text
+    return str(markdown_text)

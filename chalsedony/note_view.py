@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import (
+    QMainWindow,
     QWidget,
     QHBoxLayout,
     QVBoxLayout,
@@ -19,6 +20,7 @@ from PySide6.QtCore import (
     QEasingCurve,
 )
 from note_model import NoteModel
+from widgets__stateful_tree import TreeItemData
 from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
 from widgets__search_tab import SearchSidebar
@@ -31,7 +33,7 @@ class NoteView(QWidget):
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
     DEFAULT_SIDEBAR_WIDTH = 200  # Default sidebar width
 
-    def __init__(self, model: NoteModel, parent: QWidget | None = None) -> None:
+    def __init__(self, model: NoteModel, parent: QMainWindow) -> None:
         super().__init__(parent)
         self.model = model
         self.current_note_id: str | None = None
@@ -112,6 +114,10 @@ class NoteView(QWidget):
         if isinstance(parent, MainWindow):
             parent.save_note_signal.connect(self.save_current_note)
             parent.style_changed.connect(self.content_area.apply_dark_theme)
+        else:
+            raise TypeError(
+                "Parent window must be an instance of MainWindow to connect signals"
+            )
         # Internal Signals
         self.tree_widget.itemSelectionChanged.connect(self._on_tree_selection_changed)
 
@@ -136,12 +142,11 @@ class NoteView(QWidget):
         self.tree_widget.duplicate_note.connect(self.model.duplicate_note)
         self.tree_widget.folder_deleted.connect(self.model.delete_folder_recursive)
         self.tree_widget.folder_create.connect(self._on_create_folder_requested)
+        self.content_area.preview.note_selected.connect(self._handle_note_selection)
 
         # Connect search tab signals
         self.search_tab.search_text_changed.connect(self._on_search_text_changed)
-        self.search_tab.note_selected.connect(
-            lambda note_id: self._handle_note_selection(ItemType.NOTE, note_id)
-        )
+        self.search_tab.note_selected.connect(self._handle_note_selection)
 
     def _on_create_folder_requested(self, title: str, parent_id: str) -> None:
         try:
@@ -236,27 +241,27 @@ class NoteView(QWidget):
                 print(e)
 
     def _on_tree_selection_changed(self) -> None:
-        items = self.tree_widget.selectedItems()
-        if not items:
-            return
+        items = self.tree_widget.get_selected_items_data()
+        if len(items) > 0:
+            self._handle_note_selection(items[0], change_tree=False)
 
-        item = items[0]
-        item_type, item_id, item_title = item.data(0, Qt.ItemDataRole.UserRole)
-        _ = item_title  # Unused variable
-        self._handle_note_selection(item_type, item_id)
-
-    def _handle_note_selection(self, item_type: ItemType, item_id: str) -> None:
+    # TODO handle back and forth history, unsure with scrolling tree though
+    def _handle_note_selection(
+        self, item_data: TreeItemData, change_tree: bool = True
+    ) -> None:
         """Common handler for note selection from either tree or list"""
         # Disconnect textChanged signal to prevent update loop
         self.content_area.editor.textChanged.disconnect(self._on_editor_text_changed)
 
         try:
-            match item_type:
+            match item_data.type:
                 case ItemType.NOTE:
-                    self.current_note_id = item_id
-                    note = self.model.find_note_by_id(item_id)
+                    self.current_note_id = item_data.id
+                    note = self.model.find_note_by_id(item_data.id)
                     if note:
                         self.content_area.editor.setPlainText(note.body or "")
+                        if change_tree:
+                            self.tree_widget.set_current_item_by_data(item_data)
                 case ItemType.FOLDER:
                     self.current_note_id = None
                     self.content_area.editor.clear()
