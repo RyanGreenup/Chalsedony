@@ -5,12 +5,12 @@ from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QSplitter,
-    QInputDialog,
 )
 from PySide6.QtGui import QImage
 from PySide6.QtCore import Signal
 import tempfile
 import os
+from utils_html_to_markdown import html_to_markdown
 from PySide6.QtWebEngineCore import (
     QWebEngineUrlScheme,
     QWebEnginePage,
@@ -294,7 +294,7 @@ class EditPreview(QWidget):
 
 class MDTextEdit(QTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
-    imageUploadRequested = Signal(str, str)
+    imageUploadRequested = Signal(str)  # Filepath
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -326,23 +326,17 @@ class MDTextEdit(QTextEdit):
         cursor.setPosition(pos + len(text))
         self.setTextCursor(cursor)
 
+    # Improve this to handle drag and drop of images AI!
     def insertFromMimeData(self, source: QMimeData) -> None:
         """Handle paste events and transform HTML content using markdownify"""
         if source.hasImage():
             image = QImage(source.imageData())
             if not image.isNull():
-                # Prompt for image title
-                title, ok = QInputDialog.getText(
-                    self, "Image Title", "Enter a title for the pasted image:"
-                )
-                if ok and title:
-                    # Save image to temp file
-                    temp_path = os.path.join(
-                        self.temp_dir, f"pasted_image_{id(image)}.png"
-                    )
-                    image.save(temp_path)
-                    # Emit signal for upload
-                    self.imageUploadRequested.emit(temp_path, title)
+                # Save image to temp file
+                temp_path = os.path.join(self.temp_dir, f"pasted_image_{id(image)}.png")
+                image.save(temp_path)
+                # Emit signal for upload
+                self.imageUploadRequested.emit(temp_path)
                 return
 
         elif source.hasHtml():
@@ -350,25 +344,11 @@ class MDTextEdit(QTextEdit):
             html = source.html()
 
             try:
-                from markdownify import markdownify as md
-
                 # Convert HTML to markdown
-                markdown_text = md(
-                    html,
-                    heading_style="ATX",  # Use # for headings
-                    code_language="guess",  # Try to detect code language
-                    strip=["style", "script"],  # Remove unwanted tags
-                    autolinks=True,  # Convert URLs to links
-                    default_title=True,  # Use title attribute for links
-                    escape_underscores=False,  # Don't escape underscores
-                    keep_inline_images_in=["img"],  # Keep image tags
-                    wrap_width=0,  # Don't wrap text
-                )
-
+                markdown_text = html_to_markdown(html)
                 # Insert the transformed text
                 self.insertPlainText(markdown_text)
-            except ImportError:
-                # Fallback to plain text if markdownify not available
+            except Exception:
                 from bs4 import BeautifulSoup
 
                 soup = BeautifulSoup(html, "html.parser")
