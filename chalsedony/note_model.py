@@ -920,8 +920,42 @@ class NoteModel(QObject):
         )
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
-    # A forward link is represented by text in the body field of the form ":/{id}". Implement logic to return a list of forward links for a given note. AI!
     def get_forwardlinks(self, note_id: str) -> List[NoteSearchResult]:
+        """Get all notes that this note links to
+
+        A forward link is represented by text in the body field of the form ":/{id}"
+
+        Args:
+            note_id: The ID of the source note
+
+        Returns:
+            List of NoteSearchResult containing note IDs and titles of linked notes
+        """
+        # First get the note body
+        cursor = self.db_connection.cursor()
+        cursor.execute("SELECT body FROM notes WHERE id = ?", (note_id,))
+        row = cursor.fetchone()
+        if not row or not row[0]:
+            return []
+
+        body = row[0]
+        
+        # Find all instances of ":/ID" pattern
+        import re
+        linked_ids = re.findall(r':/([a-zA-Z0-9]+)', body)
+        
+        if not linked_ids:
+            return []
+            
+        # Get titles for all valid note IDs found
+        placeholders = ','.join('?' * len(linked_ids))
+        cursor.execute(
+            f"SELECT id, title FROM notes WHERE id IN ({placeholders})",
+            linked_ids
+        )
+        
+        return [NoteSearchResult(id=row[0], title=row[1]) 
+                for row in cursor.fetchall()]
 
 
 # Footnotes
