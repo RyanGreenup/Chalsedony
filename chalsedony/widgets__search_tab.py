@@ -1,5 +1,5 @@
-from typing import List
-from PySide6.QtGui import QAction
+from typing import Callable, List
+from PySide6.QtGui import QAction, QKeyEvent
 from utils__ngram_filter import text_matches_filter
 from PySide6.QtWidgets import (
     QApplication,
@@ -76,10 +76,15 @@ class SearchSidebar(QWidget):
 
 
 class NoteListWidget(KbdListWidget):
+    # This is used to select a note even when follow_mode is disabled, otherwise notes update when moving through the tree
+    note_selected = Signal(TreeItemData)  # The selected Item,
+    status_bar_message = Signal(str)  # Signal to send messages to status bar
+
     def __init__(self) -> None:
         super().__init__()
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
+        self.create_keybinings()
 
     def populate_notes_list(self, note_items: List[NoteSearchResult]) -> None:
         """Populate the all notes list view with optional search filtering"""
@@ -128,3 +133,41 @@ class NoteListWidget(KbdListWidget):
         item.setData(Qt.ItemDataRole.UserRole, search_result.id)
         super().addItem(item)
         return item
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """Handle keyboard shortcuts for cut/paste operations"""
+        if self.currentItem():
+            key = Qt.Key(event.key())
+            action = self.key_actions.get(key)
+            if action is not None:
+                action()
+                event.accept()
+                return
+
+        # Let parent class handle other keys
+        super().keyPressEvent(event)
+
+    def create_keybinings(self) -> None:
+        """Create keyboard shortcuts for tree operations.
+
+        Returns:
+            None
+        """
+
+        def note_select() -> None:
+            if item := self.currentItem():
+                title = item.text()
+                item_id = item.data(Qt.ItemDataRole.UserRole)
+                self.note_selected.emit(
+                    TreeItemData(ItemType.NOTE, item_id, title=title)
+                )
+            else:
+                self.send_status_message("No item selected")
+
+        self.key_actions: dict[Qt.Key, Callable[[], None]] = {
+            Qt.Key.Key_Return: note_select,
+        }
+
+    def send_status_message(self, message: str) -> None:
+        """Send a message to the status bar"""
+        self.status_bar_message.emit(message)

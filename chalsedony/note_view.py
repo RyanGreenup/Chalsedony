@@ -188,7 +188,11 @@ class NoteView(QWidget):
 
         # Connect search tab signals
         self.search_tab.search_text_changed.connect(self._on_search_text_changed)
+        # This needs to be reviewed for follow mode with Enter (already implemented in widget
         self.search_tab.note_selected.connect(self._handle_note_selection)
+        self.search_tab.search_sidebar_list.status_bar_message.connect(
+            self.send_status_message
+        )
 
         # Connect tree search
         self.tree_search.textChanged.connect(self.tree_widget.filter_tree)
