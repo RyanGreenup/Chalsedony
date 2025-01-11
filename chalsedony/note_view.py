@@ -283,8 +283,7 @@ class NoteView(QWidget):
             print(status_message)
             self.send_status_message(status_message)
             return
-        # Use a QTimer to ensure the tree is updated before selecting the new folder
-        # Is there a better way to wait for other signals to complete before selecting?
+        # Is there a better way to wait for other signals to complete before selecting? AI!
         QTimer.singleShot(
             100,
             lambda: self._handle_note_selection(
