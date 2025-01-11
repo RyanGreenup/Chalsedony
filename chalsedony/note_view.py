@@ -31,6 +31,8 @@ from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
 from widgets__search_tab import SearchSidebar
 
+HISTORY_TIME = 1000
+
 
 class NoteView(QWidget):
     note_content_changed = Signal(int, str)  # (note_id, content)
@@ -74,7 +76,7 @@ class NoteView(QWidget):
         self.history: List[TreeItemData] = []
         self.history_position = -1
         self._history_timer = QTimer()
-        self._history_timer.setInterval(2000)  # 5 seconds
+        self._history_timer.setInterval(HISTORY_TIME)  # 5 seconds
         self._history_timer.setSingleShot(True)
         self._history_timer.timeout.connect(self._add_current_note_to_history)
 
@@ -376,6 +378,7 @@ class NoteView(QWidget):
         # Safely disconnect textChanged signal to prevent update loop
         if self.current_note_id == item_data.id:
             print("Attempting to select the same note")
+            self.send_status_message("Note already selected")
             return
         try:
             self.content_area.editor.textChanged.disconnect(
@@ -592,15 +595,15 @@ class NoteView(QWidget):
             note = self.model.find_note_by_id(self.current_note_id)
             if note:
                 item_data = TreeItemData(
-                    ItemType.NOTE,
-                    self.current_note_id,
-                    title=note.title
+                    ItemType.NOTE, self.current_note_id, title=note.title
                 )
                 # Remove any forward history when adding new item
                 if self.history_position < len(self.history) - 1:
-                    self.history = self.history[:self.history_position + 1]
-                self.history.append(item_data)
-                self.history_position = len(self.history) - 1
+                    self.history = self.history[: self.history_position + 1]
+                # Don't add duplicates
+                if len(self.history) == 0 or self.history[-1] != item_data:
+                    self.history.append(item_data)
+                    self.history_position = len(self.history) - 1
 
     def go_back_in_history(self) -> None:
         """Navigate backwards in the note history"""
