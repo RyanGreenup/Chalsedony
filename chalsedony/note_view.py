@@ -57,11 +57,7 @@ class NoteView(QWidget):
         self.setup_ui()
         self._populate_ui()
         self._connect_signals()
-        self.history: List[TreeItemData] = []
-        self._history_timer = QTimer()
-        self._history_timer.setInterval(5000)  # 5 seconds
-        self._history_timer.setSingleShot(True)
-        self._history_timer.timeout.connect(self._add_current_note_to_history)
+        self._setup_history()
         if focus_journal:
             self.focus_todays_journal()
         else:
@@ -73,6 +69,13 @@ class NoteView(QWidget):
                     )
                 else:
                     self.send_status_message(f"Note '{initial_note}' not found")
+
+    def _setup_history(self) -> None:
+        self.history: List[TreeItemData] = []
+        self._history_timer = QTimer()
+        self._history_timer.setInterval(2000)  # 5 seconds
+        self._history_timer.setSingleShot(True)
+        self._history_timer.timeout.connect(self._add_current_note_to_history)
 
     def focus_todays_journal(self) -> None:
         journal_page = self.model.get_journal_page_for_today()
@@ -593,3 +596,8 @@ class NoteView(QWidget):
                     title=note.title
                 )
                 self.history.append(item_data)
+
+    # Implement history navigation AI!
+    def go_back_in_history(self) -> None:
+
+    def go_forward_in_history(self) -> None:
