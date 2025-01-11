@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -57,6 +57,8 @@ class NoteView(QWidget):
         self.setup_ui()
         self._populate_ui()
         self._connect_signals()
+        # AI: This is the history of notes visited
+        self.history: List[TreeItemData] = []
         if focus_journal:
             self.focus_todays_journal()
         else:
@@ -360,6 +362,7 @@ class NoteView(QWidget):
                 self._handle_note_selection(items[0], change_tree=False)
 
     # TODO handle back and forth history, unsure with scrolling tree though
+    # If a note has been viewed for more than 5 seconds, add it to the history AI!
     def _handle_note_selection(
         self, item_data: TreeItemData, change_tree: bool = True
     ) -> None:
