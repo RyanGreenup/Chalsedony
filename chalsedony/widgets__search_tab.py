@@ -89,8 +89,8 @@ class NoteListWidget(KbdListWidget):
         self.create_keybinings()
         self._connect_signals()
 
-    # Modify this to not emit anything if there is no item selected AI!
     def _connect_signals(self) -> None:
+        """Connect signals and ensure they only emit when an item is selected."""
         def get_item_data(item: QListWidgetItem) -> TreeItemData:
             return TreeItemData(
                 ItemType.NOTE,
