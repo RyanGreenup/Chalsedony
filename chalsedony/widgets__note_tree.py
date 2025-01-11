@@ -94,6 +94,13 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         Returns:
             None
         """
+
+        def note_select() -> None:
+            if item := self.get_current_item_data():
+                self.note_selected.emit(item)
+            else:
+                self.send_status_message("No item selected")
+
         self.key_actions: dict[Qt.Key, Callable[[], None]] = {
             Qt.Key.Key_X: self.cut_selected_items,
             Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
@@ -103,7 +110,7 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             Qt.Key.Key_Delete: lambda: self.delete_item(self.currentItem()),
             Qt.Key.Key_C: lambda: self.copy_id(self.currentItem()),
             Qt.Key.Key_Y: lambda: self.duplicate_item(self.currentItem()),
-            Qt.Key.Key_Return: lambda: self.note_selected.emit(self.currentItem().data(0, Qt.ItemDataRole.UserRole)),
+            Qt.Key.Key_Return: note_select,
         }
 
     def setup_ui(self) -> None:

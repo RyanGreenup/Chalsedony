@@ -182,7 +182,7 @@ class MainWindow(QMainWindow):
                             id="note_link_palette",
                             text="&Note Link Palette",
                             handler="note_link_palette",
-                            shortcut="Ctrl+K",
+                            shortcut="Ctrl+L",
                         ),
                         MenuAction(
                             id="maximize_editor",
@@ -253,13 +253,24 @@ class MainWindow(QMainWindow):
                             id="next_widget",
                             text="Next &Widget",
                             handler="focusNextChild",
-                            shortcut="Tab",
+                            shortcut="Ctrl+J",
                         ),
                         MenuAction(
                             id="previous_widget",
                             text="Previous Wi&dget",
-                            handler="focusPreviousChild", 
-                            shortcut="Shift+Tab",
+                            handler="focusPreviousChild",
+                            shortcut="Ctrl+K",
+                        ),
+                    ],
+                ),
+                MenuStructure(
+                    name="&Options",
+                    actions=[
+                        MenuAction(
+                            id="toggle_follow_mode",
+                            text="Toggle &Follow Mode",
+                            shortcut="Ctrl+F",
+                            handler="toggle_follow_mode",
                         ),
                     ],
                 ),
@@ -275,6 +286,13 @@ class MainWindow(QMainWindow):
                 ),
             ]
         )
+
+    def toggle_follow_mode(self) -> None:
+        if view := self.get_current_view():
+            view.follow_mode = not view.follow_mode
+            self.set_status_message(
+                f"Follow mode {'enabled' if view.follow_mode else 'disabled'}"
+            )
 
     def todays_journal(self) -> None:
         journal_page = self.note_model.get_journal_page_for_today()

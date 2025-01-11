@@ -39,6 +39,7 @@ class NoteView(QWidget):
     def __init__(self, model: NoteModel, parent: QMainWindow) -> None:
         super().__init__(parent)
         self.model = model
+        self.follow_mode = False
         self.current_note_id: str | None = None
         self._editor_maximized = False  # Track editor maximization state
         self._left_animation: QPropertyAnimation | None = None
@@ -130,6 +131,9 @@ class NoteView(QWidget):
             )
         # Internal Signals
         self.tree_widget.itemSelectionChanged.connect(self._on_tree_selection_changed)
+        self.tree_widget.note_selected.connect(
+            lambda item: self._handle_note_selection(item, change_tree=False)
+        )
 
         # Emit Signals
         # Emit signals to Model
@@ -277,8 +281,9 @@ class NoteView(QWidget):
 
     def _on_tree_selection_changed(self) -> None:
         items = self.tree_widget.get_selected_items_data()
-        if len(items) > 0:
-            self._handle_note_selection(items[0], change_tree=False)
+        if self.follow_mode and len(items) > 0:
+            if len(items) > 0:
+                self._handle_note_selection(items[0], change_tree=False)
 
     # TODO handle back and forth history, unsure with scrolling tree though
     def _handle_note_selection(
@@ -287,7 +292,9 @@ class NoteView(QWidget):
         """Common handler for note selection from either tree or list"""
         # Safely disconnect textChanged signal to prevent update loop
         try:
-            self.content_area.editor.textChanged.disconnect(self._on_editor_text_changed)
+            self.content_area.editor.textChanged.disconnect(
+                self._on_editor_text_changed
+            )
         except TypeError:
             # Signal was not connected
             pass
