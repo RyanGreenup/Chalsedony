@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
 )
 
-from command_palette import NoteSelectionPalette
+from command_palette import NoteSelectionPalette, NoteLinkPalette
 
 
 from pathlib import Path
@@ -123,6 +123,7 @@ class NoteView(QWidget):
             parent.save_note_signal.connect(self.save_current_note)
             parent.style_changed.connect(self.content_area.apply_dark_theme)
             parent.note_selection_palette_requested.connect(self.note_selection_palette)
+            parent.note_link_palette_requested.connect(self.note_link_palette)
         else:
             raise TypeError(
                 "Parent window must be an instance of MainWindow to connect signals"
@@ -168,6 +169,13 @@ class NoteView(QWidget):
         all_notes = self.model.get_all_notes()
         palette = NoteSelectionPalette(self, all_notes)
         palette.note_selected.connect(self._handle_note_selection_from_id)
+        palette.show()
+
+    def note_link_palette(self) -> None:
+        """Open a note selection palette dialog"""
+        all_notes = self.model.get_all_notes()
+        palette = NoteLinkPalette(self, all_notes)
+        palette.insert_note_link.connect(self.insert_note_link)
         palette.show()
 
     def _handle_note_selection_from_id(self, note_id: str) -> None:
@@ -465,4 +473,16 @@ class NoteView(QWidget):
             # Create markdown link
             resource_name = self.model.get_resource_title(resource_id)
             text = f"![{resource_name}](:/{resource_id})"
-            self.content_area.editor.insert_text_at_cursor(text, copy=True)
+            self.insert_text_at_cursor(text, copy=True)
+
+    def insert_text_at_cursor(self, text: str, copy: bool = False) -> None:
+        """Insert text at the current cursor position in the editor"""
+        self.content_area.editor.insert_text_at_cursor(text, copy=copy)
+
+    def insert_note_link(self, note_id: str) -> None:
+        """Insert a link to a note at the current cursor position in the editor"""
+        # TODO this doesn't need the content
+        note = self.model.find_note_by_id(note_id)
+        if note:
+            text = f"[{note.title}](note:{note.id})"
+            self.insert_text_at_cursor(text, copy=True)

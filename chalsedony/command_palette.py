@@ -40,7 +40,7 @@ class CommandPalette(SelectionDialog):
                 break
 
 
-class NoteSelectionPalette(SelectionDialog):
+class NotePalette(SelectionDialog):
     note_selected = Signal(str)  # Emits note ID when selected
 
     def __init__(self, parent: QWidget, notes: list[NoteSearchResult]) -> None:
@@ -59,11 +59,35 @@ class NoteSelectionPalette(SelectionDialog):
         if self.list.count() > 0:
             self.list.setCurrentRow(0)
 
+
+class NoteSelectionPalette(NotePalette):
+    note_selected = Signal(str)  # Emits note ID when selected
+
+    def __init__(self, parent: QWidget, notes: list[NoteSearchResult]) -> None:
+        super().__init__(parent=parent, notes=notes)
+
     def on_item_selected(self, item: QListWidgetItem) -> None:
         """Handle note selection"""
         selected_title = item.text()
         for note in self._notes:
             if note.title == selected_title:
                 self.note_selected.emit(note.id)
+                self.close()
+                break
+
+
+# TODO these should both be ordered by modified time
+class NoteLinkPalette(NotePalette):
+    insert_note_link = Signal(str)  # Emits note ID when selected
+
+    def __init__(self, parent: QWidget, notes: list[NoteSearchResult]) -> None:
+        super().__init__(parent=parent, notes=notes)
+
+    def on_item_selected(self, item: QListWidgetItem) -> None:
+        """Handle note selection"""
+        selected_title = item.text()
+        for note in self._notes:
+            if note.title == selected_title:
+                self.insert_note_link.emit(note.id)
                 self.close()
                 break

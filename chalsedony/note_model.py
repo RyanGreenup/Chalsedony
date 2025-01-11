@@ -831,6 +831,18 @@ class NoteModel(QObject):
             case _:
                 return mime_type, ResourceType.OTHER
 
+    @staticmethod
+    def format_as_markdown_link(note: NoteSearchResult) -> str:
+        """Format a note as a markdown link
+
+        Args:
+            note: The note to format
+
+        Returns:
+            A markdown link to the note
+        """
+        return f"[{note.title}](:/{note.id})"
+
 
 # Footnotes
 # [fn_is_associated]: https://discourse.joplinapp.org/t/is-associated-in-note-resource-0-at-what-time-orphaned-files-are-detectable/4443/3

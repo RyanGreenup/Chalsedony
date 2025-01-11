@@ -52,9 +52,8 @@ class MainWindow(QMainWindow):
     style_changed = Signal(bool)  # Emits True for dark mode, False for light mode
     refresh = Signal()
     save_note_signal = Signal()  # Signal to trigger note save
-    note_selection_palette_requested = (
-        Signal()
-    )  # Signal to request note selection palette
+    note_selection_palette_requested = Signal()
+    note_link_palette_requested = Signal()
 
     def __init__(self, database: Path, assets: Path) -> None:
         super().__init__()
@@ -178,6 +177,12 @@ class MainWindow(QMainWindow):
                             shortcut="Ctrl+P",
                         ),
                         MenuAction(
+                            id="note_link_palette",
+                            text="&Note Link Palette",
+                            handler="note_link_palette",
+                            shortcut="Ctrl+K",
+                        ),
+                        MenuAction(
                             id="maximize_editor",
                             text="Maximize &Editor",
                             handler="maximize_editor",
@@ -248,6 +253,9 @@ class MainWindow(QMainWindow):
 
     def note_selection_palette(self) -> None:
         self.note_selection_palette_requested.emit()
+
+    def note_link_palette(self) -> None:
+        self.note_link_palette_requested.emit()
 
     def zoom(self, factor: float) -> None:
         """Change the UI scale by the given factor.
