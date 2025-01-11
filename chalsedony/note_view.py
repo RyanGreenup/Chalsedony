@@ -283,13 +283,11 @@ class NoteView(QWidget):
             print(status_message)
             self.send_status_message(status_message)
             return
-        # Is there a better way to wait for other signals to complete before selecting? AI!
-        QTimer.singleShot(
-            100,
-            lambda: self._handle_note_selection(
-                TreeItemData(ItemType.FOLDER, folder_id, title)
-            ),
-        )
+        # Use processEvents to ensure signals are handled before selection
+        from PySide6.QtCore import QCoreApplication
+
+        QCoreApplication.processEvents()
+        self._handle_note_selection(TreeItemData(ItemType.FOLDER, folder_id, title))
 
     def save_current_note(self) -> None:
         """Save the current note with title update from heading"""
