@@ -848,24 +848,22 @@ class NoteModel(QObject):
             case _:
                 return mime_type, ResourceType.OTHER
 
-
-    def get_journal_page_for_today(self) -> NoteSearchResult:
+    def get_journal_page_for_today(self) -> NoteSearchResult | None:
         """Get today's journal page note, identified by title matching today's date
 
         Returns:
             NoteSearchResult containing the matching note's ID and title
         """
-        title = date.today().strftime('%Y-%m-%d')
+        title = date.today().strftime("%Y-%m-%d")
         cursor = self.db_connection.cursor()
         cursor.execute(
             "SELECT id, title FROM notes WHERE title = ? ORDER BY updated_time DESC LIMIT 1",
-            (title,)
+            (title,),
         )
         row = cursor.fetchone()
         if not row:
-            raise ValueError(f"No journal page found for today ({title})")
+            return None
         return NoteSearchResult(id=row[0], title=row[1])
-
 
     @staticmethod
     def format_as_markdown_link(note: NoteSearchResult) -> str:

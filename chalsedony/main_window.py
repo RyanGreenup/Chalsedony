@@ -3,6 +3,8 @@ from PySide6.QtGui import QAction, QPalette
 import sqlite3
 from sqlite3 import Connection
 from pathlib import Path
+from db_api import ItemType
+from widgets__stateful_tree import TreeItemData
 from note_view import NoteView
 from note_model import (
     NoteModel,
@@ -239,6 +241,17 @@ class MainWindow(QMainWindow):
                     ],
                 ),
                 MenuStructure(
+                    name="&View",
+                    actions=[
+                        MenuAction(
+                            id="todays_journal",
+                            text="&Today's Journal",
+                            handler="todays_journal",
+                            shortcut="Ctrl+G",
+                        ),
+                    ],
+                ),
+                MenuStructure(
                     name="&Help",
                     actions=[
                         MenuAction(
@@ -250,6 +263,17 @@ class MainWindow(QMainWindow):
                 ),
             ]
         )
+
+    def todays_journal(self) -> None:
+        journal_page = self.note_model.get_journal_page_for_today()
+        if journal_page is None:
+            self.set_status_message("No journal page found for today")
+            return
+        if view := self.get_current_view():
+            item_data = TreeItemData(
+                ItemType.NOTE, journal_page.id, title=journal_page.title
+            )
+            view._handle_note_selection(item_data)
 
     def note_selection_palette(self) -> None:
         self.note_selection_palette_requested.emit()
