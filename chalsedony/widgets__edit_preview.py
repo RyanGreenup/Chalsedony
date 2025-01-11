@@ -325,7 +325,8 @@ class MDTextEdit(QTextEdit):
                     temp_path = os.path.join(self.temp_dir, f"pasted_image_{id(image)}.png")
                     # Diagnostics:
                     # Pyright: No overloads for "save" match the provided arguments [reportCallIssue]
-                    # The type si
+                    # The type signature is
+
 
                     image.save(temp_path, "PNG")
                     # Emit signal for upload
