@@ -54,6 +54,9 @@ class NoteModel(QObject):
         cursor.execute("SELECT id, title FROM notes")
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
+    # Implement this method AI!
+    def get_note_meta_by_id(self, note_id: str) -> NoteSearchResult:
+
     def on_note_content_changed(self, note_id: str, content: str) -> None:
         """Handle note content changes from view
 
