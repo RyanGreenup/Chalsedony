@@ -326,6 +326,14 @@ class MDTextEdit(QTextEdit):
                     # Diagnostics:
                     # Pyright: No overloads for "save" match the provided arguments [reportCallIssue]
                     # The type signature is
+                    ```
+
+def save(
+    fileName: str,
+    format: bytes | bytearray | memoryview[int] | None = ...,
+    quality: int = ...
+) -> bool: ...
+                    ```
 
 
                     image.save(temp_path, "PNG")
