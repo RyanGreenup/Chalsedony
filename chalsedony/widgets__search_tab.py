@@ -100,10 +100,7 @@ class NoteListWidget(KbdListWidget):
         def emit_signal_if_exists(item: QListWidgetItem) -> None:
             if item:
                 self.item_selection_changed.emit(get_item_data(item))
-        # Fix this error
-        # TypeError: NoteListWidget._connect_signals.<locals>.emit_signal_if_exists() missing 1 required positional argument: 'item'
-        # AI!
-        self.itemSelectionChanged.connect(emit_signal_if_exists)
+        self.itemSelectionChanged.connect(lambda: emit_signal_if_exists(self.currentItem()))
 
     def populate_notes_list(self, note_items: List[NoteSearchResult]) -> None:
         """Populate the all notes list view with optional search filtering"""
