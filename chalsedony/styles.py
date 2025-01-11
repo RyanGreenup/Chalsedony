@@ -2,6 +2,10 @@ base_style = """
 * {
     font-family: "Fira Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
+
+*:focus {
+    border: 2px solid palette(highlight);
+}
 """
 
 
