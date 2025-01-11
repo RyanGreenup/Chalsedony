@@ -1,3 +1,4 @@
+from typing import Optional
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -36,7 +37,13 @@ class NoteView(QWidget):
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
     DEFAULT_SIDEBAR_WIDTH = 200  # Default sidebar width
 
-    def __init__(self, model: NoteModel, parent: QMainWindow) -> None:
+    def __init__(
+        self,
+        model: NoteModel,
+        parent: QMainWindow,
+        initial_note: Optional[str] = None,
+        focus_journal: Optional[bool] = True,
+    ) -> None:
         super().__init__(parent)
         self.model = model
         self.follow_mode = False
@@ -48,6 +55,27 @@ class NoteView(QWidget):
         self.setup_ui()
         self._populate_ui()
         self._connect_signals()
+        if focus_journal:
+            self.focus_todays_journal()
+        else:
+            if initial_note:
+                note = self.model.get_note_by_title(initial_note)
+                if note is not None:
+                    self._handle_note_selection(
+                        TreeItemData(ItemType.NOTE, note.id, note.title)
+                    )
+                else:
+                    self.send_status_message(f"Note '{initial_note}' not found")
+
+    def focus_todays_journal(self) -> None:
+        journal_page = self.model.get_journal_page_for_today()
+        if journal_page is None:
+            self.send_status_message("No journal page found for today")
+            return
+        item_data = TreeItemData(
+            ItemType.NOTE, journal_page.id, title=journal_page.title
+        )
+        self._handle_note_selection(item_data)
 
     def send_status_message(self, message: str) -> None:
         """Send a message to the status bar"""

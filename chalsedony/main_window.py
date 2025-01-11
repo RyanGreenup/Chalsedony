@@ -3,8 +3,6 @@ from PySide6.QtGui import QAction, QPalette
 import sqlite3
 from sqlite3 import Connection
 from pathlib import Path
-from db_api import ItemType
-from widgets__stateful_tree import TreeItemData
 from note_view import NoteView
 from note_model import (
     NoteModel,
@@ -20,7 +18,7 @@ from PySide6.QtWidgets import (
     QStatusBar,
     QMessageBox,
 )
-from typing import List, Dict, TypedDict
+from typing import List, Dict, Optional, TypedDict
 from pydantic import BaseModel
 from palettes import create_dark_palette, create_light_palette
 
@@ -57,7 +55,13 @@ class MainWindow(QMainWindow):
     note_selection_palette_requested = Signal()
     note_link_palette_requested = Signal()
 
-    def __init__(self, database: Path, assets: Path) -> None:
+    def __init__(
+        self,
+        database: Path,
+        assets: Path,
+        initial_note: Optional[str],
+        focus_journal: Optional[bool],
+    ) -> None:
         super().__init__()
         app = QApplication.instance()
         if app is None:
@@ -97,7 +101,12 @@ class MainWindow(QMainWindow):
 
         # Initialize model and view
         self.note_model = NoteModel(self.db_connection, assets)
-        self.note_view = NoteView(parent=self, model=self.note_model)
+        self.note_view = NoteView(
+            parent=self,
+            model=self.note_model,
+            initial_note=initial_note,
+            focus_journal=focus_journal,
+        )
 
         # Connect signals to the view
         # Ask the model to refresh the data (which will emit a signal to refresh the view)
@@ -295,15 +304,8 @@ class MainWindow(QMainWindow):
             )
 
     def todays_journal(self) -> None:
-        journal_page = self.note_model.get_journal_page_for_today()
-        if journal_page is None:
-            self.set_status_message("No journal page found for today")
-            return
         if view := self.get_current_view():
-            item_data = TreeItemData(
-                ItemType.NOTE, journal_page.id, title=journal_page.title
-            )
-            view._handle_note_selection(item_data)
+            view.focus_todays_journal()
 
     def note_selection_palette(self) -> None:
         self.note_selection_palette_requested.emit()

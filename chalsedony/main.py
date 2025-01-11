@@ -31,6 +31,8 @@ def main(
     ),
     assets: Path = Path(os.path.expanduser("~/.config/joplin-desktop/resources/")),
     dark_mode: Optional[bool] = None,
+    initial_note: Optional[str] = None,
+    focus_journal: Optional[bool] = True,
 ) -> None:
     """
     Start the application
@@ -39,6 +41,8 @@ def main(
         dark_mode: Force dark mode on/off. If None, use system preference
         database: Path to the database file.
         assets: Path to the assets folder
+        initial_note: The title of the note to open on startup (First note by update_date)
+        focus_journal: Focus todays journal note on startup (default: True)
     """
     app = QApplication(sys.argv)
 
@@ -56,7 +60,7 @@ def main(
     # Apply the modern style sheet
     app.setStyleSheet(QSS_STYLE)
 
-    window = MainWindow(database, assets)
+    window = MainWindow(database, assets, initial_note, focus_journal)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     window.show()
     sys.exit(app.exec())

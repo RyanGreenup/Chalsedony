@@ -865,6 +865,25 @@ class NoteModel(QObject):
             return None
         return NoteSearchResult(id=row[0], title=row[1])
 
+    def get_note_by_title(self, title: str) -> NoteSearchResult | None:
+        """Get a note by its title, choosing the most recently updated if multiple exist
+
+        Args:
+            title: The title to search for
+
+        Returns:
+            NoteSearchResult containing the matching note's ID and title, or None if not found
+        """
+        cursor = self.db_connection.cursor()
+        cursor.execute(
+            "SELECT id, title FROM notes WHERE title = ? ORDER BY updated_time DESC LIMIT 1",
+            (title,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+        return NoteSearchResult(id=row[0], title=row[1])
+
     @staticmethod
     def format_as_markdown_link(note: NoteSearchResult) -> str:
         """Format a note as a markdown link
