@@ -3,7 +3,6 @@ base_style = """
     font-family: "Fira Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-# Improve this so the focused widgets including backlinks_list and forwardlinks_list have a border when selected AI!
 *:focus {
     border: 2px solid palette(highlight);
 }
