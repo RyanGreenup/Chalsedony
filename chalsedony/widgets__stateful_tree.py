@@ -167,6 +167,11 @@ class StatefulTree(QTreeWidget):
             # Item was deleted or doesn't exist, skip silently
             pass
 
+    # Create a method to get the current item data AI!
+    def get_current_item_data(self) -> TreeItemData:
+
+
+
     def get_selected_items_data(self) -> List[TreeItemData]:
         """Get TreeItemData for all selected items in the tree
 
