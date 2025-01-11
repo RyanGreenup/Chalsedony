@@ -126,13 +126,31 @@ class NoteView(QWidget):
         self.content_area = EditPreview(self.model)
         self.content_area.setObjectName("contentArea")
 
-        # Right sidebar
-        # Modify this right sidebar to have three NoteListWidgets vertically above each other as splitter environments AI!
+        # Right sidebar with three vertical note lists
         self.right_sidebar = QFrame()
         self.right_sidebar.setObjectName("rightSidebar")
         self.right_sidebar.setFrameShape(QFrame.Shape.StyledPanel)
         right_layout = QVBoxLayout()
         right_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Create vertical splitter for note lists
+        self.right_splitter = QSplitter(Qt.Orientation.Vertical)
+        self.right_splitter.setHandleWidth(15)
+        
+        # Create three note list widgets
+        self.top_note_list = NoteListWidget(self.model)
+        self.middle_note_list = NoteListWidget(self.model)
+        self.bottom_note_list = NoteListWidget(self.model)
+        
+        # Add them to the splitter
+        self.right_splitter.addWidget(self.top_note_list)
+        self.right_splitter.addWidget(self.middle_note_list)
+        self.right_splitter.addWidget(self.bottom_note_list)
+        
+        # Set equal initial sizes
+        self.right_splitter.setSizes([100, 100, 100])
+        
+        right_layout.addWidget(self.right_splitter)
         self.right_sidebar.setLayout(right_layout)
 
         # Add frames to splitter
