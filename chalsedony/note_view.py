@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -31,6 +31,8 @@ from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
 from widgets__search_tab import SearchSidebar
 
+HISTORY_TIME = 1000
+
 
 class NoteView(QWidget):
     note_content_changed = Signal(int, str)  # (note_id, content)
@@ -57,6 +59,7 @@ class NoteView(QWidget):
         self.setup_ui()
         self._populate_ui()
         self._connect_signals()
+        self._setup_history()
         if focus_journal:
             self.focus_todays_journal()
         else:
@@ -68,6 +71,14 @@ class NoteView(QWidget):
                     )
                 else:
                     self.send_status_message(f"Note '{initial_note}' not found")
+
+    def _setup_history(self) -> None:
+        self.history: List[TreeItemData] = []
+        self.history_position = -1
+        self._history_timer = QTimer()
+        self._history_timer.setInterval(HISTORY_TIME)  # 5 seconds
+        self._history_timer.setSingleShot(True)
+        self._history_timer.timeout.connect(self._add_current_note_to_history)
 
     def focus_todays_journal(self) -> None:
         journal_page = self.model.get_journal_page_for_today()
@@ -359,7 +370,6 @@ class NoteView(QWidget):
             if len(items) > 0:
                 self._handle_note_selection(items[0], change_tree=False)
 
-    # TODO handle back and forth history, unsure with scrolling tree though
     def _handle_note_selection(
         self, item_data: TreeItemData, change_tree: bool = True
     ) -> None:
@@ -368,6 +378,7 @@ class NoteView(QWidget):
         # Safely disconnect textChanged signal to prevent update loop
         if self.current_note_id == item_data.id:
             print("Attempting to select the same note")
+            self.send_status_message("Note already selected")
             return
         try:
             self.content_area.editor.textChanged.disconnect(
@@ -385,6 +396,8 @@ class NoteView(QWidget):
                     self.current_note_id = item_data.id
                     note = self.model.find_note_by_id(item_data.id)
                     if note:
+                        # Start timer for history tracking
+                        self._history_timer.start()
                         self.content_area.editor.setPlainText(note.body or "")
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
@@ -575,3 +588,39 @@ class NoteView(QWidget):
         if note:
             text = f"[{note.title}](note:{note.id})"
             self.insert_text_at_cursor(text, copy=True)
+
+    def _add_current_note_to_history(self) -> None:
+        """Add current note to history after timer expires"""
+        if self.current_note_id:
+            note = self.model.find_note_by_id(self.current_note_id)
+            if note:
+                item_data = TreeItemData(
+                    ItemType.NOTE, self.current_note_id, title=note.title
+                )
+                # Remove any forward history when adding new item
+                if self.history_position < len(self.history) - 1:
+                    self.history = self.history[: self.history_position + 1]
+                # Don't add duplicates
+                if len(self.history) == 0 or self.history[-1] != item_data:
+                    self.history.append(item_data)
+                    self.history_position = len(self.history) - 1
+
+    def go_back_in_history(self) -> None:
+        """Navigate backwards in the note history"""
+        if self.history_position > 0:
+            self.history_position -= 1
+            item_data = self.history[self.history_position]
+            # Temporarily stop history tracking while navigating
+            self._history_timer.stop()
+            self._handle_note_selection(item_data)
+            self._history_timer.start()
+
+    def go_forward_in_history(self) -> None:
+        """Navigate forwards in the note history"""
+        if self.history_position < len(self.history) - 1:
+            self.history_position += 1
+            item_data = self.history[self.history_position]
+            # Temporarily stop history tracking while navigating
+            self._history_timer.stop()
+            self._handle_note_selection(item_data)
+            self._history_timer.start()

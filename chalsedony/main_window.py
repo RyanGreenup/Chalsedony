@@ -270,6 +270,18 @@ class MainWindow(QMainWindow):
                             handler="focusPreviousChild",
                             shortcut="Ctrl+K",
                         ),
+                        MenuAction(
+                            id="forward_history",
+                            text="&Forward",
+                            handler="forward_history",
+                            shortcut="Ctrl+Alt+Right",
+                        ),
+                        MenuAction(
+                            id="back_history",
+                            text="&Back",
+                            handler="back_history",
+                            shortcut="Ctrl+Alt+Left",
+                        ),
                     ],
                 ),
                 MenuStructure(
@@ -295,6 +307,14 @@ class MainWindow(QMainWindow):
                 ),
             ]
         )
+
+    def back_history(self) -> None:
+        if view := self.get_current_view():
+            view.go_back_in_history()
+
+    def forward_history(self) -> None:
+        if view := self.get_current_view():
+            view.go_forward_in_history()
 
     def toggle_follow_mode(self) -> None:
         if view := self.get_current_view():
