@@ -920,6 +920,9 @@ class NoteModel(QObject):
         )
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
+    # A forward link is represented by text in the body field of the form ":/{id}". Implement logic to return a list of forward links for a given note. AI!
+    def get_forwardlinks(self, note_id: str) -> List[NoteSearchResult]:
+
 
 # Footnotes
 # [fn_is_associated]: https://discourse.joplinapp.org/t/is-associated-in-note-resource-0-at-what-time-orphaned-files-are-detectable/4443/3
