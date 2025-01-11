@@ -292,6 +292,7 @@ class EditPreview(QWidget):
         )
 
 
+# Ensure that text copied from this class is just plain text and not rich text AI!
 class MDTextEdit(QTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested = Signal(str, str)
