@@ -76,6 +76,7 @@ class NoteListWidget(KbdListWidget):
         self.customContextMenuRequested.connect(self._show_context_menu)
         self.create_keybinings()
         self._connect_signals()
+        self.itemClicked.connect(self._on_item_clicked)
 
 
     def _connect_signals(self) -> None:
@@ -164,7 +165,6 @@ class NoteListWidget(KbdListWidget):
         # Let parent class handle other keys
         super().keyPressEvent(event)
 
-    # This emits the note_selected signal on enter, this should also be emited when clicking the item AI!
     def create_keybinings(self) -> None:
         """Create keyboard shortcuts for tree operations.
 
@@ -189,3 +189,12 @@ class NoteListWidget(KbdListWidget):
     def send_status_message(self, message: str) -> None:
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
+
+    def _on_item_clicked(self, item: QListWidgetItem) -> None:
+        """Handle item click to emit note_selected signal"""
+        if item:
+            title = item.text()
+            item_id = item.data(Qt.ItemDataRole.UserRole)
+            self.note_selected.emit(
+                TreeItemData(ItemType.NOTE, item_id, title=title)
+            )
