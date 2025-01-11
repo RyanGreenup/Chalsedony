@@ -54,8 +54,21 @@ class NoteModel(QObject):
         cursor.execute("SELECT id, title FROM notes")
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
-    # Implement this method AI!
     def get_note_meta_by_id(self, note_id: str) -> NoteSearchResult:
+        """Get note metadata by ID
+        
+        Args:
+            note_id: ID of the note to look up
+            
+        Returns:
+            NoteSearchResult containing the note's ID and title
+        """
+        cursor = self.db_connection.cursor()
+        cursor.execute("SELECT id, title FROM notes WHERE id = ?", (note_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise ValueError(f"Note {note_id} not found")
+        return NoteSearchResult(id=row[0], title=row[1])
 
     def on_note_content_changed(self, note_id: str, content: str) -> None:
         """Handle note content changes from view
