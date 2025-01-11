@@ -849,9 +849,22 @@ class NoteModel(QObject):
                 return mime_type, ResourceType.OTHER
 
 
-    # Implement this to return the note that matches the title, return the first sorted by updated time AI!
     def get_journal_page_for_today(self) -> NoteSearchResult:
+        """Get today's journal page note, identified by title matching today's date
+
+        Returns:
+            NoteSearchResult containing the matching note's ID and title
+        """
         title = date.today().strftime('%Y-%m-%d')
+        cursor = self.db_connection.cursor()
+        cursor.execute(
+            "SELECT id, title FROM notes WHERE title = ? ORDER BY updated_time DESC LIMIT 1",
+            (title,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            raise ValueError(f"No journal page found for today ({title})")
+        return NoteSearchResult(id=row[0], title=row[1])
 
 
     @staticmethod
