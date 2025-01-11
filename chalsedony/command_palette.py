@@ -60,14 +60,13 @@ class NotePalette(SelectionDialog):
         if self.list.count() > 0:
             self.list.setCurrentRow(0)
 
-    # Modify this to use the text_matches_filter function AI!
     def filter_items(self, text: str) -> None:
         """Filter items based on search text"""
         had_visible = False
         for i in range(self.list.count()):
             item = self.list.item(i)
             if item:
-                is_visible = text.lower() in item.text().lower()
+                is_visible = text_matches_filter(text, item.text(), match_all=False)
                 item.setHidden(not is_visible)
                 if is_visible and not had_visible:
                     self.list.setCurrentItem(item)
