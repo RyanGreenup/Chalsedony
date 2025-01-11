@@ -295,7 +295,7 @@ class EditPreview(QWidget):
 class MDTextEdit(QTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested = Signal(str, str)
-    
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         # Enable rich text paste handling
@@ -326,21 +326,21 @@ class MDTextEdit(QTextEdit):
                     # Diagnostics:
                     # Pyright: No overloads for "save" match the provided arguments [reportCallIssue]
                     # The type signature is
-                    ```
-
-def save(
-    fileName: str,
-    format: bytes | bytearray | memoryview[int] | None = ...,
-    quality: int = ...
-) -> bool: ...
-                    ```
+                    # ```
+                    # def save(
+                    #     fileName: str,
+                    #     format: bytes | bytearray | memoryview[int] | None = ...,
+                    #     quality: int = ...
+                    # ) -> bool: ...
+                    # ```
+                    # AI!
 
 
                     image.save(temp_path, "PNG")
                     # Emit signal for upload
                     self.imageUploadRequested.emit(temp_path, title)
                 return
-                
+
         elif source.hasHtml():
             # Get the HTML content
             html = source.html()
