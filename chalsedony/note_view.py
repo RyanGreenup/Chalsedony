@@ -285,8 +285,12 @@ class NoteView(QWidget):
         self, item_data: TreeItemData, change_tree: bool = True
     ) -> None:
         """Common handler for note selection from either tree or list"""
-        # Disconnect textChanged signal to prevent update loop
-        self.content_area.editor.textChanged.disconnect(self._on_editor_text_changed)
+        # Safely disconnect textChanged signal to prevent update loop
+        try:
+            self.content_area.editor.textChanged.disconnect(self._on_editor_text_changed)
+        except TypeError:
+            # Signal was not connected
+            pass
 
         try:
             match item_data.type:
