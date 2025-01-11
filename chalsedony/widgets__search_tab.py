@@ -78,12 +78,9 @@ class NoteListWidget(KbdListWidget):
         self._connect_signals()
         self.itemClicked.connect(self._on_item_clicked)
 
-
     def _connect_signals(self) -> None:
         """Connect internal signals"""
-        self.currentItemChanged.connect(
-            self._on_list_selection_changed
-        )
+        self.currentItemChanged.connect(self._on_list_selection_changed)
 
     def _on_list_selection_changed(self) -> None:
         """Handle selection from the all notes list"""
@@ -195,6 +192,4 @@ class NoteListWidget(KbdListWidget):
         if item:
             title = item.text()
             item_id = item.data(Qt.ItemDataRole.UserRole)
-            self.note_selected.emit(
-                TreeItemData(ItemType.NOTE, item_id, title=title)
-            )
+            self.note_selected.emit(TreeItemData(ItemType.NOTE, item_id, title=title))

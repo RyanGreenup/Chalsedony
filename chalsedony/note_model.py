@@ -939,23 +939,22 @@ class NoteModel(QObject):
             return []
 
         body = row[0]
-        
+
         # Find all instances of ":/ID" pattern
         import re
-        linked_ids = re.findall(r':/([a-zA-Z0-9]+)', body)
-        
+
+        linked_ids = re.findall(r":/([a-zA-Z0-9]+)", body)
+
         if not linked_ids:
             return []
-            
+
         # Get titles for all valid note IDs found
-        placeholders = ','.join('?' * len(linked_ids))
+        placeholders = ",".join("?" * len(linked_ids))
         cursor.execute(
-            f"SELECT id, title FROM notes WHERE id IN ({placeholders})",
-            linked_ids
+            f"SELECT id, title FROM notes WHERE id IN ({placeholders})", linked_ids
         )
-        
-        return [NoteSearchResult(id=row[0], title=row[1]) 
-                for row in cursor.fetchall()]
+
+        return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
 
 # Footnotes

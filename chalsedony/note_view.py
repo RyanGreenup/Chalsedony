@@ -29,7 +29,7 @@ from note_model import NoteModel
 from widgets__stateful_tree import TreeItemData
 from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
-from widgets__search_tab import NoteListWidget, SearchSidebar
+from widgets__search_tab import SearchSidebar
 
 
 class NoteView(QWidget):
@@ -224,11 +224,7 @@ class NoteView(QWidget):
             self.search_tab.search_sidebar_list.filter_items
         )
 
-
-        # self.backlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
         self.backlinks_list.note_selected.connect(self._handle_note_selection)
-
-        # self.forwardlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
         self.forwardlinks_list.note_selected.connect(self._handle_note_selection)
 
     def _handle_note_selection_from_list(self, item: QItemSelection | None) -> None:
@@ -368,7 +364,11 @@ class NoteView(QWidget):
         self, item_data: TreeItemData, change_tree: bool = True
     ) -> None:
         """Common handler for note selection from either tree or list"""
+        print(f"Selected note: {item_data.title} -- {item_data.id}")
         # Safely disconnect textChanged signal to prevent update loop
+        if self.current_note_id == item_data.id:
+            print("Attempting to select the same note")
+            return
         try:
             self.content_area.editor.textChanged.disconnect(
                 self._on_editor_text_changed
