@@ -11,12 +11,13 @@ from PySide6.QtWidgets import (
 )
 
 from command_palette import NoteSelectionPalette, NoteLinkPalette
-from widgets__backlinks import BackLinksWidget
+from widgets__backlinks import BackLinksWidget, ForwardLinksWidget
 
 
 from pathlib import Path
 from db_api import ItemType
 from PySide6.QtCore import (
+    QItemSelection,
     QTimer,
     Qt,
     Signal,
@@ -151,16 +152,16 @@ class NoteView(QWidget):
 
         # Create three note list widgets
         self.backlinks_list = BackLinksWidget(self.model)
-        self.middle_note_list = NoteListWidget()
-        self.bottom_note_list = NoteListWidget()
+        self.forwardlinks_list = ForwardLinksWidget(self.model)
+        # self.bottom_note_list = NoteListWidget()
 
         # Add them to the splitter
         self.right_splitter.addWidget(self.backlinks_list)
-        self.right_splitter.addWidget(self.middle_note_list)
-        self.right_splitter.addWidget(self.bottom_note_list)
+        self.right_splitter.addWidget(self.forwardlinks_list)
+        # self.right_splitter.addWidget(self.bottom_note_list)
 
         # Set equal initial sizes
-        self.right_splitter.setSizes([100, 100, 100])
+        self.right_splitter.setSizes([100, 100])
 
         right_layout.addWidget(self.right_splitter)
         self.right_sidebar.setLayout(right_layout)
@@ -223,8 +224,16 @@ class NoteView(QWidget):
             self.search_tab.search_sidebar_list.filter_items
         )
 
+
         self.backlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
         self.backlinks_list.note_selected.connect(self._handle_note_selection)
+
+        self.forwardlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
+        self.forwardlinks_list.note_selected.connect(self._handle_note_selection)
+
+    # Impplement this to call _handle_note_selection, first verify that everything exists, be very careful to avoid seg faults AI!
+    def _handle_note_selection_from_list(self, item: QItemSelection | None) -> None:
+        """Handle note selection from the list view"""
 
     def note_selection_palette(self) -> None:
         """Open a note selection palette dialog"""
@@ -367,6 +376,7 @@ class NoteView(QWidget):
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
                         self.backlinks_list.populate(item_data.id)
+                        self.forwardlinks_list.populate(item_data.id)
                 case ItemType.FOLDER:
                     self.current_note_id = None
                     self.content_area.editor.clear()
