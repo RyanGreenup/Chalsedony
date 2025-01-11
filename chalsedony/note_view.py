@@ -283,8 +283,14 @@ class NoteView(QWidget):
             print(status_message)
             self.send_status_message(status_message)
             return
-        # TODO this is not being selected
-        self._handle_note_selection(TreeItemData(ItemType.FOLDER, folder_id, title))
+        # Use a QTimer to ensure the tree is updated before selecting the new folder
+        # Is there a better way to wait for other signals to complete before selecting?
+        QTimer.singleShot(
+            100,
+            lambda: self._handle_note_selection(
+                TreeItemData(ItemType.FOLDER, folder_id, title)
+            ),
+        )
 
     def save_current_note(self) -> None:
         """Save the current note with title update from heading"""
@@ -415,6 +421,8 @@ class NoteView(QWidget):
                 case ItemType.FOLDER:
                     self.current_note_id = None
                     self.content_area.editor.clear()
+                    print(f"Selected folder: {item_data.title} -- {item_data.id}")
+                    self.tree_widget.set_current_item_by_data(item_data)
         finally:
             # Reconnect signal after text is set
             self.content_area.editor.textChanged.connect(self._on_editor_text_changed)
