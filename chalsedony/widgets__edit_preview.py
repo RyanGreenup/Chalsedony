@@ -323,20 +323,7 @@ class MDTextEdit(QTextEdit):
                 if ok and title:
                     # Save image to temp file
                     temp_path = os.path.join(self.temp_dir, f"pasted_image_{id(image)}.png")
-                    # Diagnostics:
-                    # Pyright: No overloads for "save" match the provided arguments [reportCallIssue]
-                    # The type signature is
-                    # ```
-                    # def save(
-                    #     fileName: str,
-                    #     format: bytes | bytearray | memoryview[int] | None = ...,
-                    #     quality: int = ...
-                    # ) -> bool: ...
-                    # ```
-                    # AI!
-
-
-                    image.save(temp_path, "PNG")
+                    image.save(temp_path, format="PNG")
                     # Emit signal for upload
                     self.imageUploadRequested.emit(temp_path, title)
                 return
