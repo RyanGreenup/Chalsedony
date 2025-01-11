@@ -72,6 +72,7 @@ class NoteView(QWidget):
 
     def _setup_history(self) -> None:
         self.history: List[TreeItemData] = []
+        self.history_position = -1
         self._history_timer = QTimer()
         self._history_timer.setInterval(2000)  # 5 seconds
         self._history_timer.setSingleShot(True)
@@ -595,9 +596,28 @@ class NoteView(QWidget):
                     self.current_note_id,
                     title=note.title
                 )
+                # Remove any forward history when adding new item
+                if self.history_position < len(self.history) - 1:
+                    self.history = self.history[:self.history_position + 1]
                 self.history.append(item_data)
+                self.history_position = len(self.history) - 1
 
-    # Implement history navigation AI!
     def go_back_in_history(self) -> None:
+        """Navigate backwards in the note history"""
+        if self.history_position > 0:
+            self.history_position -= 1
+            item_data = self.history[self.history_position]
+            # Temporarily stop history tracking while navigating
+            self._history_timer.stop()
+            self._handle_note_selection(item_data)
+            self._history_timer.start()
 
     def go_forward_in_history(self) -> None:
+        """Navigate forwards in the note history"""
+        if self.history_position < len(self.history) - 1:
+            self.history_position += 1
+            item_data = self.history[self.history_position]
+            # Temporarily stop history tracking while navigating
+            self._history_timer.stop()
+            self._handle_note_selection(item_data)
+            self._history_timer.start()
