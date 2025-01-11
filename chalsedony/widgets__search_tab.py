@@ -83,6 +83,8 @@ class NoteListWidget(KbdListWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
 
+    # Use the text_matches_filter function to take in some text and filter out results from the list AI!
+
     def _show_context_menu(self, position: QPoint) -> None:
         """Show context menu with note ID copy option"""
         item = self.itemAt(position)
