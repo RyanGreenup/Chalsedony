@@ -5,10 +5,10 @@ from PySide6.QtWidgets import (
     QFrame,
     QSplitter,
     QTabWidget,
-    QApplication,
 )
 
 
+from pathlib import Path
 from db_api import ItemType
 from PySide6.QtCore import (
     QTimer,
@@ -380,26 +380,54 @@ class NoteView(QWidget):
         """Return the ID of the currently selected note"""
         return self.current_note_id
 
-    def handle_resource_uploaded(self, resource_path: str) -> None:
-        """Handle a resource being uploaded"""
-        print(f"Resource uploaded: {resource_path}")
+    def upload_resource(self) -> None:
+        """Handle resource file upload with optional title"""
+        from PySide6.QtWidgets import QFileDialog, QInputDialog
 
-        if self.get_current_note_id() is not None:
-            # Get the cursor position and insert markdown link
-            cursor = self.content_area.editor.textCursor()
-            pos = cursor.position()
+        if not self.model:
+            return
 
+        # Get current note ID
+        note_id = self.get_current_note_id()
+
+        # Open file dialog
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select File to Upload",
+            "",  # Start in current directory
+            "All Files (*);;Images (*.png *.jpg *.jpeg *.gif);;Documents (*.pdf *.doc *.docx *.txt)",
+        )
+
+        if not file_path:  # User canceled
+            return
+
+        # Get resource title from user
+        title, ok = QInputDialog.getText(
+            self,
+            "Resource Title",
+            "Enter a title for the resource:",
+            text=Path(file_path).stem,  # Default to filename without extension
+        )
+
+        if not ok:  # User canceled
+            return
+
+        print(f"Uploading file: {file_path} with title: {title}")
+        try:
+            resource_id = self.model.upload_resource(
+                Path(file_path), note_id, title=title if title else None
+            )
+            self.send_status_message(
+                f"Uploaded resource: {title or Path(file_path).name}"
+            )
+            # Emit signal with resource ID if needed
+            print(f"Resource ID: {resource_id}")
+        except Exception as e:
+            self.send_status_message(f"Error uploading file: {str(e)}")
+            return
+
+        if note_id and resource_id is not None:
             # Create markdown link
-            resource_name = self.model.get_resource_title(resource_path)
-            markdown_link = f"![{resource_name}](:/{resource_path})"
-
-            # Copy markdown link to clipboard
-            clipboard = QApplication.clipboard()
-            clipboard.setText(markdown_link)
-
-            # Insert at cursor position
-            cursor.insertText(markdown_link)
-
-            # Move cursor after the inserted text
-            cursor.setPosition(pos + len(markdown_link))
-            self.content_area.editor.setTextCursor(cursor)
+            resource_name = self.model.get_resource_title(resource_id)
+            text = f"![{resource_name}](:/{resource_id})"
+            self.content_area.editor.insert_text_at_cursor(text, copy=True)

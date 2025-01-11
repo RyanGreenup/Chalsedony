@@ -1,5 +1,6 @@
 from pathlib import Path
 from PySide6.QtWidgets import (
+    QApplication,
     QTextEdit,
     QWidget,
     QVBoxLayout,
@@ -16,7 +17,6 @@ from PySide6.QtWebEngineCore import (
     QWebEngineUrlRequestInterceptor,
     QWebEngineUrlRequestInfo,
 )
-import os
 from PySide6.QtCore import (
     QDir,
     QDirIterator,
@@ -301,13 +301,30 @@ class MDTextEdit(QTextEdit):
         # Enable rich text paste handling
         self.setAcceptRichText(True)
         # Create a persistent temp directory for pasted images
-        self.temp_dir = tempfile.mkdtemp(prefix='chalsedony_')
+        self.temp_dir = tempfile.mkdtemp(prefix="chalsedony_")
 
     def createMimeDataFromSelection(self) -> QMimeData:
         """Override to ensure copied text is plain text only"""
         mime_data = QMimeData()
         mime_data.setText(self.textCursor().selectedText())
         return mime_data
+
+    def insert_text_at_cursor(self, text: str, copy: bool = False) -> None:
+        # Get the cursor position and insert markdown link
+        cursor = self.textCursor()
+        pos = cursor.position()
+
+        if copy:
+            # Copy markdown link to clipboard
+            clipboard = QApplication.clipboard()
+            clipboard.setText(text)
+
+        # Insert at cursor position
+        cursor.insertText(text)
+
+        # Move cursor after the inserted text
+        cursor.setPosition(pos + len(text))
+        self.setTextCursor(cursor)
 
     def insertFromMimeData(self, source: QMimeData) -> None:
         """Handle paste events and transform HTML content using markdownify"""
@@ -316,14 +333,14 @@ class MDTextEdit(QTextEdit):
             if not image.isNull():
                 # Prompt for image title
                 title, ok = QInputDialog.getText(
-                    self,
-                    "Image Title",
-                    "Enter a title for the pasted image:"
+                    self, "Image Title", "Enter a title for the pasted image:"
                 )
                 if ok and title:
                     # Save image to temp file
-                    temp_path = os.path.join(self.temp_dir, f"pasted_image_{id(image)}.png")
-                    image.save(temp_path, format="PNG")
+                    temp_path = os.path.join(
+                        self.temp_dir, f"pasted_image_{id(image)}.png"
+                    )
+                    image.save(temp_path)
                     # Emit signal for upload
                     self.imageUploadRequested.emit(temp_path, title)
                 return

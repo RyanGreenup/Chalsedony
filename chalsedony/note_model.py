@@ -636,7 +636,7 @@ class NoteModel(QObject):
 
     def upload_resource(
         self, file_path: Path, note_id: str | None = None, title: str | None = None
-    ) -> str | None:
+    ) -> str:
         """Upload a file as a resource attached to a note
 
         Args:
@@ -715,7 +715,6 @@ class NoteModel(QObject):
         except Exception as e:
             print(e)
             print("Model: Failed to upload resource")
-            return None
 
         self.db_connection.commit()
         return resource_id
