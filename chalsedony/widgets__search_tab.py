@@ -96,9 +96,11 @@ class NoteListWidget(KbdListWidget):
                 item.data(Qt.ItemDataRole.UserRole),
                 title=item.text(),
             )
-        # AI! Fix this error
-        # TypeError: NoteListWidget._connect_signals.<locals>.<lambda>() missing 1 required positional argument: 'item'
-        self.itemSelectionChanged.connect(lambda item: self.item_selection_changed.emit(get_item_data(item)))
+        self.itemSelectionChanged.connect(
+            lambda: self.item_selection_changed.emit(get_item_data(self.currentItem()))
+            if self.currentItem()
+            else None
+        )
 
     def populate_notes_list(self, note_items: List[NoteSearchResult]) -> None:
         """Populate the all notes list view with optional search filtering"""
