@@ -249,7 +249,18 @@ class MainWindow(QMainWindow):
                             handler="todays_journal",
                             shortcut="Ctrl+G",
                         ),
-                        # Create an action to go to the next widget and another to go to the previous widget, this should perform the same action as pressing the tab key and Shift+Tab respectively AI!
+                        MenuAction(
+                            id="next_widget",
+                            text="Next &Widget",
+                            handler="focusNextChild",
+                            shortcut="Tab",
+                        ),
+                        MenuAction(
+                            id="previous_widget",
+                            text="Previous Wi&dget",
+                            handler="focusPreviousChild", 
+                            shortcut="Shift+Tab",
+                        ),
                     ],
                 ),
                 MenuStructure(
