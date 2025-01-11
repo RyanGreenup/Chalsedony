@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QSplitter,
     QTabWidget,
+    QLineEdit,
 )
 
 
@@ -70,6 +71,11 @@ class NoteView(QWidget):
         self.left_sidebar.setFrameShape(QFrame.Shape.StyledPanel)
         left_layout = QVBoxLayout()
         left_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Add search bar above tabs
+        self.tree_search = QLineEdit()
+        self.tree_search.setPlaceholderText("Search in tree...")
+        left_layout.addWidget(self.tree_search)
 
         # Create tab widget
         self.left_tabs = QTabWidget()
@@ -147,6 +153,9 @@ class NoteView(QWidget):
         # Connect search tab signals
         self.search_tab.search_text_changed.connect(self._on_search_text_changed)
         self.search_tab.note_selected.connect(self._handle_note_selection)
+
+        # Connect tree search
+        self.tree_search.textChanged.connect(self._filter_tree)
 
     def _on_create_folder_requested(self, title: str, parent_id: str) -> None:
         try:
@@ -384,6 +393,36 @@ class NoteView(QWidget):
     def get_current_note_id(self) -> str | None:
         """Return the ID of the currently selected note"""
         return self.current_note_id
+
+    def _filter_tree(self, text: str) -> None:
+        """Filter the tree view based on search text"""
+        def filter_items(item: QTreeWidgetItem) -> bool:
+            # Get if this item matches
+            item_matches = text.lower() in item.text(0).lower()
+            
+            # Check all children
+            child_matches = False
+            for i in range(item.childCount()):
+                if filter_items(item.child(i)):
+                    child_matches = True
+                    
+            # Show if this item or any children match
+            item.setHidden(not (item_matches or child_matches))
+            
+            return item_matches or child_matches
+
+        # If empty show all items
+        if not text:
+            for i in range(self.tree_widget.topLevelItemCount()):
+                item = self.tree_widget.topLevelItem(i)
+                item.setHidden(False)
+                for j in range(item.childCount()):
+                    item.child(j).setHidden(False)
+            return
+
+        # Filter from top level
+        for i in range(self.tree_widget.topLevelItemCount()):
+            filter_items(self.tree_widget.topLevelItem(i))
 
     def upload_resource(self) -> None:
         """Handle resource file upload with optional title"""
