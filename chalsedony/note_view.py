@@ -57,8 +57,11 @@ class NoteView(QWidget):
         self.setup_ui()
         self._populate_ui()
         self._connect_signals()
-        # AI: This is the history of notes visited
         self.history: List[TreeItemData] = []
+        self._history_timer = QTimer()
+        self._history_timer.setInterval(5000)  # 5 seconds
+        self._history_timer.setSingleShot(True)
+        self._history_timer.timeout.connect(self._add_current_note_to_history)
         if focus_journal:
             self.focus_todays_journal()
         else:
@@ -361,8 +364,6 @@ class NoteView(QWidget):
             if len(items) > 0:
                 self._handle_note_selection(items[0], change_tree=False)
 
-    # TODO handle back and forth history, unsure with scrolling tree though
-    # If a note has been viewed for more than 5 seconds, add it to the history AI!
     def _handle_note_selection(
         self, item_data: TreeItemData, change_tree: bool = True
     ) -> None:
@@ -388,6 +389,8 @@ class NoteView(QWidget):
                     self.current_note_id = item_data.id
                     note = self.model.find_note_by_id(item_data.id)
                     if note:
+                        # Start timer for history tracking
+                        self._history_timer.start()
                         self.content_area.editor.setPlainText(note.body or "")
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
@@ -578,3 +581,15 @@ class NoteView(QWidget):
         if note:
             text = f"[{note.title}](note:{note.id})"
             self.insert_text_at_cursor(text, copy=True)
+
+    def _add_current_note_to_history(self) -> None:
+        """Add current note to history after timer expires"""
+        if self.current_note_id:
+            note = self.model.find_note_by_id(self.current_note_id)
+            if note:
+                item_data = TreeItemData(
+                    ItemType.NOTE,
+                    self.current_note_id,
+                    title=note.title
+                )
+                self.history.append(item_data)
