@@ -1,4 +1,5 @@
 from PySide6.QtGui import QAction
+from utils__ngram_filter import text_matches_filter
 from PySide6.QtWidgets import (
     QApplication,
     QListWidgetItem,
