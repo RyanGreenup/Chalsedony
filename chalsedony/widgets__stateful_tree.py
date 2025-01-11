@@ -167,13 +167,22 @@ class StatefulTree(QTreeWidget):
             # Item was deleted or doesn't exist, skip silently
             pass
 
-    # Implement this method AI!
     def get_item_data_above_current(self) -> TreeItemData | None:
         """Get TreeItemData for the item above the current item in the tree
 
         Returns:
             TreeItemData for the item above the current item, or None if no item is selected
         """
+        current = self.currentItem()
+        if not current:
+            return None
+
+        # Get the item above the current item
+        above = self.itemAbove(current)
+        if not above:
+            return None
+
+        return cast(TreeWidgetItem, above).item_data
 
     def get_current_item_data(self) -> TreeItemData | None:
         """Get TreeItemData for the current item in the tree
