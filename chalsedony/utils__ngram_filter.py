@@ -1,20 +1,51 @@
-from typing import List
+from typing import Set
 
-def ngram_filter(lines: List[str], n: int = 3) -> List[str]:
-    """
-    Filter out lines that don't contain any n-grams from the input list of lines.
-    Returns only lines that contain at least one n-gram sequence.
-    
+def generate_ngrams(text: str, n: int = 2) -> Set[str]:
+    """Generate n-grams from text.
+
     Args:
-        lines: List of strings to filter
-        n: Length of n-grams to check for (default=3 for trigrams)
-        
+        text: Input text to generate n-grams from
+        n: Length of each n-gram (default=2 for digrams)
+
     Returns:
-        List of strings that contain at least one n-gram
+        Set of n-grams
     """
-    def get_ngrams(text: str, n: int) -> set:
-        """Generate set of n-grams from text"""
-        return {text[i:i+n] for i in range(len(text) - n + 1)}
-    
-    # Filter lines that have at least one n-gram
-    return [line for line in lines if len(get_ngrams(line, n)) > 0]
+    # Convert to lowercase and remove extra whitespace
+    text = ' '.join(text.lower().split())
+
+    # Generate n-grams including spaces
+    ngrams = set()
+    for i in range(len(text) - n + 1):
+        ngrams.add(text[i:i + n])
+    return ngrams
+
+# AI: Using this function
+def text_matches_filter(filter_text: str, target_text: str, n: int = 2, match_all: bool = True) -> bool:
+    """Check if target text matches filter text using n-gram comparison.
+
+    Args:
+        filter_text: Text to filter by
+        target_text: Text to check against filter
+        n: Length of n-grams to use (default=2)
+        match_all: If True, all filter n-grams must be present in target; if False, any filter n-gram can be present (default=False)
+                   True is tentative, useful for strict filtering,
+                   False is useful for fuzzy filtering (greedy)
+
+    Returns:
+        True if target text matches filter criteria
+    """
+    if not filter_text or not target_text:
+        return True
+
+    if len(filter_text) < n or len(target_text) < n:
+        n = min(len(filter_text), len(target_text))
+
+    # Generate n-grams for both texts
+    filter_ngrams = generate_ngrams(filter_text, n)
+    target_ngrams = generate_ngrams(target_text, n)
+
+    # Check if all or any filter n-grams are present in target
+    return all(ng in target_ngrams for ng in filter_ngrams) if match_all else any(ng in target_ngrams for ng in filter_ngrams)
+
+
+

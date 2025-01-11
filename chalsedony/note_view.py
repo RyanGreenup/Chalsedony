@@ -395,6 +395,7 @@ class NoteView(QWidget):
         """Return the ID of the currently selected note"""
         return self.current_note_id
 
+    # Improve this method to use the text_matches_filter function AI!
     def _filter_tree(self, text: str) -> None:
         """Filter the tree view based on search text"""
         def filter_items(item: QTreeWidgetItem) -> bool:
