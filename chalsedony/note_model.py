@@ -7,6 +7,7 @@ from pathlib import Path
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 from db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
+from datetime import date
 
 
 class ResourceType(Enum):
@@ -846,6 +847,12 @@ class NoteModel(QObject):
                 return mime_type, ResourceType.CODE
             case _:
                 return mime_type, ResourceType.OTHER
+
+
+    # Implement this to return the note that matches the title, return the first sorted by updated time AI!
+    def get_journal_page_for_today(self) -> NoteSearchResult:
+        title = date.today().strftime('%Y-%m-%d')
+
 
     @staticmethod
     def format_as_markdown_link(note: NoteSearchResult) -> str:
