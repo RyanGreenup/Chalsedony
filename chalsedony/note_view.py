@@ -586,7 +586,7 @@ class NoteView(QWidget):
         """Insert a link to a note at the current cursor position in the editor"""
         note = self.model.get_note_meta_by_id(note_id)
         if note:
-            text = f"[{note.title}](note:{note.id})"
+            text = f"[{note.title}](:/{note.id})"
             self.insert_text_at_cursor(text, copy=True)
 
     def _add_current_note_to_history(self) -> None:

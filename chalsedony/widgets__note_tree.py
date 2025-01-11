@@ -180,6 +180,7 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         Args:
             item: The tree item to delete
         """
+        item_above = self.get_item_data_above_current()
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
 
         match item_data.type:
@@ -190,6 +191,9 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             case ItemType.FOLDER:
                 self.folder_deleted.emit(item_data.id)
                 self.send_status_message(f"Deleted folder: {item_data.title}")
+        # Select the item above the deleted item
+        if item_above:
+            self.set_current_item_by_data(item_above)
 
     def duplicate_item(self, item: QTreeWidgetItem) -> None:
         """Duplicate a note or folder and its contents
