@@ -150,6 +150,7 @@ class NoteView(QWidget):
         # Set initial sizes (similar proportions to the previous stretch factors)
         self.main_splitter.setSizes([100, 300, 100])
 
+    # AI: The right sidebar is set up here
     def setup_ui_right_sidebar(self) -> None:
         self.right_sidebar = QFrame()
         self.right_sidebar.setObjectName("rightSidebar")
