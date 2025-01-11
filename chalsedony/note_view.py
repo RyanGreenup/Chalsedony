@@ -231,16 +231,19 @@ class NoteView(QWidget):
         self.forwardlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
         self.forwardlinks_list.note_selected.connect(self._handle_note_selection)
 
+    # Fix this error
+    # TypeError: NoteView._handle_note_selection() missing 1 required positional argument: 'item_data'
+    #  AI!
     def _handle_note_selection_from_list(self, item: QItemSelection | None) -> None:
         """Handle note selection from the list view"""
         if not item or item.isEmpty():
             return
-            
+
         # Get the first selected index
         indexes = item.indexes()
         if not indexes:
             return
-            
+
         # Get the TreeItemData from the first index
         item_data = indexes[0].data(Qt.ItemDataRole.UserRole)
         if isinstance(item_data, TreeItemData):
