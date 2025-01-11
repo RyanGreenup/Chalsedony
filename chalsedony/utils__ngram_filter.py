@@ -33,6 +33,8 @@ def text_matches_filter(filter_text: str, target_text: str, n: int = 2, match_al
     Returns:
         True if target text matches filter criteria
     """
+    if target_text == "":
+        return False
     if not filter_text or not target_text:
         return True
 

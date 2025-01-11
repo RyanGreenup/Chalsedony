@@ -400,17 +400,24 @@ class NoteView(QWidget):
         """Filter the tree view based on search text using n-gram comparison"""
         def filter_items(item: QTreeWidgetItem) -> bool:
             # Get if this item matches using n-gram comparison
-            item_matches = text_matches_filter(text, item.text(0), n=2, match_all=False)
-            
+            item_matches = text_matches_filter(text, item.text(0), n=2, match_all=True)
+
             # Check all children
             child_matches = False
+            visible_children = 0
             for i in range(item.childCount()):
-                if filter_items(item.child(i)):
+                child = item.child(i)
+                if filter_items(child):
                     child_matches = True
-                    
-            # Show if this item or any children match
-            item.setHidden(not (item_matches or child_matches))
-            
+                    visible_children += 1
+
+            # For folders (items with children), hide if no visible children and no match
+            if item.childCount() > 0:
+                item.setHidden(not (item_matches or visible_children > 0))
+            else:
+                # For notes (leaf items), hide if no match
+                item.setHidden(not item_matches)
+
             return item_matches or child_matches
 
         # If empty show all items
