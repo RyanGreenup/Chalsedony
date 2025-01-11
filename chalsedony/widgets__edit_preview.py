@@ -292,7 +292,6 @@ class EditPreview(QWidget):
         )
 
 
-# Ensure that text copied from this class is just plain text and not rich text AI!
 class MDTextEdit(QTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested = Signal(str, str)
@@ -303,6 +302,12 @@ class MDTextEdit(QTextEdit):
         self.setAcceptRichText(True)
         # Create a persistent temp directory for pasted images
         self.temp_dir = tempfile.mkdtemp(prefix='chalsedony_')
+
+    def createMimeDataFromSelection(self) -> QMimeData:
+        """Override to ensure copied text is plain text only"""
+        mime_data = QMimeData()
+        mime_data.setText(self.textCursor().selectedText())
+        return mime_data
 
     def insertFromMimeData(self, source: QMimeData) -> None:
         """Handle paste events and transform HTML content using markdownify"""
