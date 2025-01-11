@@ -896,6 +896,30 @@ class NoteModel(QObject):
         """
         return f"[{note.title}](:/{note.id})"
 
+    def get_backlinks(self, note_id: str) -> List[NoteSearchResult]:
+        """Get all notes that link to the specified note
+
+        Args:
+            note_id: The ID of the target note
+
+        Returns:
+            List of NoteSearchResult containing note IDs and titles
+
+        Implememenation Notes:
+            - This looks for the id, not for a markdown link or a prefix of `:/`, this may be changed in the future
+              for now this simplicity is perferable
+        """
+        cursor = self.db_connection.cursor()
+        cursor.execute(
+            """
+            SELECT id, title
+            FROM notes
+            WHERE body LIKE '%' || ? || '%';
+            """,
+            (note_id,),
+        )
+        return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
+
 
 # Footnotes
 # [fn_is_associated]: https://discourse.joplinapp.org/t/is-associated-in-note-resource-0-at-what-time-orphaned-files-are-detectable/4443/3

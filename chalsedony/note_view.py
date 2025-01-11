@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 )
 
 from command_palette import NoteSelectionPalette, NoteLinkPalette
+from widgets__backlinks import BackLinksWidget
 
 
 from pathlib import Path
@@ -127,31 +128,7 @@ class NoteView(QWidget):
         self.content_area.setObjectName("contentArea")
 
         # Right sidebar with three vertical note lists
-        self.right_sidebar = QFrame()
-        self.right_sidebar.setObjectName("rightSidebar")
-        self.right_sidebar.setFrameShape(QFrame.Shape.StyledPanel)
-        right_layout = QVBoxLayout()
-        right_layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Create vertical splitter for note lists
-        self.right_splitter = QSplitter(Qt.Orientation.Vertical)
-        self.right_splitter.setHandleWidth(15)
-        
-        # Create three note list widgets
-        self.top_note_list = NoteListWidget(self.model)
-        self.middle_note_list = NoteListWidget(self.model)
-        self.bottom_note_list = NoteListWidget(self.model)
-        
-        # Add them to the splitter
-        self.right_splitter.addWidget(self.top_note_list)
-        self.right_splitter.addWidget(self.middle_note_list)
-        self.right_splitter.addWidget(self.bottom_note_list)
-        
-        # Set equal initial sizes
-        self.right_splitter.setSizes([100, 100, 100])
-        
-        right_layout.addWidget(self.right_splitter)
-        self.right_sidebar.setLayout(right_layout)
+        self.setup_ui_right_sidebar()
 
         # Add frames to splitter
         self.main_splitter.addWidget(self.left_sidebar)
@@ -160,6 +137,33 @@ class NoteView(QWidget):
 
         # Set initial sizes (similar proportions to the previous stretch factors)
         self.main_splitter.setSizes([100, 300, 100])
+
+    def setup_ui_right_sidebar(self) -> None:
+        self.right_sidebar = QFrame()
+        self.right_sidebar.setObjectName("rightSidebar")
+        self.right_sidebar.setFrameShape(QFrame.Shape.StyledPanel)
+        right_layout = QVBoxLayout()
+        right_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Create vertical splitter for note lists
+        self.right_splitter = QSplitter(Qt.Orientation.Vertical)
+        self.right_splitter.setHandleWidth(15)
+
+        # Create three note list widgets
+        self.backlinks_list = BackLinksWidget(self.model)
+        self.middle_note_list = NoteListWidget()
+        self.bottom_note_list = NoteListWidget()
+
+        # Add them to the splitter
+        self.right_splitter.addWidget(self.backlinks_list)
+        self.right_splitter.addWidget(self.middle_note_list)
+        self.right_splitter.addWidget(self.bottom_note_list)
+
+        # Set equal initial sizes
+        self.right_splitter.setSizes([100, 100, 100])
+
+        right_layout.addWidget(self.right_splitter)
+        self.right_sidebar.setLayout(right_layout)
 
     def _connect_signals(self) -> None:
         """Connect UI signals to handlers"""
@@ -218,6 +222,9 @@ class NoteView(QWidget):
         self.tree_search.textChanged.connect(
             self.search_tab.search_sidebar_list.filter_items
         )
+
+        self.backlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
+        self.backlinks_list.note_selected.connect(self._handle_note_selection)
 
     def note_selection_palette(self) -> None:
         """Open a note selection palette dialog"""
@@ -359,6 +366,7 @@ class NoteView(QWidget):
                         self.content_area.editor.setPlainText(note.body or "")
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
+                        self.backlinks_list.populate(item_data.id)
                 case ItemType.FOLDER:
                     self.current_note_id = None
                     self.content_area.editor.clear()
