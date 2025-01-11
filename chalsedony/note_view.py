@@ -225,10 +225,10 @@ class NoteView(QWidget):
         )
 
 
-        self.backlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
+        # self.backlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
         self.backlinks_list.note_selected.connect(self._handle_note_selection)
 
-        self.forwardlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
+        # self.forwardlinks_list.itemSelectionChanged.connect(self._handle_note_selection)
         self.forwardlinks_list.note_selected.connect(self._handle_note_selection)
 
     def _handle_note_selection_from_list(self, item: QItemSelection | None) -> None:
@@ -376,6 +376,8 @@ class NoteView(QWidget):
         except TypeError:
             # Signal was not connected
             pass
+        except Exception as e:
+            print(f"Error disconnecting signal: {e}")
 
         try:
             match item_data.type:
