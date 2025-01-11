@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QWidget, QListWidgetItem
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction
 from typing import Dict
+from db_api import NoteSearchResult
 from selection_dialog import SelectionDialog
 
 
@@ -35,5 +36,34 @@ class CommandPalette(SelectionDialog):
         for action in self._actions.values():
             if action.text().replace("&", "") == text:
                 self.command_selected.emit(action)
+                self.close()
+                break
+
+
+class NoteSelectionPalette(SelectionDialog):
+    note_selected = Signal(str)  # Emits note ID when selected
+
+    def __init__(self, parent: QWidget, notes: list[NoteSearchResult]) -> None:
+        super().__init__(parent, "Note Selection")
+        self._notes = notes
+        self.search.setPlaceholderText("Type to search notes...")
+        self.populate_notes()
+
+    def populate_notes(self) -> None:
+        """Populate the list with all notes"""
+        self.list.clear()
+        for note in self._notes:
+            self.list.addItem(note.title)
+
+        # Select first item
+        if self.list.count() > 0:
+            self.list.setCurrentRow(0)
+
+    def on_item_selected(self, item: QListWidgetItem) -> None:
+        """Handle note selection"""
+        selected_title = item.text()
+        for note in self._notes:
+            if note.title == selected_title:
+                self.note_selected.emit(note.id)
                 self.close()
                 break

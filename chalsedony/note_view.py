@@ -9,6 +9,8 @@ from PySide6.QtWidgets import (
     QLineEdit,
 )
 
+from command_palette import NoteSelectionPalette
+
 
 from pathlib import Path
 from db_api import ItemType
@@ -120,6 +122,7 @@ class NoteView(QWidget):
         if isinstance(parent, MainWindow):
             parent.save_note_signal.connect(self.save_current_note)
             parent.style_changed.connect(self.content_area.apply_dark_theme)
+            parent.note_selection_palette_requested.connect(self.note_selection_palette)
         else:
             raise TypeError(
                 "Parent window must be an instance of MainWindow to connect signals"
@@ -159,6 +162,21 @@ class NoteView(QWidget):
         self.tree_search.textChanged.connect(
             self.search_tab.search_sidebar_list.filter_items
         )
+
+    def note_selection_palette(self) -> None:
+        """Open a note selection palette dialog"""
+        all_notes = self.model.get_all_notes()
+        palette = NoteSelectionPalette(self, all_notes)
+        palette.note_selected.connect(self._handle_note_selection_from_id)
+        palette.show()
+
+    def _handle_note_selection_from_id(self, note_id: str) -> None:
+        """Handle note selection from the palette by ID"""
+        note = self.model.find_note_by_id(note_id)
+        if note:
+            self._handle_note_selection(
+                TreeItemData(ItemType.NOTE, note.id, note.title)
+            )
 
     def _on_create_folder_requested(self, title: str, parent_id: str) -> None:
         try:

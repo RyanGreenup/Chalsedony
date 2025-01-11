@@ -52,6 +52,9 @@ class MainWindow(QMainWindow):
     style_changed = Signal(bool)  # Emits True for dark mode, False for light mode
     refresh = Signal()
     save_note_signal = Signal()  # Signal to trigger note save
+    note_selection_palette_requested = (
+        Signal()
+    )  # Signal to request note selection palette
 
     def __init__(self, database: Path, assets: Path) -> None:
         super().__init__()
@@ -169,6 +172,12 @@ class MainWindow(QMainWindow):
                             shortcut="Ctrl+Shift+P",
                         ),
                         MenuAction(
+                            id="note_selection_palette",
+                            text="&Note Selection Palette",
+                            handler="note_selection_palette",
+                            shortcut="Ctrl+P",
+                        ),
+                        MenuAction(
                             id="maximize_editor",
                             text="Maximize &Editor",
                             handler="maximize_editor",
@@ -237,7 +246,8 @@ class MainWindow(QMainWindow):
             ]
         )
 
-    # Add a method to save the current note by emitting a signal
+    def note_selection_palette(self) -> None:
+        self.note_selection_palette_requested.emit()
 
     def zoom(self, factor: float) -> None:
         """Change the UI scale by the given factor.
@@ -396,5 +406,6 @@ class MainWindow(QMainWindow):
 
     def _connect_signals(self) -> None:
         """Connect signals from child widgets"""
-        if self.note_view:
-            self.note_view.status_bar_message.connect(self.set_status_message)
+        # From Widgets
+        if view := self.get_current_view():
+            view.status_bar_message.connect(self.set_status_message)
