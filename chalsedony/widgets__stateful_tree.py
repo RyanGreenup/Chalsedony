@@ -253,11 +253,25 @@ class StatefulTree(QTreeWidget):
         if app := QApplication.instance():
             app.postEvent(self, event)
 
+    def get_item(self, item_data: TreeItemData) -> QTreeWidgetItem | None:
+        """Get an item based on TreeItemData
+
+        Args:
+            item_data: The TreeItemData containing the item's type and ID
+
+        Returns:
+            The QTreeWidgetItem if found, otherwise None
+        """
+        return self.tree_items.get_item(item_data)
+
     def set_current_item_by_data(self, item_data: TreeItemData) -> None:
         """Set the current item using TreeItemData
 
         Args:
             item_data: The TreeItemData containing the item's type and ID
+
+        Returns:
+            None
         """
         if current_data := self.get_current_item_data():
             if item_data == current_data:

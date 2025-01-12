@@ -117,7 +117,21 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             Qt.Key.Key_C: lambda: self.copy_id(self.currentItem()),
             Qt.Key.Key_Y: lambda: self.duplicate_item(self.currentItem()),
             Qt.Key.Key_Return: note_select,
+            Qt.Key.Key_M: lambda: self.move_folder_to_root(
+                self.get_current_item_data()
+            ),
         }
+
+    def move_folder_to_root(self, item: TreeItemData | None) -> None:
+        if item:
+            match item.type:
+                case ItemType.FOLDER:
+                    if widget := self.tree_items.get_item(item):
+                        id = item.id
+                        if widget.parent():
+                            self.note_model.set_folder_to_root(id)
+                case _:
+                    self.send_status_message("Can only move folders to root")
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         """Handle double click to select a note"""
