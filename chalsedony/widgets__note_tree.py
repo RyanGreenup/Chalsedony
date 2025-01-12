@@ -92,6 +92,8 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         self._dragged_item: QTreeWidgetItem | None = None
         self._cut_items: list[TreeItemData] = []
         self.setup_ui()
+        menu = self.build_context_menu_actions(None)
+        self.addActions(menu.actions())
 
     def move_folder_to_root(self, item_data: TreeItemData | None) -> None:
         item_data = item_data or self.get_current_item_data()
@@ -356,8 +358,10 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         item_type: str | None = None
         item_id: str | None = None
         if position:
-            item = self.itemAt(position) or self.currentItem()
-            item_data = item.data(0, Qt.ItemDataRole.UserRole)
+            if item := self.itemAt(position):
+                item_data = item.data(0, Qt.ItemDataRole.UserRole)
+            else:
+                item_data = self.get_current_item_data()
             if item_data is not None:
                 # If the user right-clicked on an empty area
                 # We can't determine the item type
