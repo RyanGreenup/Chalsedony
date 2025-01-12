@@ -136,6 +136,9 @@ class VimTextEdit(QTextEdit):
                     cursor.removeSelectedText()
             case Qt.Key.Key_U:
                 self.undo()
+            # Implement R for replacing a character AI!
+            case Qt.Key.Key_R:
+
             # Capital A for end of line
             case Qt.Key.Key_A:
                 if e.modifiers() & Qt.KeyboardModifier.ShiftModifier:
