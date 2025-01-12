@@ -138,6 +138,7 @@ class VimTextEdit(QTextEdit):
                 self.undo()
             case Qt.Key.Key_R:
                 if e.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+                    # Modify this to count the number of entered characters, remove those from the yanked text and then insert the leftover text afterwards AI!
                     # Enter replace mode which overwrites existing text
                     self.mode = EditorMode.INSERT
                     cursor.movePosition(
