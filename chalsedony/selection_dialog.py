@@ -39,7 +39,18 @@ class SelectionDialog(QDialog):
         layout.addWidget(self.list)
 
         # Set size and focus
-        self.resize(400, 300)
+
+        ## Get the size of the current window
+        if hasattr((pw := self.parent()), "width"):
+            width = pw.width() * 0.8  # type: ignore
+        else:
+            width = 400
+        if hasattr(pw, "height"):
+            height = pw.height()  # type: ignore
+        else:
+            height = 300
+        ## Set Palette Size
+        self.resize(width, height)
         self.search.setFocus()
 
         # Connect return/enter key
