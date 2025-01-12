@@ -287,7 +287,6 @@ class MainWindow(QMainWindow):
                 MenuStructure(
                     name="&Options",
                     actions=[
-                        # AI: This action should be checkable
                         MenuAction(
                             id="toggle_follow_mode",
                             text="Toggle &Follow Mode",
@@ -317,10 +316,12 @@ class MainWindow(QMainWindow):
         if view := self.get_current_view():
             view.go_forward_in_history()
 
-    # Improve this to toggle the checkable state of follow mode AI!
     def toggle_follow_mode(self) -> None:
         if view := self.get_current_view():
             view.follow_mode = not view.follow_mode
+            # Update the menu action's checked state
+            if action := self.menu_actions.get("toggle_follow_mode"):
+                action.setChecked(view.follow_mode)
             self.set_status_message(
                 f"Follow mode {'enabled' if view.follow_mode else 'disabled'}"
             )
@@ -449,7 +450,6 @@ class MainWindow(QMainWindow):
         menu_bar = QMenuBar(self)
         self.setMenuBar(menu_bar)
 
-        # AI: THe menu config is used here
         menu_config = self.get_menu_config()
         self.menu_actions = {}
 
@@ -471,6 +471,9 @@ class MainWindow(QMainWindow):
                         if handler := getattr(self, action_item.handler, None):
                             action.triggered.connect(handler)
 
+                # Make toggle_follow_mode action checkable
+                if action_item.id == "toggle_follow_mode":
+                    action.setCheckable(True)
                 menu.addAction(action)
                 self.menu_actions[action_item.id] = action
 
