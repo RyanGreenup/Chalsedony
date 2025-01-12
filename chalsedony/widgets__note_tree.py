@@ -349,49 +349,8 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
 
 
 
-    # Keybinding logic starts here
-
-    def create_keybinings(self) -> None:
-        """Create keyboard shortcuts for tree operations.
-
-        Returns:
-            None
-        """
-
-        def note_select() -> None:
-            if item := self.get_current_item_data():
-                self.note_selected.emit(item)
-            else:
-                self.send_status_message("No item selected")
-
-        self.key_actions: dict[Qt.Key, Callable[[], None]] = {
-            Qt.Key.Key_X: self.cut_selected_items,
-            Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
-            Qt.Key.Key_R: self.clear_cut_items,
-            Qt.Key.Key_N: lambda: self.create_note(self.currentItem()),
-            Qt.Key.Key_F2: lambda: self.request_folder_rename(self.currentItem()),
-            Qt.Key.Key_Delete: lambda: self.delete_item(self.currentItem()),
-            Qt.Key.Key_C: lambda: self.copy_id(self.currentItem()),
-            Qt.Key.Key_Y: lambda: self.duplicate_item(self.currentItem()),
-            Qt.Key.Key_Return: note_select,
-            Qt.Key.Key_M: lambda: self.move_folder_to_root(
-                self.get_current_item_data()
-            ),
-        }
-
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        """Handle keyboard shortcuts for cut/paste operations"""
-        if self.currentItem():
-            key = Qt.Key(event.key())
-            action = self.key_actions.get(key)
-            if action is not None:
-                action()
-                event.accept()
-                return
-
-        # Let parent class handle other keys
-        super().keyPressEvent(event)
-
+    # Refactor this to use a pydantic data model for the actions, then loop over that to create the actions and connect them.
+    # The actions should use the `self.itemAt(position)` if the context menu is visible, otherwise it should use the current item. AI!
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
@@ -471,6 +430,7 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             menu.addAction(clear_cut_action)
 
         menu.exec(self.viewport().mapToGlobal(position))
+        self.addActions(menu.actions())
 
 
 
