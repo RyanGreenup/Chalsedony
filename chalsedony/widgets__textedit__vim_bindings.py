@@ -123,8 +123,8 @@ class VimTextEdit(QTextEdit):
                     self.clear_line_highlight()
                 else:
                     self.enter_insert_mode()
-            # Implement W to move to start of next word AI!
             case Qt.Key.Key_W:
+                cursor.movePosition(QTextCursor.MoveOperation.NextWord)
             case Qt.Key.Key_0:
                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
             case Qt.Key.Key_D:
