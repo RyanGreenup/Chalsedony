@@ -1,4 +1,5 @@
-from typing import Callable
+from typing import Callable, List, Optional
+from pydantic import BaseModel
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QTreeWidget
 from widgets__kbd_widgets import KbdTreeWidget
@@ -8,7 +9,6 @@ from PySide6.QtGui import (
     QDragEnterEvent,
     QDragMoveEvent,
     QDropEvent,
-    QKeyEvent,
     QMouseEvent,
 )
 from PySide6.QtWidgets import (
@@ -92,32 +92,21 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         self._dragged_item: QTreeWidgetItem | None = None
         self._cut_items: list[TreeItemData] = []
         self.setup_ui()
-        self.create_keybinings()
+        menu = self.build_context_menu_actions(None)
+        self.addActions(menu.actions())
 
-    def create_keybinings(self) -> None:
-        """Create keyboard shortcuts for tree operations.
-
-        Returns:
-            None
-        """
-
-        def note_select() -> None:
-            if item := self.get_current_item_data():
-                self.note_selected.emit(item)
-            else:
-                self.send_status_message("No item selected")
-
-        self.key_actions: dict[Qt.Key, Callable[[], None]] = {
-            Qt.Key.Key_X: self.cut_selected_items,
-            Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
-            Qt.Key.Key_R: self.clear_cut_items,
-            Qt.Key.Key_N: lambda: self.create_note(self.currentItem()),
-            Qt.Key.Key_F2: lambda: self.request_folder_rename(self.currentItem()),
-            Qt.Key.Key_Delete: lambda: self.delete_item(self.currentItem()),
-            Qt.Key.Key_C: lambda: self.copy_id(self.currentItem()),
-            Qt.Key.Key_Y: lambda: self.duplicate_item(self.currentItem()),
-            Qt.Key.Key_Return: note_select,
-        }
+    def move_folder_to_root(self, item_data: TreeItemData | None) -> None:
+        item_data = item_data or self.get_current_item_data()
+        if not item_data:
+            return
+        match item_data.type:
+            case ItemType.FOLDER:
+                if widget := self.tree_items.get_item(item_data):
+                    id = item_data.id
+                    if widget.parent():
+                        self.note_model.set_folder_to_root(id)
+            case _:
+                self.send_status_message("Can only move folders to root")
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         """Handle double click to select a note"""
@@ -186,14 +175,16 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         # Collapse all folders by default
         self.collapseAll()
 
-    def delete_item(self, item: QTreeWidgetItem) -> None:
+    def delete_item(self, item_data: TreeItemData | None) -> None:
         """Delete a note or folder from the tree and database
 
         Args:
             item: The tree item to delete
         """
+        item_data = item_data or self.get_current_item_data()
+        if not item_data:
+            return
         item_above = self.get_item_data_above_current()
-        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
 
         match item_data.type:
             case ItemType.NOTE:
@@ -207,14 +198,15 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         if item_above:
             self.set_current_item_by_data(item_above)
 
-    def duplicate_item(self, item: QTreeWidgetItem) -> None:
+    def duplicate_item(self, item_data: TreeItemData | None) -> None:
         """Duplicate a note or folder and its contents
 
         Args:
             item: The tree item to duplicate
         """
-        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-
+        item_data = item_data or self.get_current_item_data()
+        if not item_data:
+            return
         match item_data.type:
             case ItemType.FOLDER:
                 self.folder_duplicated.emit(item_data.id)
@@ -224,9 +216,10 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
                 self.duplicate_note.emit(item_data.id)
                 self.send_status_message(f"Duplicated note: {item_data.title}")
 
-    def create_folder(self, item: QTreeWidgetItem) -> None:
-        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-
+    def create_folder(self, item_data: TreeItemData | None) -> None:
+        item_data = item_data or self.get_current_item_data()
+        if not item_data:
+            return
         match item_data.type:
             case ItemType.FOLDER:
                 parent_id = item_data.id
@@ -238,98 +231,27 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             self.folder_create.emit(title, parent_id)
             self.send_status_message(f"Created folder: {title}")
 
-    def copy_id(self, item: QTreeWidgetItem) -> None:
-        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+    def copy_id(self, maybe_item_data: TreeItemData | None) -> None:
+        item_data = maybe_item_data or self.get_current_item_data()
+        if not item_data:
+            return
+
         id = item_data.id
         title = item_data.title
         self.copy_to_clipboard(f"[{title}](:/{id})")
 
-    def show_context_menu(self, position: QPoint) -> None:
-        """Show context menu with create action and ID display"""
-        item = self.itemAt(position)
-        if not item:
+    def request_folder_rename(self, item_data: TreeItemData | None) -> None:
+        """
+        Handle folder rename request
+
+        I haven't implemented note rename, save a note and change the heading
+        """
+        item_data = item_data or self.get_current_item_data()
+        if not item_data:
             return
-
-        menu = QMenu()
-
-        # Add ID display as clickable menu item that copies to clipboard
-        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-        item_type_enum = item_data.type
-        id_action = QAction(
-            f"Copy {item_type_enum.name.capitalize()} ID: {item_data.id}", self
-        )
-        id_action.triggered.connect(lambda: self.copy_id(item))
-        menu.addAction(id_action)
-
-        # Add separator
-        menu.addSeparator()
-
-        # Add Create Note action
-        create_action = QAction("Create Note", self)
-        create_action.triggered.connect(lambda: self.create_note(item))
-        create_action.setShortcut("Ctrl+N")
-        menu.addAction(create_action)
-
-        # Add Create Folder action
-        create_folder_action = QAction("Create Folder", self)
-        create_folder_action.triggered.connect(lambda: self.create_folder(item))
-        create_folder_action.setShortcut("Ctrl+Shift+N")
-        menu.addAction(create_folder_action)
-
-        # Add Duplicate action
-        duplicate_action = QAction(
-            f"Duplicate {item_type_enum.name.capitalize()}", self
-        )
-        duplicate_action.triggered.connect(lambda: self.duplicate_item(item))
-        menu.addAction(duplicate_action)
-
-        delete_action = QAction(f"Delete {item_type_enum.name.capitalize()}", self)
-        delete_action.triggered.connect(lambda: self.delete_item(item))
-        menu.addAction(delete_action)
-
-        # Add folder-specific actions
-        if item_type_enum == ItemType.FOLDER:
-            # Rename action
-            rename_action = QAction("Rename Folder", self)
-            rename_action.triggered.connect(lambda: self.request_folder_rename(item))
-            rename_action.setShortcut("F2")
-            menu.addAction(rename_action)
-
-            # Move to root action
-            if item.parent():  # Only show if folder has a parent
-                move_to_root_action = QAction("Move to Root", self)
-                move_to_root_action.triggered.connect(
-                    lambda: self.note_model.set_folder_to_root(item_data.id)
-                )
-                menu.addAction(move_to_root_action)
-
-        # Add Cut action
-        cut_action = QAction("Cut", self)
-        cut_action.triggered.connect(self.cut_selected_items)
-        cut_action.setShortcut("Ctrl+X")
-        menu.addAction(cut_action)
-
-        # Add Paste action if we have cut items
-        if self._cut_items:
-            paste_action = QAction("Paste", self)
-            paste_action.triggered.connect(lambda: self.paste_items(item))
-            paste_action.setShortcut("Ctrl+V")
-            menu.addAction(paste_action)
-
-            # Add Clear Cut action
-            clear_cut_action = QAction("Clear Cut", self)
-            clear_cut_action.triggered.connect(self.clear_cut_items)
-            clear_cut_action.setShortcut("Esc")
-            menu.addAction(clear_cut_action)
-
-        menu.exec(self.viewport().mapToGlobal(position))
-
-    def request_folder_rename(self, item: QTreeWidgetItem) -> None:
-        """Handle folder rename request"""
-        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
         if item_data.type == ItemType.FOLDER:
             new_title, ok = QInputDialog.getText(
-                self, "Rename Folder", "Enter new folder name:", text=item.text(0)
+                self, "Rename Folder", "Enter new folder name:", text=item_data.title
             )
             if ok and new_title:
                 self.folder_rename_requested.emit(item_data.id, new_title)
@@ -339,9 +261,11 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         clipboard = QApplication.clipboard()
         clipboard.setText(text)
 
-    def create_note(self, clicked_item: QTreeWidgetItem) -> None:
+    def create_note(self, item_data: TreeItemData | None) -> None:
         """Create a new note under the selected folder"""
-        item_data: TreeItemData = clicked_item.data(0, Qt.ItemDataRole.UserRole)
+        item_data = item_data or self.get_current_item_data()
+        if not item_data:
+            return
         match item_data.type:
             case ItemType.NOTE:
                 folder_id = self.note_model.get_folder_id_from_note(item_data.id)
@@ -350,19 +274,6 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         self.note_created.emit(folder_id)
         full_title = self.note_model.get_folder_path(folder_id)
         self.send_status_message(f"Created new note in folder: {full_title}")
-
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        """Handle keyboard shortcuts for cut/paste operations"""
-        if self.currentItem():
-            key = Qt.Key(event.key())
-            action = self.key_actions.get(key)
-            if action is not None:
-                action()
-                event.accept()
-                return
-
-        # Let parent class handle other keys
-        super().keyPressEvent(event)
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         self.drag_drop_handler.dragEnterEvent(event)
@@ -412,26 +323,130 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
 
     # TODO this should call an operation in the model that bulkd moves items
     # otherwise each item triggers a refresh which is needlessly slow
-    def paste_items(self, target_item: QTreeWidgetItem) -> None:
+    def paste_items(self, target_item_data: TreeItemData | None) -> None:
         """Paste cut items to the target folder"""
-        if not target_item:
+        target_item_data = target_item_data or self.get_current_item_data()
+        if not target_item_data:
             return
 
         # Verify target is a folder
-        target_data: TreeItemData = target_item.data(0, Qt.ItemDataRole.UserRole)
-        if target_data.type != ItemType.FOLDER:
+        if target_item_data.type != ItemType.FOLDER:
             self.send_status_message("Can only paste into folders")
             return
 
         # Move each cut item to the target folder
         for item_data in self._cut_items:
             if item_data.type == ItemType.FOLDER:
-                self.folder_moved.emit(item_data.id, target_data.id)
+                self.folder_moved.emit(item_data.id, target_item_data.id)
             elif item_data.type == ItemType.NOTE:
-                self.note_moved.emit(item_data.id, target_data.id)
+                self.note_moved.emit(item_data.id, target_item_data.id)
 
         # Clear cut items after paste
         self.clear_cut_items()
+
+    class MenuAction(BaseModel):
+        """Model for context menu actions"""
+
+        label: str
+        handler: Callable[[], None]
+        shortcut: Optional[str] = None
+        condition: Optional[Callable[[TreeItemData], bool]] = None
+
+    def get_context_menu_actions(self, position: QPoint | None) -> List[MenuAction]:
+        """Get list of context menu actions based on item type"""
+        # If the user right-clicked on an empty area
+        # We can't determine the item type
+        # and our methods will default to current_item_data
+        # This requires re-thinking
+        # To block context Menu, consider returning an empty list
+
+        if position and (item := self.itemAt(position)):
+            item_data = item.data(0, Qt.ItemDataRole.UserRole)
+        else:
+            item_data = self.get_current_item_data()
+
+        item_type: str | None = None
+        item_id: str | None = None
+        if item_data:
+            item_type = item_data.type.name.lower().capitalize()
+            item_id = item_data.id
+
+        return [
+            self.MenuAction(
+                label=f"Copy {item_type} ID: {item_id}",
+                handler=lambda: self.copy_id(item_data),
+                shortcut="C",
+            ),
+            self.MenuAction(
+                label="Create Note",
+                handler=lambda: self.create_note(item_data),
+                shortcut="N",
+            ),
+            self.MenuAction(
+                label="Create Folder",
+                handler=lambda: self.create_folder(item_data),
+                shortcut="Ctrl+Alt+N",
+            ),
+            self.MenuAction(
+                label=f"Duplicate {item_type}",
+                handler=lambda: self.duplicate_item(item_data),
+                shortcut="Print",
+            ),
+            self.MenuAction(
+                label=f"Delete {item_type}",
+                handler=lambda: self.delete_item(item_data),
+                shortcut="Delete",
+            ),
+            self.MenuAction(
+                label="Rename Folder",
+                handler=lambda: self.request_folder_rename(item_data),
+                shortcut="F2",
+            ),
+            self.MenuAction(
+                label="Move to Root",
+                handler=lambda: self.move_folder_to_root(item_data),
+                shortcut="0",
+            ),
+            self.MenuAction(label="Cut", handler=self.cut_selected_items, shortcut="X"),
+            self.MenuAction(
+                label="Paste",
+                handler=lambda: self.paste_items(item_data),
+                shortcut="P",
+                condition=lambda _: bool(self._cut_items),
+            ),
+            self.MenuAction(
+                label="Clear Cut",
+                handler=self.clear_cut_items,
+                shortcut="Esc",
+                condition=lambda _: bool(self._cut_items),
+            ),
+        ]
+
+    def build_context_menu_actions(self, position: QPoint | None) -> QMenu:
+        """
+        Build Context Menu actions for the selected item or use the function default (current item usually)
+        """
+
+        menu = QMenu()
+        actions = self.get_context_menu_actions(position)
+
+        # Add actions with conditions
+        for action in actions:
+            q_action = QAction(action.label, self)
+            q_action.triggered.connect(action.handler)
+            if action.shortcut:
+                q_action.setShortcut(action.shortcut)
+            menu.addAction(q_action)
+
+            # Add separator after ID copy
+            if action.label.startswith("Copy"):
+                menu.addSeparator()
+
+        return menu
+
+    def show_context_menu(self, position: QPoint) -> None:
+        menu = self.build_context_menu_actions(position)
+        menu.exec(self.viewport().mapToGlobal(position))
 
 
 class DragDropHandler:
