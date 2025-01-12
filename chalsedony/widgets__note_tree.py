@@ -417,7 +417,7 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             self.MenuAction(
                 label="Clear Cut",
                 handler=self.clear_cut_items,
-                shortcut="Esc",
+                shortcut="`",
                 condition=lambda _: bool(self._cut_items),
             ),
         ]
