@@ -92,7 +92,14 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         self._dragged_item: QTreeWidgetItem | None = None
         self._cut_items: list[TreeItemData] = []
         self.setup_ui()
-        self.addActions(self.build_context_menu_actions(position=None).actions())
+        try:
+            menu = self.build_context_menu_actions(position=None).actions()
+        except Exception as e:
+            print(e)
+        try:
+            self.addActions(menu)
+        except Exception as e:
+            print(e)
 
     def move_folder_to_root(self, item_data: TreeItemData | None) -> None:
         item_data = item_data or self.get_current_item_data()
@@ -347,8 +354,6 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         """Model for context menu actions"""
 
         label: str
-        # Fix this AI!
-        # chalsedony/widgets__note_tree.py:350: error: Missing type parameters for generic type "Callable"  [type-arg]
         handler: Callable[[], None]
         shortcut: Optional[str] = None
         condition: Optional[Callable[[TreeItemData], bool]] = None
