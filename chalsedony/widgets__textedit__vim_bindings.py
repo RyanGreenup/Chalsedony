@@ -125,6 +125,8 @@ class VimTextEdit(QTextEdit):
                     self.enter_insert_mode()
             case Qt.Key.Key_W:
                 cursor.movePosition(QTextCursor.MoveOperation.NextWord)
+            case Qt.Key.Key_B:
+                cursor.movePosition(QTextCursor.MoveOperation.PreviousWord)
             case Qt.Key.Key_0:
                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
             case Qt.Key.Key_D:
@@ -246,6 +248,10 @@ class VimTextEdit(QTextEdit):
                 self.exit_visual_mode(cursor)
             case Qt.Key.Key_Y:
                 self.yank_text(cursor)
+            case Qt.Key.Key_W:
+                cursor.movePosition(QTextCursor.MoveOperation.NextWord)
+            case Qt.Key.Key_B:
+                cursor.movePosition(QTextCursor.MoveOperation.PreviousWord)
 
         self.setTextCursor(cursor)
 
