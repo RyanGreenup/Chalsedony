@@ -94,33 +94,6 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         self.setup_ui()
         self.create_keybinings()
 
-    def create_keybinings(self) -> None:
-        """Create keyboard shortcuts for tree operations.
-
-        Returns:
-            None
-        """
-
-        def note_select() -> None:
-            if item := self.get_current_item_data():
-                self.note_selected.emit(item)
-            else:
-                self.send_status_message("No item selected")
-
-        self.key_actions: dict[Qt.Key, Callable[[], None]] = {
-            Qt.Key.Key_X: self.cut_selected_items,
-            Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
-            Qt.Key.Key_R: self.clear_cut_items,
-            Qt.Key.Key_N: lambda: self.create_note(self.currentItem()),
-            Qt.Key.Key_F2: lambda: self.request_folder_rename(self.currentItem()),
-            Qt.Key.Key_Delete: lambda: self.delete_item(self.currentItem()),
-            Qt.Key.Key_C: lambda: self.copy_id(self.currentItem()),
-            Qt.Key.Key_Y: lambda: self.duplicate_item(self.currentItem()),
-            Qt.Key.Key_Return: note_select,
-            Qt.Key.Key_M: lambda: self.move_folder_to_root(
-                self.get_current_item_data()
-            ),
-        }
 
     def move_folder_to_root(self, item: TreeItemData | None) -> None:
         if item:
@@ -258,6 +231,167 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         title = item_data.title
         self.copy_to_clipboard(f"[{title}](:/{id})")
 
+
+
+    def request_folder_rename(self, item: QTreeWidgetItem) -> None:
+        """Handle folder rename request"""
+        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
+        if item_data.type == ItemType.FOLDER:
+            new_title, ok = QInputDialog.getText(
+                self, "Rename Folder", "Enter new folder name:", text=item.text(0)
+            )
+            if ok and new_title:
+                self.folder_rename_requested.emit(item_data.id, new_title)
+
+    def copy_to_clipboard(self, text: str) -> None:
+        """Copy text to the system clipboard"""
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text)
+
+    def create_note(self, clicked_item: QTreeWidgetItem) -> None:
+        """Create a new note under the selected folder"""
+        item_data: TreeItemData = clicked_item.data(0, Qt.ItemDataRole.UserRole)
+        match item_data.type:
+            case ItemType.NOTE:
+                folder_id = self.note_model.get_folder_id_from_note(item_data.id)
+            case ItemType.FOLDER:
+                folder_id = item_data.id
+        self.note_created.emit(folder_id)
+        full_title = self.note_model.get_folder_path(folder_id)
+        self.send_status_message(f"Created new note in folder: {full_title}")
+
+
+    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
+        self.drag_drop_handler.dragEnterEvent(event)
+
+    def dragMoveEvent(self, event: QDragMoveEvent) -> None:
+        self.drag_drop_handler.dragMoveEvent(event)
+
+    def dropEvent(self, event: QDropEvent) -> None:
+        self.drag_drop_handler.dropEvent(event)
+
+    def send_status_message(self, message: str) -> None:
+        """Send a message to the status bar"""
+        self.status_bar_message.emit(message)
+
+    def _is_child_of(
+        self, child_item: QTreeWidgetItem, parent_item: QTreeWidgetItem
+    ) -> bool:
+        """Check if an item is a child of another item"""
+        current = child_item
+        while current.parent():
+            current = current.parent()
+            if current == parent_item:
+                return True
+        return False
+
+    def cut_selected_items(self) -> None:
+        """Store the currently selected items for cutting"""
+        self._cut_items += self.get_selected_items_data()
+        for item in self._cut_items:
+            self.highlight_item(item)
+
+    def clear_cut_items(self) -> None:
+        """Clear the cut items selection"""
+        if not self._cut_items:
+            return
+
+        # Make a copy of the list since we're modifying it
+        items_to_clear = list(self._cut_items)
+        self._cut_items.clear()
+
+        for item in items_to_clear:
+            try:
+                if item:  # Check if item still exists
+                    self.unhighlight_item(item)
+            except RuntimeError:
+                continue  # Skip if item was deleted
+
+    # TODO this should call an operation in the model that bulkd moves items
+    # otherwise each item triggers a refresh which is needlessly slow
+    def paste_items(self, target_item: QTreeWidgetItem) -> None:
+        """Paste cut items to the target folder"""
+        if not target_item:
+            return
+
+        # Verify target is a folder
+        target_data: TreeItemData = target_item.data(0, Qt.ItemDataRole.UserRole)
+        if target_data.type != ItemType.FOLDER:
+            self.send_status_message("Can only paste into folders")
+            return
+
+        # Move each cut item to the target folder
+        for item_data in self._cut_items:
+            if item_data.type == ItemType.FOLDER:
+                self.folder_moved.emit(item_data.id, target_data.id)
+            elif item_data.type == ItemType.NOTE:
+                self.note_moved.emit(item_data.id, target_data.id)
+
+        # Clear cut items after paste
+        self.clear_cut_items()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # Keybinding logic starts here
+
+    def create_keybinings(self) -> None:
+        """Create keyboard shortcuts for tree operations.
+
+        Returns:
+            None
+        """
+
+        def note_select() -> None:
+            if item := self.get_current_item_data():
+                self.note_selected.emit(item)
+            else:
+                self.send_status_message("No item selected")
+
+        self.key_actions: dict[Qt.Key, Callable[[], None]] = {
+            Qt.Key.Key_X: self.cut_selected_items,
+            Qt.Key.Key_P: lambda: self.paste_items(self.currentItem()),
+            Qt.Key.Key_R: self.clear_cut_items,
+            Qt.Key.Key_N: lambda: self.create_note(self.currentItem()),
+            Qt.Key.Key_F2: lambda: self.request_folder_rename(self.currentItem()),
+            Qt.Key.Key_Delete: lambda: self.delete_item(self.currentItem()),
+            Qt.Key.Key_C: lambda: self.copy_id(self.currentItem()),
+            Qt.Key.Key_Y: lambda: self.duplicate_item(self.currentItem()),
+            Qt.Key.Key_Return: note_select,
+            Qt.Key.Key_M: lambda: self.move_folder_to_root(
+                self.get_current_item_data()
+            ),
+        }
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """Handle keyboard shortcuts for cut/paste operations"""
+        if self.currentItem():
+            key = Qt.Key(event.key())
+            action = self.key_actions.get(key)
+            if action is not None:
+                action()
+                event.accept()
+                return
+
+        # Let parent class handle other keys
+        super().keyPressEvent(event)
+
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
         item = self.itemAt(position)
@@ -338,114 +472,27 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
 
         menu.exec(self.viewport().mapToGlobal(position))
 
-    def request_folder_rename(self, item: QTreeWidgetItem) -> None:
-        """Handle folder rename request"""
-        item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-        if item_data.type == ItemType.FOLDER:
-            new_title, ok = QInputDialog.getText(
-                self, "Rename Folder", "Enter new folder name:", text=item.text(0)
-            )
-            if ok and new_title:
-                self.folder_rename_requested.emit(item_data.id, new_title)
 
-    def copy_to_clipboard(self, text: str) -> None:
-        """Copy text to the system clipboard"""
-        clipboard = QApplication.clipboard()
-        clipboard.setText(text)
 
-    def create_note(self, clicked_item: QTreeWidgetItem) -> None:
-        """Create a new note under the selected folder"""
-        item_data: TreeItemData = clicked_item.data(0, Qt.ItemDataRole.UserRole)
-        match item_data.type:
-            case ItemType.NOTE:
-                folder_id = self.note_model.get_folder_id_from_note(item_data.id)
-            case ItemType.FOLDER:
-                folder_id = item_data.id
-        self.note_created.emit(folder_id)
-        full_title = self.note_model.get_folder_path(folder_id)
-        self.send_status_message(f"Created new note in folder: {full_title}")
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        """Handle keyboard shortcuts for cut/paste operations"""
-        if self.currentItem():
-            key = Qt.Key(event.key())
-            action = self.key_actions.get(key)
-            if action is not None:
-                action()
-                event.accept()
-                return
 
-        # Let parent class handle other keys
-        super().keyPressEvent(event)
 
-    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        self.drag_drop_handler.dragEnterEvent(event)
 
-    def dragMoveEvent(self, event: QDragMoveEvent) -> None:
-        self.drag_drop_handler.dragMoveEvent(event)
 
-    def dropEvent(self, event: QDropEvent) -> None:
-        self.drag_drop_handler.dropEvent(event)
 
-    def send_status_message(self, message: str) -> None:
-        """Send a message to the status bar"""
-        self.status_bar_message.emit(message)
 
-    def _is_child_of(
-        self, child_item: QTreeWidgetItem, parent_item: QTreeWidgetItem
-    ) -> bool:
-        """Check if an item is a child of another item"""
-        current = child_item
-        while current.parent():
-            current = current.parent()
-            if current == parent_item:
-                return True
-        return False
 
-    def cut_selected_items(self) -> None:
-        """Store the currently selected items for cutting"""
-        self._cut_items += self.get_selected_items_data()
-        for item in self._cut_items:
-            self.highlight_item(item)
 
-    def clear_cut_items(self) -> None:
-        """Clear the cut items selection"""
-        if not self._cut_items:
-            return
 
-        # Make a copy of the list since we're modifying it
-        items_to_clear = list(self._cut_items)
-        self._cut_items.clear()
 
-        for item in items_to_clear:
-            try:
-                if item:  # Check if item still exists
-                    self.unhighlight_item(item)
-            except RuntimeError:
-                continue  # Skip if item was deleted
 
-    # TODO this should call an operation in the model that bulkd moves items
-    # otherwise each item triggers a refresh which is needlessly slow
-    def paste_items(self, target_item: QTreeWidgetItem) -> None:
-        """Paste cut items to the target folder"""
-        if not target_item:
-            return
 
-        # Verify target is a folder
-        target_data: TreeItemData = target_item.data(0, Qt.ItemDataRole.UserRole)
-        if target_data.type != ItemType.FOLDER:
-            self.send_status_message("Can only paste into folders")
-            return
 
-        # Move each cut item to the target folder
-        for item_data in self._cut_items:
-            if item_data.type == ItemType.FOLDER:
-                self.folder_moved.emit(item_data.id, target_data.id)
-            elif item_data.type == ItemType.NOTE:
-                self.note_moved.emit(item_data.id, target_data.id)
 
-        # Clear cut items after paste
-        self.clear_cut_items()
+
+
+
+
 
 
 class DragDropHandler:
