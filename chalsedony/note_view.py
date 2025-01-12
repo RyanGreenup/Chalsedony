@@ -180,9 +180,12 @@ class NoteView(QWidget):
         """Connect UI signals to handlers"""
         parent = self.parent()
 
-        # Connect save signal from parent window
+        # Connect save signal from parent window AI!
+        # Add the correct type ignore comment for this type of mypy error
+        # Pyright: Cannot access attribute "style_changed" for class "QObject"
+        #   Attribute "style_changed" is unknown [reportAttributeAccessIssue]
         if hasattr(parent, "style_changed"):
-            parent.style_changed.connect(self.content_area.apply_dark_theme)  # type: ignore [attr-defined]
+            parent.style_changed.connect(self.content_area.apply_dark_theme)
         else:
             raise AttributeError(
                 "Parent window must have a style_changed signal otherwise the dark theme will not be applied"
