@@ -18,8 +18,7 @@ class EditorMode(Enum):
 
 class VimTextEdit(QTextEdit):
     def __init__(self, parent: QWidget | None = None) -> None:
-        # This is a mixin, don't initialize QTextEdit
-        # super().__init__()
+        super().__init__()
         self._mode = EditorMode.INSERT
         self.visual_anchor: None | int = None
         self.yanked_text = ""

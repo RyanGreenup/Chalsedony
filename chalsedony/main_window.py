@@ -161,6 +161,7 @@ class MainWindow(QMainWindow):
                             id="refresh",
                             text="&Refresh",
                             handler="refresh",
+                            shortcut="Ctrl+R",
                         ),
                         MenuAction(
                             id="save_note",
