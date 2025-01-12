@@ -134,7 +134,33 @@ SelectionDialog QListWidget::item:hover:!selected {
 """
 
 note_list_style = """
+QListWidget {
+    border: none;
+    background: palette(base);
+    outline: none;
+    font-size: 13px;
+    padding: 4px;
+}
 
+QListWidget::item {
+    padding: 8px;
+    border-radius: 4px;
+    margin: 2px 4px;
+}
+
+QListWidget::item:selected {
+    background: palette(highlight);
+    color: palette(highlighted-text);
+}
+
+QListWidget::item:hover:!selected {
+    background: palette(shadow);
+}
+
+QListWidget::item:focus {
+    border: none;
+    outline: none;
+}
 """
 
 
