@@ -6,6 +6,16 @@ base_style = """
 *:focus {
     border: 2px solid palette(highlight);
 }
+
+QLineEdit {
+    padding: 4px;
+    /*border: 1px solid palette(mid); */
+    border-radius: 4px;
+    margin: 8px 8px 4px 8px;
+    font-size: 13px;
+    color: palette(text);
+}
+
 """
 
 
@@ -120,6 +130,10 @@ SelectionDialog QListWidget::item:selected {
 SelectionDialog QListWidget::item:hover:!selected {
     background: palette(shadow);
 }
+
+"""
+
+note_list_style = """
 
 """
 
@@ -489,4 +503,5 @@ QSS_STYLE = (
     + toolbar
     + menus
     + override_text_edit_background
+    + note_list_style
 )
