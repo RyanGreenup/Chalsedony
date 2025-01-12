@@ -92,14 +92,6 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         self._dragged_item: QTreeWidgetItem | None = None
         self._cut_items: list[TreeItemData] = []
         self.setup_ui()
-        try:
-            menu = self.build_context_menu_actions(position=None).actions()
-        except Exception as e:
-            print(e)
-        try:
-            self.addActions(menu)
-        except Exception as e:
-            print(e)
 
     def move_folder_to_root(self, item_data: TreeItemData | None) -> None:
         item_data = item_data or self.get_current_item_data()
