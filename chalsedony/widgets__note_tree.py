@@ -26,9 +26,15 @@ from utils__ngram_filter import text_matches_filter
 class TreeWithFilter(QTreeWidget):
     """Base tree widget class with filtering functionality"""
 
-    # When the text is empty, the note items are not repopulated they remain missing until  the tree is rebuilt, fix this AI!
     def filter_tree(self, text: str) -> None:
         """Filter the tree view based on search text using n-gram comparison"""
+
+        def show_all_items(item: QTreeWidgetItem) -> None:
+            """Recursively show all items in the tree"""
+            item.setHidden(False)
+            for i in range(item.childCount()):
+                child = item.child(i)
+                show_all_items(child)
 
         def filter_items(item: QTreeWidgetItem) -> bool:
             # Get if this item matches using n-gram comparison
@@ -52,13 +58,11 @@ class TreeWithFilter(QTreeWidget):
 
             return item_matches or child_matches
 
-        # If empty show all items
+        # If empty show all items recursively
         if not text:
             for i in range(self.topLevelItemCount()):
                 item = self.topLevelItem(i)
-                item.setHidden(False)
-                for j in range(item.childCount()):
-                    item.child(j).setHidden(False)
+                show_all_items(item)
             return
 
         # Filter from top level
