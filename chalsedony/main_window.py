@@ -51,9 +51,6 @@ class MainWindow(QMainWindow):
     current_scale: float = 1.0  # Track current scale factor
     style_changed = Signal(bool)  # Emits True for dark mode, False for light mode
     refresh = Signal()
-    save_note_signal = Signal()  # Signal to trigger note save
-    note_selection_palette_requested = Signal()
-    note_link_palette_requested = Signal()
 
     def __init__(
         self,
@@ -331,10 +328,12 @@ class MainWindow(QMainWindow):
             view.focus_todays_journal()
 
     def note_selection_palette(self) -> None:
-        self.note_selection_palette_requested.emit()
+        if view := self.get_current_view():
+            view.note_selection_palette()
 
     def note_link_palette(self) -> None:
-        self.note_link_palette_requested.emit()
+        if view := self.get_current_view():
+            view.note_link_palette()
 
     def zoom(self, factor: float) -> None:
         """Change the UI scale by the given factor.
@@ -368,7 +367,6 @@ class MainWindow(QMainWindow):
                         print(f"Error updating widget: {e}")
                     except Exception as e:
                         print(f"Error updating widget: {e}")
-
 
                 # Trigger style refresh
                 # NOTE this could work instead of the loop, probably should be used as well
@@ -430,7 +428,8 @@ class MainWindow(QMainWindow):
     # TODO ensure this works when multiple tabs are implemented
     def save_note(self) -> None:
         """Trigger note save with title update from heading"""
-        self.save_note_signal.emit()
+        if view := self.get_current_view():
+            view.save_current_note()
 
     def show_about_dialog(self) -> None:
         QMessageBox.about(

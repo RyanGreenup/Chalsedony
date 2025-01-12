@@ -179,18 +179,15 @@ class NoteView(QWidget):
     def _connect_signals(self) -> None:
         """Connect UI signals to handlers"""
         parent = self.parent()
-        from main_window import MainWindow
 
         # Connect save signal from parent window
-        if isinstance(parent, MainWindow):
-            parent.save_note_signal.connect(self.save_current_note)
-            parent.style_changed.connect(self.content_area.apply_dark_theme)
-            parent.note_selection_palette_requested.connect(self.note_selection_palette)
-            parent.note_link_palette_requested.connect(self.note_link_palette)
+        if hasattr(parent, "style_changed"):
+            parent.style_changed.connect(self.content_area.apply_dark_theme)  # type: ignore
         else:
-            raise TypeError(
-                "Parent window must be an instance of MainWindow to connect signals"
+            raise AttributeError(
+                "Parent window must have a style_changed signal otherwise the dark theme will not be applied"
             )
+
         # Internal Signals
         self.tree_widget.itemSelectionChanged.connect(self._on_tree_selection_changed)
         self.tree_widget.note_selected.connect(
@@ -411,8 +408,12 @@ class NoteView(QWidget):
                         self.content_area.editor.setPlainText(note.body or "")
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
-                        self.backlinks_list.populate(self.model.get_backlinks(item_data.id))
-                        self.forwardlinks_list.populate(self.model.get_forwardlinks(item_data.id))
+                        self.backlinks_list.populate(
+                            self.model.get_backlinks(item_data.id)
+                        )
+                        self.forwardlinks_list.populate(
+                            self.model.get_forwardlinks(item_data.id)
+                        )
                 case ItemType.FOLDER:
                     self.current_note_id = None
                     self.content_area.editor.clear()
