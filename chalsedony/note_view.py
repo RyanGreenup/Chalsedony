@@ -116,9 +116,9 @@ class NoteView(QWidget):
         left_layout.setContentsMargins(0, 0, 0, 0)
 
         # Add search bar above tabs
-        self.tree_search = QLineEdit()
-        self.tree_search.setPlaceholderText("Search in tree...")
-        left_layout.addWidget(self.tree_search)
+        self.note_filter = QLineEdit()
+        self.note_filter.setPlaceholderText("Filter Items...")
+        left_layout.addWidget(self.note_filter)
 
         # Create tab widget
         self.left_tabs = QTabWidget()
@@ -224,8 +224,8 @@ class NoteView(QWidget):
         )
 
         # Connect tree search
-        self.tree_search.textChanged.connect(self.tree_widget.filter_tree)
-        self.tree_search.textChanged.connect(
+        self.note_filter.textChanged.connect(self.tree_widget.filter_tree)
+        self.note_filter.textChanged.connect(
             self.search_tab.search_sidebar_list.filter_items
         )
 
@@ -638,7 +638,7 @@ class NoteView(QWidget):
 
     def focus_filter_bar(self) -> None:
         """Focus the search bar in the tree view"""
-        self.tree_search.setFocus()
+        self.note_filter.setFocus()
 
     def focus_search_bar(self) -> None:
         """Focus the search bar in the tree view"""
