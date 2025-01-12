@@ -635,3 +635,37 @@ class NoteView(QWidget):
             self._history_timer.stop()
             self._handle_note_selection(item_data)
             self._history_timer.start()
+
+    def focus_filter_bar(self) -> None:
+        """Focus the search bar in the tree view"""
+        self.tree_search.setFocus()
+
+    def focus_search_bar(self) -> None:
+        """Focus the search bar in the tree view"""
+        # Focus the tab
+        self.left_tabs.setCurrentWidget(self.search_tab)
+        # Focus the search bar
+        self.search_tab.search_input.setFocus()
+
+    def focus_note_tree(self) -> None:
+        """Focus the tree view"""
+        self.left_tabs.setCurrentWidget(self.tree_widget)
+        self.tree_widget.setFocus()
+
+    def focus_editor(self) -> None:
+        """Focus the editor"""
+        self.content_area.editor.setFocus()
+
+    def focus_preview(self) -> None:
+        """Focus the preview"""
+        self.content_area.preview.setFocus()
+
+    def focus_backlinks(self) -> None:
+        """Focus the backlinks list"""
+        # self.right_splitter.widget(0).setFocus()
+        self.backlinks_list.setFocus()
+
+    def focus_forwardlinks(self) -> None:
+        """Focus the forwardlinks list"""
+        # self.right_splitter.widget(1).setFocus()
+        self.forwardlinks_list.setFocus()

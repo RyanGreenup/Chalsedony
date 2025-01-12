@@ -282,6 +282,41 @@ class MainWindow(QMainWindow):
                     ],
                 ),
                 MenuStructure(
+                    name="&Focus",
+                    actions=[
+                        MenuAction(
+                            id="focus_search_bar",
+                            text="&Search Bar",
+                            handler="focus_search_bar",
+                            shortcut="F6",
+                        ),
+                        MenuAction(
+                            id="focus_filter_bar",
+                            text="&Filter Bar",
+                            handler="focus_search_bar",
+                            shortcut="Ctrl+/",
+                        ),
+                        MenuAction(
+                            id="focus_note_tree",
+                            text="Note &Tree",
+                            handler="focus_note_tree",
+                            shortcut="F5",
+                        ),
+                        MenuAction(
+                            id="focus_backlinks",
+                            text="&Backlinks",
+                            handler="focus_backlinks",
+                            shortcut="F4",
+                        ),
+                        MenuAction(
+                            id="focus_forwardlinks",
+                            text="Forward &Links",
+                            handler="focus_forwardlinks",
+                            shortcut="F3",
+                        ),
+                    ],
+                ),
+                MenuStructure(
                     name="&Options",
                     actions=[
                         MenuAction(
@@ -304,6 +339,26 @@ class MainWindow(QMainWindow):
                 ),
             ]
         )
+
+    def focus_note_tree(self) -> None:
+        if view := self.get_current_view():
+            view.focus_note_tree()
+
+    def focus_backlinks(self) -> None:
+        if view := self.get_current_view():
+            view.focus_backlinks()
+
+    def focus_forwardlinks(self) -> None:
+        if view := self.get_current_view():
+            view.focus_forwardlinks()
+
+    def focus_filter_bar(self) -> None:
+        if view := self.get_current_view():
+            view.focus_filter_bar()
+
+    def focus_search_bar(self) -> None:
+        if view := self.get_current_view():
+            view.focus_search_bar()
 
     def back_history(self) -> None:
         if view := self.get_current_view():
