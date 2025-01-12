@@ -349,7 +349,7 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         label: str
         # Fix this AI!
         # chalsedony/widgets__note_tree.py:350: error: Missing type parameters for generic type "Callable"  [type-arg]
-        handler: Callable
+        handler: Callable[[], None]
         shortcut: Optional[str] = None
         condition: Optional[Callable[[TreeItemData], bool]] = None
 
