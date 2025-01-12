@@ -7,7 +7,7 @@ check:
     # vulture chalsedony/*.py
 
 run:
-    python chalsedony/main.py --no-dark-mode
+    python chalsedony/main.py & 
 
 
 embed-assets:
