@@ -143,7 +143,7 @@ class VimTextEdit(QTextEdit):
                     self.mode = EditorMode.INSERT
                     cursor.movePosition(
                         QTextCursor.MoveOperation.EndOfBlock,
-                        QTextCursor.MoveMode.KeepAnchor
+                        QTextCursor.MoveMode.KeepAnchor,
                     )
                     # Store text for potential undo
                     self.yanked_text = cursor.selectedText()
@@ -151,8 +151,7 @@ class VimTextEdit(QTextEdit):
                     # Single character replace (lowercase r)
                     self.mode = EditorMode.INSERT
                 cursor.movePosition(
-                    QTextCursor.MoveOperation.Right,
-                    QTextCursor.MoveMode.KeepAnchor
+                    QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor
                 )
                 cursor.removeSelectedText()
 
