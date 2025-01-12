@@ -357,6 +357,7 @@ class MainWindow(QMainWindow):
                 # Apply the font to the application
                 app.setFont(current_font)
 
+                # This doesn't seem needed
                 # Force update on all widgets
                 for widget in app.allWidgets():
                     widget.setFont(current_font)
@@ -371,7 +372,10 @@ class MainWindow(QMainWindow):
 
 
                 # Trigger style refresh
-                app.setStyleSheet(app.styleSheet())
+                # NOTE this could work instead of the loop, probably should be used as well
+                # However, parsing the stylesheet is slow, so it's better to avoid it
+                # User can toggle dark mode for now.
+                # app.setStyleSheet(app.styleSheet())
 
     def upload_resource(self) -> None:
         view = self.get_current_view()
