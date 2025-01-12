@@ -188,6 +188,14 @@ class NoteView(QWidget):
                 "Parent window must have a style_changed signal otherwise the dark theme will not be applied"
             )
 
+        if hasattr(parent, "zoom_editor"):
+            for content_area in self.get_all_content_area():
+                parent.zoom_editor.connect(content_area.editor.zoom)  # type: ignore[reportAttributeAccessIssue]  # parent is QMainWindow which has style_changed
+        else:
+            raise AttributeError(
+                "Parent window must have a zoom_editor signal to zoom into editor widgets"
+            )
+
         # Internal Signals
         self.tree_widget.itemSelectionChanged.connect(self._on_tree_selection_changed)
         self.tree_widget.note_selected.connect(
@@ -389,9 +397,7 @@ class NoteView(QWidget):
             return
         content_area = self.get_current_content_area()
         try:
-            content_area.editor.textChanged.disconnect(
-                self._on_editor_text_changed
-            )
+            content_area.editor.textChanged.disconnect(self._on_editor_text_changed)
         except TypeError:
             # Signal was not connected
             pass

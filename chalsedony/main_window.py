@@ -51,6 +51,7 @@ class MainWindow(QMainWindow):
     current_scale: float = 1.0  # Track current scale factor
     style_changed = Signal(bool)  # Emits True for dark mode, False for light mode
     refresh = Signal()
+    zoom_editor = Signal(float)  # Scale of zoom
 
     def __init__(
         self,
@@ -233,6 +234,18 @@ class MainWindow(QMainWindow):
                             shortcut="Ctrl+-",
                         ),
                         MenuAction(
+                            id="zoom_editor_in",
+                            text="Zoom &Editor In",
+                            handler="zoom_editor_in",
+                            shortcut="Ctrl+Alt+=",
+                        ),
+                        MenuAction(
+                            id="zoom_editor_out",
+                            text="Zoom E&ditor Out",
+                            handler="zoom_editor_out",
+                            shortcut="Ctrl+Alt+-",
+                        ),
+                        MenuAction(
                             id="toggle_left_sidebar",
                             text="Toggle &Left Sidebar",
                             handler="toggle_sidebar",
@@ -345,6 +358,13 @@ class MainWindow(QMainWindow):
                 ),
             ]
         )
+
+    def zoom_editor_in(self) -> None:
+        print("Zooming in")
+        self.zoom_editor.emit(1.1)
+
+    def zoom_editor_out(self) -> None:
+        self.zoom_editor.emit(0.9)
 
     def focus_editor(self) -> None:
         if view := self.get_current_view():
