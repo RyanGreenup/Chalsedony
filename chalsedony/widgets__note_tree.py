@@ -26,6 +26,7 @@ from utils__ngram_filter import text_matches_filter
 class TreeWithFilter(QTreeWidget):
     """Base tree widget class with filtering functionality"""
 
+    # When the text is empty, the note items are not repopulated they remain missing until  the tree is rebuilt, fix this AI!
     def filter_tree(self, text: str) -> None:
         """Filter the tree view based on search text using n-gram comparison"""
 
