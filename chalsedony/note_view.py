@@ -386,7 +386,6 @@ class NoteView(QWidget):
         self, item_data: TreeItemData, change_tree: bool = True
     ) -> None:
         """Common handler for note selection from either tree or list"""
-        print(f"Selected note: {item_data.title} -- {item_data.id}")
         # Safely disconnect textChanged signal to prevent update loop
         if self.current_note_id == item_data.id:
             print("Attempting to select the same note")
