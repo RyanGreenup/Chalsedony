@@ -300,7 +300,13 @@ class MainWindow(QMainWindow):
                             id="focus_note_tree",
                             text="Note &Tree",
                             handler="focus_note_tree",
-                            shortcut="F5",
+                            shortcut="Ctrl+Alt+L",
+                        ),
+                        MenuAction(
+                            id="focus_editor",
+                            text="&Editor",
+                            handler="focus_editor",
+                            shortcut="Ctrl+Alt+B",
                         ),
                         MenuAction(
                             id="focus_backlinks",
@@ -339,6 +345,10 @@ class MainWindow(QMainWindow):
                 ),
             ]
         )
+
+    def focus_editor(self) -> None:
+        if view := self.get_current_view():
+            view.focus_editor()
 
     def focus_note_tree(self) -> None:
         if view := self.get_current_view():

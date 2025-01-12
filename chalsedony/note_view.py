@@ -658,7 +658,7 @@ class NoteView(QWidget):
 
     def focus_preview(self) -> None:
         """Focus the preview"""
-        self.content_area.preview.setFocus()
+        self.get_current_content_area().preview.setFocus()
 
     def focus_backlinks(self) -> None:
         """Focus the backlinks list"""
@@ -669,3 +669,7 @@ class NoteView(QWidget):
         """Focus the forwardlinks list"""
         # self.right_splitter.widget(1).setFocus()
         self.forwardlinks_list.setFocus()
+
+    def get_current_content_area(self) -> EditPreview:
+        """Return the current content area"""
+        return self.content_area

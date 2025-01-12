@@ -10,6 +10,7 @@ from PySide6.QtGui import QFont, QImage, QWheelEvent
 from PySide6.QtCore import Signal
 import tempfile
 import os
+from widgets__textedit__vim_bindings import VimTextEdit
 from widgets__stateful_tree import TreeItemData
 from utils_html_to_markdown import html_to_markdown
 from PySide6.QtWebEngineCore import (
@@ -330,7 +331,7 @@ class MyTextEdit(QTextEdit):
         self.setFont(font)
 
 
-class MDTextEdit(MyTextEdit):
+class MDTextEdit(MyTextEdit, VimTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested = Signal(str)  # Filepath
 
