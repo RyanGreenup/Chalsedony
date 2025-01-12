@@ -85,7 +85,29 @@ class VimTextEdit(QTextEdit):
                 self.update_line_highlight()
 
             case (EditorMode.INSERT, _):
-                super().keyPressEvent(e)
+                if hasattr(self, 'replace_start_pos'):
+                    # We're in replace mode (Shift+R)
+                    cursor = self.textCursor()
+                    current_pos = cursor.position()
+                    chars_typed = current_pos - self.replace_start_pos
+                    
+                    if e.key() == Qt.Key.Key_Escape:
+                        # Exit replace mode
+                        delattr(self, 'replace_start_pos')
+                        self.mode = EditorMode.NORMAL
+                        return
+                    
+                    # Handle the keypress
+                    super().keyPressEvent(e)
+                    
+                    # If we have remaining text to restore
+                    if chars_typed < len(self.yanked_text):
+                        # Move cursor back to where we just typed
+                        cursor = self.textCursor()
+                        cursor.setPosition(current_pos + 1)
+                        self.setTextCursor(cursor)
+                else:
+                    super().keyPressEvent(e)
 
             case (EditorMode.VISUAL, _):
                 self.handle_visual_mode(e)
@@ -138,22 +160,27 @@ class VimTextEdit(QTextEdit):
                 self.undo()
             case Qt.Key.Key_R:
                 if e.modifiers() & Qt.KeyboardModifier.ShiftModifier:
-                    # Modify this to count the number of entered characters, remove those from the yanked text and then insert the leftover text afterwards AI!
                     # Enter replace mode which overwrites existing text
                     self.mode = EditorMode.INSERT
+                    # Store current position
+                    self.replace_start_pos = cursor.position()
+                    # Select to end of line
                     cursor.movePosition(
                         QTextCursor.MoveOperation.EndOfBlock,
-                        QTextCursor.MoveMode.KeepAnchor,
+                        QTextCursor.MoveMode.KeepAnchor
                     )
-                    # Store text for potential undo
+                    # Store original text
                     self.yanked_text = cursor.selectedText()
+                    # Clear selection but keep cursor position
+                    cursor.clearSelection()
                 else:
                     # Single character replace (lowercase r)
                     self.mode = EditorMode.INSERT
-                cursor.movePosition(
-                    QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor
-                )
-                cursor.removeSelectedText()
+                    cursor.movePosition(
+                        QTextCursor.MoveOperation.Right,
+                        QTextCursor.MoveMode.KeepAnchor
+                    )
+                    cursor.removeSelectedText()
 
             # Capital A for end of line
             case Qt.Key.Key_A:
