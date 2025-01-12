@@ -360,7 +360,15 @@ class MainWindow(QMainWindow):
                 # Force update on all widgets
                 for widget in app.allWidgets():
                     widget.setFont(current_font)
-                    widget.update()
+                    try:
+                        widget.update()
+                    except AttributeError as e:
+                        print(f"Error updating widget: {e}")
+                    except TypeError as e:
+                        print(f"Error updating widget: {e}")
+                    except Exception as e:
+                        print(f"Error updating widget: {e}")
+
 
                 # Trigger style refresh
                 app.setStyleSheet(app.styleSheet())

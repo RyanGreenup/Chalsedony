@@ -11,7 +11,6 @@ from PySide6.QtWidgets import (
 )
 
 from command_palette import NoteSelectionPalette, NoteLinkPalette
-from widgets__backlinks import BackLinksWidget, ForwardLinksWidget
 
 
 from pathlib import Path
@@ -29,7 +28,7 @@ from note_model import NoteModel
 from widgets__stateful_tree import TreeItemData
 from widgets__note_tree import NoteTree
 from widgets__edit_preview import EditPreview
-from widgets__search_tab import SearchSidebar
+from widgets__search_tab import NoteListWidget, SearchSidebar
 
 HISTORY_TIME = 1000
 
@@ -162,8 +161,8 @@ class NoteView(QWidget):
         self.right_splitter.setHandleWidth(15)
 
         # Create three note list widgets
-        self.backlinks_list = BackLinksWidget(self.model)
-        self.forwardlinks_list = ForwardLinksWidget(self.model)
+        self.backlinks_list = NoteListWidget()
+        self.forwardlinks_list = NoteListWidget()
         # self.bottom_note_list = NoteListWidget()
 
         # Add them to the splitter
@@ -412,8 +411,8 @@ class NoteView(QWidget):
                         self.content_area.editor.setPlainText(note.body or "")
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
-                        self.backlinks_list.populate(item_data.id)
-                        self.forwardlinks_list.populate(item_data.id)
+                        self.backlinks_list.populate(self.model.get_backlinks(item_data.id))
+                        self.forwardlinks_list.populate(self.model.get_forwardlinks(item_data.id))
                 case ItemType.FOLDER:
                     self.current_note_id = None
                     self.content_area.editor.clear()

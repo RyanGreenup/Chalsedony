@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLineEdit,
 )
-from PySide6.QtCore import QPoint, Signal, Qt
+from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QPoint, Signal, Qt
 
 from widgets__stateful_tree import TreeItemData
 from note_model import NoteModel
@@ -54,11 +54,11 @@ class SearchSidebar(QWidget):
         if search_query:
             # Use full text search
             results = self.model.search_notes(search_query)
-            self.search_sidebar_list.populate_notes_list(results)
+            self.search_sidebar_list.populate(results)
         else:
             # Show all notes
             notes = self.model.get_all_notes()
-            self.search_sidebar_list.populate_notes_list(notes)
+            self.search_sidebar_list.populate(notes)
 
 
 class NoteListWidget(KbdListWidget):
@@ -77,6 +77,7 @@ class NoteListWidget(KbdListWidget):
         self.create_keybinings()
         self._connect_signals()
         self.itemClicked.connect(self._on_item_clicked)
+        self.current_note_items: List[NoteSearchResult] | None = []
 
     def _connect_signals(self) -> None:
         """Connect internal signals"""
@@ -96,8 +97,9 @@ class NoteListWidget(KbdListWidget):
                 )
                 self.item_selection_changed.emit(item_data)
 
-    def populate_notes_list(self, note_items: List[NoteSearchResult]) -> None:
+    def populate(self, note_items: List[NoteSearchResult]) -> None:
         """Populate the all notes list view with optional search filtering"""
+        self.current_note_items = note_items
         self.clear()
         # Block signals
         self.blockSignals(True)
@@ -106,6 +108,15 @@ class NoteListWidget(KbdListWidget):
                 self.add_item(result)
         finally:
             # Unblock signals
+            self.blockSignals(False)
+
+    def update(self, index: QModelIndex | QPersistentModelIndex) -> None:
+        self.blockSignals(True)
+        try:
+            self.clear()
+            if self.current_note_items:
+                self.populate(self.current_note_items)
+        finally:
             self.blockSignals(False)
 
     def filter_items(self, filter_text: str) -> None:
