@@ -122,6 +122,9 @@ class VimTextEdit(QTextEdit):
                     self.clear_line_highlight()
                 else:
                     self.enter_insert_mode()
+
+            case Qt.Key.Key_E:
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfWord)
             case Qt.Key.Key_W:
                 cursor.movePosition(QTextCursor.MoveOperation.NextWord)
             case Qt.Key.Key_B:
@@ -247,10 +250,19 @@ class VimTextEdit(QTextEdit):
                 self.exit_visual_mode(cursor)
             case Qt.Key.Key_Y:
                 self.yank_text(cursor)
+            case Qt.Key.Key_E:
+                cursor.movePosition(
+                    QTextCursor.MoveOperation.EndOfWord, QTextCursor.MoveMode.KeepAnchor
+                )
             case Qt.Key.Key_W:
-                cursor.movePosition(QTextCursor.MoveOperation.NextWord)
+                cursor.movePosition(
+                    QTextCursor.MoveOperation.NextWord, QTextCursor.MoveMode.KeepAnchor
+                )
             case Qt.Key.Key_B:
-                cursor.movePosition(QTextCursor.MoveOperation.PreviousWord)
+                cursor.movePosition(
+                    QTextCursor.MoveOperation.PreviousWord,
+                    QTextCursor.MoveMode.KeepAnchor,
+                )
 
         self.setTextCursor(cursor)
 
