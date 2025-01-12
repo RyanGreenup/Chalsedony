@@ -1,4 +1,5 @@
-from typing import Callable
+from typing import Callable, List, Optional
+from pydantic import BaseModel
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QTreeWidget
 from widgets__kbd_widgets import KbdTreeWidget
@@ -349,85 +350,96 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
 
 
 
-    # Refactor this to use a pydantic data model for the actions, then loop over that to create the actions and connect them.
-    # The actions should use the `self.itemAt(position)` if the context menu is visible, otherwise it should use the current item. AI!
+    class MenuAction(BaseModel):
+        """Model for context menu actions"""
+        label: str
+        handler: Callable
+        shortcut: Optional[str] = None
+        condition: Optional[Callable[[TreeItemData], bool]] = None
+
+    def get_context_menu_actions(self, item_data: TreeItemData) -> List[MenuAction]:
+        """Get list of context menu actions based on item type"""
+        item_type = item_data.type.name.capitalize()
+        is_folder = item_data.type == ItemType.FOLDER
+        has_parent = self.itemAt(self.currentIndex()).parent() is not None
+
+        return [
+            self.MenuAction(
+                label=f"Copy {item_type} ID: {item_data.id}",
+                handler=lambda: self.copy_id(item_data)
+            ),
+            self.MenuAction(
+                label="Create Note",
+                handler=lambda: self.create_note(item_data),
+                shortcut="Ctrl+N"
+            ),
+            self.MenuAction(
+                label="Create Folder",
+                handler=lambda: self.create_folder(item_data),
+                shortcut="Ctrl+Shift+N"
+            ),
+            self.MenuAction(
+                label=f"Duplicate {item_type}",
+                handler=lambda: self.duplicate_item(item_data)
+            ),
+            self.MenuAction(
+                label=f"Delete {item_type}",
+                handler=lambda: self.delete_item(item_data)
+            ),
+            self.MenuAction(
+                label="Rename Folder",
+                handler=lambda: self.request_folder_rename(item_data),
+                shortcut="F2",
+                condition=lambda _: is_folder
+            ),
+            self.MenuAction(
+                label="Move to Root",
+                handler=lambda: self.note_model.set_folder_to_root(item_data.id),
+                condition=lambda _: is_folder and has_parent
+            ),
+            self.MenuAction(
+                label="Cut",
+                handler=self.cut_selected_items,
+                shortcut="Ctrl+X"
+            ),
+            self.MenuAction(
+                label="Paste",
+                handler=lambda: self.paste_items(item_data),
+                shortcut="Ctrl+V",
+                condition=lambda _: bool(self._cut_items)
+            ),
+            self.MenuAction(
+                label="Clear Cut",
+                handler=self.clear_cut_items,
+                shortcut="Esc",
+                condition=lambda _: bool(self._cut_items)
+            )
+        ]
+
     def show_context_menu(self, position: QPoint) -> None:
         """Show context menu with create action and ID display"""
-        item = self.itemAt(position)
+        item = self.itemAt(position) or self.currentItem()
         if not item:
             return
 
         menu = QMenu()
-
-        # Add ID display as clickable menu item that copies to clipboard
         item_data: TreeItemData = item.data(0, Qt.ItemDataRole.UserRole)
-        item_type_enum = item_data.type
-        id_action = QAction(
-            f"Copy {item_type_enum.name.capitalize()} ID: {item_data.id}", self
-        )
-        id_action.triggered.connect(lambda: self.copy_id(item))
-        menu.addAction(id_action)
+        actions = self.get_context_menu_actions(item_data)
 
-        # Add separator
-        menu.addSeparator()
+        # Add actions with conditions
+        for action in actions:
+            if action.condition and not action.condition(item_data):
+                continue
+                
+            q_action = QAction(action.label, self)
+            q_action.triggered.connect(action.handler)
+            if action.shortcut:
+                q_action.setShortcut(action.shortcut)
+            menu.addAction(q_action)
 
-        # Add Create Note action
-        create_action = QAction("Create Note", self)
-        create_action.triggered.connect(lambda: self.create_note(item))
-        create_action.setShortcut("Ctrl+N")
-        menu.addAction(create_action)
-
-        # Add Create Folder action
-        create_folder_action = QAction("Create Folder", self)
-        create_folder_action.triggered.connect(lambda: self.create_folder(item))
-        create_folder_action.setShortcut("Ctrl+Shift+N")
-        menu.addAction(create_folder_action)
-
-        # Add Duplicate action
-        duplicate_action = QAction(
-            f"Duplicate {item_type_enum.name.capitalize()}", self
-        )
-        duplicate_action.triggered.connect(lambda: self.duplicate_item(item))
-        menu.addAction(duplicate_action)
-
-        delete_action = QAction(f"Delete {item_type_enum.name.capitalize()}", self)
-        delete_action.triggered.connect(lambda: self.delete_item(item))
-        menu.addAction(delete_action)
-
-        # Add folder-specific actions
-        if item_type_enum == ItemType.FOLDER:
-            # Rename action
-            rename_action = QAction("Rename Folder", self)
-            rename_action.triggered.connect(lambda: self.request_folder_rename(item))
-            rename_action.setShortcut("F2")
-            menu.addAction(rename_action)
-
-            # Move to root action
-            if item.parent():  # Only show if folder has a parent
-                move_to_root_action = QAction("Move to Root", self)
-                move_to_root_action.triggered.connect(
-                    lambda: self.note_model.set_folder_to_root(item_data.id)
-                )
-                menu.addAction(move_to_root_action)
-
-        # Add Cut action
-        cut_action = QAction("Cut", self)
-        cut_action.triggered.connect(self.cut_selected_items)
-        cut_action.setShortcut("Ctrl+X")
-        menu.addAction(cut_action)
-
-        # Add Paste action if we have cut items
-        if self._cut_items:
-            paste_action = QAction("Paste", self)
-            paste_action.triggered.connect(lambda: self.paste_items(item))
-            paste_action.setShortcut("Ctrl+V")
-            menu.addAction(paste_action)
-
-            # Add Clear Cut action
-            clear_cut_action = QAction("Clear Cut", self)
-            clear_cut_action.triggered.connect(self.clear_cut_items)
-            clear_cut_action.setShortcut("Esc")
-            menu.addAction(clear_cut_action)
+            # Add separator after ID copy
+            if action.label.startswith("Copy"):
+                menu.addSeparator()
 
         menu.exec(self.viewport().mapToGlobal(position))
         self.addActions(menu.actions())
