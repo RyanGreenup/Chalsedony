@@ -136,8 +136,14 @@ class VimTextEdit(QTextEdit):
                     cursor.removeSelectedText()
             case Qt.Key.Key_U:
                 self.undo()
-            # Implement R for replacing a character AI!
             case Qt.Key.Key_R:
+                # Enter a special one-shot insert mode that replaces just one character
+                self.mode = EditorMode.INSERT
+                cursor.movePosition(
+                    QTextCursor.MoveOperation.Right,
+                    QTextCursor.MoveMode.KeepAnchor
+                )
+                cursor.removeSelectedText()
 
             # Capital A for end of line
             case Qt.Key.Key_A:
