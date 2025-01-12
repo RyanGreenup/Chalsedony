@@ -113,6 +113,8 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             Qt.Key.Key_Return: note_select,
         }
 
+    # Double clicking an item should emit the note_selected signal AI!
+
     def setup_ui(self) -> None:
         self.setAnimated(True)
         self.setHeaderHidden(True)
