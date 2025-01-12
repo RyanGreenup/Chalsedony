@@ -70,6 +70,7 @@ class NoteView(QWidget):
                     )
                 else:
                     self.send_status_message(f"Note '{initial_note}' not found")
+        self.focus_note_tree()
 
     def _setup_history(self) -> None:
         self.history: List[TreeItemData] = []
@@ -180,7 +181,8 @@ class NoteView(QWidget):
         """Connect UI signals to handlers"""
         parent = self.parent()
         if hasattr(parent, "style_changed"):
-            parent.style_changed.connect(self.content_area.apply_dark_theme)  # type: ignore[reportAttributeAccessIssue]  # parent is QMainWindow which has style_changed
+            for content_area in self.get_all_content_area():
+                parent.style_changed.connect(content_area.apply_dark_theme)  # type: ignore[reportAttributeAccessIssue]  # parent is QMainWindow which has style_changed
         else:
             raise AttributeError(
                 "Parent window must have a style_changed signal otherwise the dark theme will not be applied"
@@ -385,8 +387,9 @@ class NoteView(QWidget):
             print("Attempting to select the same note")
             self.send_status_message("Note already selected")
             return
+        content_area = self.get_current_content_area()
         try:
-            self.content_area.editor.textChanged.disconnect(
+            content_area.editor.textChanged.disconnect(
                 self._on_editor_text_changed
             )
         except TypeError:
@@ -403,7 +406,7 @@ class NoteView(QWidget):
                     if note:
                         # Start timer for history tracking
                         self._history_timer.start()
-                        self.content_area.editor.setPlainText(note.body or "")
+                        content_area.editor.setPlainText(note.body or "")
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
                         self.backlinks_list.populate(
@@ -414,12 +417,12 @@ class NoteView(QWidget):
                         )
                 case ItemType.FOLDER:
                     self.current_note_id = None
-                    self.content_area.editor.clear()
+                    content_area.editor.clear()
                     print(f"Selected folder: {item_data.title} -- {item_data.id}")
                     self.tree_widget.set_current_item_by_data(item_data)
         finally:
             # Reconnect signal after text is set
-            self.content_area.editor.textChanged.connect(self._on_editor_text_changed)
+            content_area.editor.textChanged.connect(self._on_editor_text_changed)
 
     def _get_left_sidebar_width(self) -> float:
         return float(self.left_sidebar.width())
@@ -673,3 +676,10 @@ class NoteView(QWidget):
     def get_current_content_area(self) -> EditPreview:
         """Return the current content area"""
         return self.content_area
+
+    def get_all_content_area(self) -> List[EditPreview]:
+        """
+        Return a list of all content areas, this will be useful
+        if Editor tabs are implemented
+        """
+        return [self.content_area]
