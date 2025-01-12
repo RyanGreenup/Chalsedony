@@ -180,7 +180,7 @@ class NoteView(QWidget):
         """Connect UI signals to handlers"""
         parent = self.parent()
         if hasattr(parent, "style_changed"):
-            parent.style_changed.connect(self.content_area.apply_dark_theme)  # type: ignore
+            parent.style_changed.connect(self.content_area.apply_dark_theme)  # type: ignore[reportAttributeAccessIssue]  # parent is QMainWindow which has style_changed
         else:
             raise AttributeError(
                 "Parent window must have a style_changed signal otherwise the dark theme will not be applied"
