@@ -77,7 +77,9 @@ class NoteListWidget(KbdListWidget):
         self.create_keybinings()
         self._connect_signals()
         self.itemClicked.connect(self._on_item_clicked)
-        self.current_note_items: List[NoteSearchResult] | None = []
+        # TODO this should store the widget like the tree for fast lookup
+        # Not needed righ now though.
+        self.current_note_items: dict[str, str] = dict()
 
     def _connect_signals(self) -> None:
         """Connect internal signals"""
@@ -99,7 +101,7 @@ class NoteListWidget(KbdListWidget):
 
     def populate(self, note_items: List[NoteSearchResult]) -> None:
         """Populate the all notes list view with optional search filtering"""
-        self.current_note_items = note_items
+        self.current_note_items = {id: deepcopy(note) for id, note in note_items}
         self.clear()
         # Block signals
         self.blockSignals(True)
@@ -110,14 +112,6 @@ class NoteListWidget(KbdListWidget):
             # Unblock signals
             self.blockSignals(False)
 
-    def update(self, index: QModelIndex | QPersistentModelIndex) -> None:
-        self.blockSignals(True)
-        try:
-            self.clear()
-            if self.current_note_items:
-                self.populate(self.current_note_items)
-        finally:
-            self.blockSignals(False)
 
     def filter_items(self, filter_text: str) -> None:
         """Filter list items using n-gram comparison"""
