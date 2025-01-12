@@ -32,7 +32,7 @@ from PySide6.QtCore import (
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from bs4 import BeautifulSoup, Tag
 import markdown
-from markdown.extensions.wikilinks import WikiLinkExtension
+from utils__markdown_extensions import CustomWikiLinkExtension
 import pymdownx.superfences
 
 from db_api import IdTable, ItemType
@@ -208,7 +208,7 @@ class EditPreview(QWidget):
                 "pymdownx.blocks.tab",
                 "pymdownx.superfences",
                 "pymdownx.highlight",
-                WikiLinkExtension(base_url="note://"),
+                CustomWikiLinkExtension(note_model=self.note_model, base_url="note://"),
             ],
             extension_configs=extension_configs,
         )
