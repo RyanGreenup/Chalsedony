@@ -357,7 +357,6 @@ class MainWindow(QMainWindow):
                 # Apply the font to the application
                 app.setFont(current_font)
 
-                # This doesn't seem needed
                 # Force update on all widgets
                 for widget in app.allWidgets():
                     widget.setFont(current_font)

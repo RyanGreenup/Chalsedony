@@ -292,8 +292,43 @@ class EditPreview(QWidget):
             self.preview.settings().WebAttribute.ForceDarkMode, dark_mode
         )
 
+class MyTextEdit(QTextEdit):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.base_font_size = self.font().pointSize()
+        self.current_scale = 1.0
 
-class MDTextEdit(QTextEdit):
+    def wheelEvent(self, event) -> None:
+        """Handle mouse wheel events for zooming when Ctrl is pressed"""
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            delta = event.angleDelta().y()
+            if delta > 0:
+                self.zoom(1.1)  # Zoom in
+            elif delta < 0:
+                self.zoom(0.9)  # Zoom out
+            event.accept()
+        else:
+            super().wheelEvent(event)
+
+    def zoom(self, factor: float) -> None:
+        """Change the font size by the given factor.
+
+        Args:
+            factor: Scale multiplier (e.g., 1.1 for 10% increase, 0.9 for 10% decrease)
+        """
+        # Update the current scale
+        self.current_scale *= factor
+        
+        # Calculate new size based on base size and total scale
+        new_size = max(6, round(self.base_font_size * self.current_scale))
+        
+        # Update font size
+        font = self.font()
+        font.setPointSize(new_size)
+        self.setFont(font)
+
+
+class MDTextEdit(MyTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested = Signal(str)  # Filepath
 
@@ -363,6 +398,7 @@ class MDTextEdit(QTextEdit):
         if scrollbar.maximum() == 0:
             return 0
         return scrollbar.value() / scrollbar.maximum()
+
 
 
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
@@ -437,6 +473,19 @@ class WebPreview(QWebEngineView):
         super().__init__(parent)
         self.setPage(NoteLinkPage(parent=self, note_model=note_model))
         self.note_model = note_model
+        self.setZoomFactor(1.0)  # Initialize zoom factor
+
+        # Connect to application font changes
+        if app := QApplication.instance():
+            if isinstance(app, QApplication):
+                app.fontChanged.connect(self._update_zoom_from_font)
+
+    def _update_zoom_from_font(self, font) -> None:
+        """Update zoom factor based on application font size changes"""
+        base_size = 10.0  # Match the base font size from MainWindow
+        current_size = font.pointSize()
+        zoom_factor = current_size / base_size
+        self.setZoomFactor(zoom_factor)
 
     def rewrite_html_links(self, html: str) -> str:
         """Rewrite HTML links to use the note:// scheme based on their target type.
