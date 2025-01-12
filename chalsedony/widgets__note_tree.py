@@ -9,6 +9,7 @@ from PySide6.QtGui import (
     QDragMoveEvent,
     QDropEvent,
     QKeyEvent,
+    QMouseEvent,
 )
 from PySide6.QtWidgets import (
     QWidget,
@@ -113,7 +114,11 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             Qt.Key.Key_Return: note_select,
         }
 
-    # Double clicking an item should emit the note_selected signal AI!
+    def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
+        """Handle double click to select a note"""
+        if item := self.get_current_item_data():
+            self.note_selected.emit(item)
+        super().mouseDoubleClickEvent(event)
 
     def setup_ui(self) -> None:
         self.setAnimated(True)
