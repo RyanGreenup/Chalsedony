@@ -323,23 +323,23 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
 
     # TODO this should call an operation in the model that bulkd moves items
     # otherwise each item triggers a refresh which is needlessly slow
-    def paste_items(self, item_data: TreeItemData | None) -> None:
+    def paste_items(self, target_item_data: TreeItemData | None) -> None:
         """Paste cut items to the target folder"""
-        item_data = item_data or self.get_current_item_data()
-        if not item_data:
+        target_item_data = target_item_data or self.get_current_item_data()
+        if not target_item_data:
             return
 
         # Verify target is a folder
-        if item_data.type != ItemType.FOLDER:
+        if target_item_data.type != ItemType.FOLDER:
             self.send_status_message("Can only paste into folders")
             return
 
         # Move each cut item to the target folder
         for item_data in self._cut_items:
             if item_data.type == ItemType.FOLDER:
-                self.folder_moved.emit(item_data.id, item_data.id)
+                self.folder_moved.emit(item_data.id, target_item_data.id)
             elif item_data.type == ItemType.NOTE:
-                self.note_moved.emit(item_data.id, item_data.id)
+                self.note_moved.emit(item_data.id, target_item_data.id)
 
         # Clear cut items after paste
         self.clear_cut_items()
@@ -354,46 +354,48 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
 
     def get_context_menu_actions(self, position: QPoint | None) -> List[MenuAction]:
         """Get list of context menu actions based on item type"""
-        item_data: TreeItemData | None = None
-        item_type: str | None = None
-        item_id: str | None = None
-        if position:
-            if item := self.itemAt(position):
-                item_data = item.data(0, Qt.ItemDataRole.UserRole)
-            else:
-                item_data = self.get_current_item_data()
-            if item_data is not None:
-                # If the user right-clicked on an empty area
-                # We can't determine the item type
-                # and our methods will default to current_item_data
-                # This requires re-thinking
-                # To block context Menu, consider returning an empty list
-                item_type = item_data.type.name.lower().capitalize()
-                item_id = item_data.id
+        # If the user right-clicked on an empty area
+        # We can't determine the item type
+        # and our methods will default to current_item_data
+        # This requires re-thinking
+        # To block context Menu, consider returning an empty list
+
+        if position and (item := self.itemAt(position)):
+            item_data = item.data(0, Qt.ItemDataRole.UserRole)
         else:
             item_data = self.get_current_item_data()
+
+        item_type: str | None = None
+        item_id: str | None = None
+        if item_data:
+            item_type = item_data.type.name.lower().capitalize()
+            item_id = item_data.id
 
         return [
             self.MenuAction(
                 label=f"Copy {item_type} ID: {item_id}",
                 handler=lambda: self.copy_id(item_data),
+                shortcut="C",
             ),
             self.MenuAction(
                 label="Create Note",
                 handler=lambda: self.create_note(item_data),
-                shortcut="Ctrl+N",
+                shortcut="N",
             ),
             self.MenuAction(
                 label="Create Folder",
                 handler=lambda: self.create_folder(item_data),
-                shortcut="Ctrl+Shift+N",
+                shortcut="Ctrl+Alt+N",
             ),
             self.MenuAction(
                 label=f"Duplicate {item_type}",
                 handler=lambda: self.duplicate_item(item_data),
+                shortcut="Print",
             ),
             self.MenuAction(
-                label=f"Delete {item_type}", handler=lambda: self.delete_item(item_data)
+                label=f"Delete {item_type}",
+                handler=lambda: self.delete_item(item_data),
+                shortcut="Delete",
             ),
             self.MenuAction(
                 label="Rename Folder",
@@ -403,14 +405,13 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             self.MenuAction(
                 label="Move to Root",
                 handler=lambda: self.move_folder_to_root(item_data),
+                shortcut="0",
             ),
-            self.MenuAction(
-                label="Cut", handler=self.cut_selected_items, shortcut="Ctrl+X"
-            ),
+            self.MenuAction(label="Cut", handler=self.cut_selected_items, shortcut="X"),
             self.MenuAction(
                 label="Paste",
                 handler=lambda: self.paste_items(item_data),
-                shortcut="Ctrl+V",
+                shortcut="P",
                 condition=lambda _: bool(self._cut_items),
             ),
             self.MenuAction(

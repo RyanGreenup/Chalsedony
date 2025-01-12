@@ -85,21 +85,21 @@ class VimTextEdit(QTextEdit):
                 self.update_line_highlight()
 
             case (EditorMode.INSERT, _):
-                if hasattr(self, 'replace_start_pos'):
+                if hasattr(self, "replace_start_pos"):
                     # We're in replace mode (Shift+R)
                     cursor = self.textCursor()
                     current_pos = cursor.position()
                     chars_typed = current_pos - self.replace_start_pos
-                    
+
                     if e.key() == Qt.Key.Key_Escape:
                         # Exit replace mode
-                        delattr(self, 'replace_start_pos')
+                        delattr(self, "replace_start_pos")
                         self.mode = EditorMode.NORMAL
                         return
-                    
+
                     # Handle the keypress
                     super().keyPressEvent(e)
-                    
+
                     # If we have remaining text to restore
                     if chars_typed < len(self.yanked_text):
                         # Move cursor back to where we just typed
@@ -167,7 +167,7 @@ class VimTextEdit(QTextEdit):
                     # Select to end of line
                     cursor.movePosition(
                         QTextCursor.MoveOperation.EndOfBlock,
-                        QTextCursor.MoveMode.KeepAnchor
+                        QTextCursor.MoveMode.KeepAnchor,
                     )
                     # Store original text
                     self.yanked_text = cursor.selectedText()
@@ -177,8 +177,7 @@ class VimTextEdit(QTextEdit):
                     # Single character replace (lowercase r)
                     self.mode = EditorMode.INSERT
                     cursor.movePosition(
-                        QTextCursor.MoveOperation.Right,
-                        QTextCursor.MoveMode.KeepAnchor
+                        QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor
                     )
                     cursor.removeSelectedText()
 
