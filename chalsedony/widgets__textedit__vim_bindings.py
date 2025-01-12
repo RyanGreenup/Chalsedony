@@ -18,7 +18,8 @@ class EditorMode(Enum):
 
 class VimTextEdit(QTextEdit):
     def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__()
+        # This is a mixin, don't initialize QTextEdit
+        # super().__init__()
         self._mode = EditorMode.INSERT
         self.visual_anchor: None | int = None
         self.yanked_text = ""
@@ -122,6 +123,8 @@ class VimTextEdit(QTextEdit):
                     self.clear_line_highlight()
                 else:
                     self.enter_insert_mode()
+            # Implement W to move to start of next word AI!
+            case Qt.Key.Key_W:
             case Qt.Key.Key_0:
                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
             case Qt.Key.Key_D:
@@ -181,14 +184,6 @@ class VimTextEdit(QTextEdit):
                     # Cut text instead of removing it
                     self.yank_text(cursor)
                     cursor.removeSelectedText()
-            case Qt.Key.Key_Y:
-                if e.modifiers() & Qt.KeyboardModifier.ShiftModifier:
-                    cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-                    cursor.movePosition(
-                        QTextCursor.MoveOperation.EndOfBlock,
-                        QTextCursor.MoveMode.KeepAnchor,
-                    )
-                    self.yank_text(cursor)
             case Qt.Key.Key_V:
                 self.mode = EditorMode.VISUAL
                 if not e.modifiers() & Qt.KeyboardModifier.ShiftModifier:
