@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QSplitter,
 )
-from PySide6.QtGui import QImage
+from PySide6.QtGui import QFont, QImage, QWheelEvent
 from PySide6.QtCore import Signal
 import tempfile
 import os
@@ -292,14 +292,16 @@ class EditPreview(QWidget):
             self.preview.settings().WebAttribute.ForceDarkMode, dark_mode
         )
 
+
 class MyTextEdit(QTextEdit):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.base_font_size = self.font().pointSize()
         self.current_scale = 1.0
 
-    def wheelEvent(self, event) -> None:
+    def wheelEvent(self, e: QWheelEvent) -> None:
         """Handle mouse wheel events for zooming when Ctrl is pressed"""
+        event = e
         if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             delta = event.angleDelta().y()
             if delta > 0:
@@ -318,10 +320,10 @@ class MyTextEdit(QTextEdit):
         """
         # Update the current scale
         self.current_scale *= factor
-        
+
         # Calculate new size based on base size and total scale
         new_size = max(6, round(self.base_font_size * self.current_scale))
-        
+
         # Update font size
         font = self.font()
         font.setPointSize(new_size)
@@ -398,7 +400,6 @@ class MDTextEdit(MyTextEdit):
         if scrollbar.maximum() == 0:
             return 0
         return scrollbar.value() / scrollbar.maximum()
-
 
 
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
@@ -480,7 +481,7 @@ class WebPreview(QWebEngineView):
             if isinstance(app, QApplication):
                 app.fontChanged.connect(self._update_zoom_from_font)
 
-    def _update_zoom_from_font(self, font) -> None:
+    def _update_zoom_from_font(self, font: QFont) -> None:
         """Update zoom factor based on application font size changes"""
         base_size = 10.0  # Match the base font size from MainWindow
         current_size = font.pointSize()

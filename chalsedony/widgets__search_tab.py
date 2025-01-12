@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLineEdit,
 )
-from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QPoint, Signal, Qt
+from PySide6.QtCore import QPoint, Signal, Qt
 
 from widgets__stateful_tree import TreeItemData
 from note_model import NoteModel
@@ -111,7 +111,6 @@ class NoteListWidget(KbdListWidget):
         finally:
             # Unblock signals
             self.blockSignals(False)
-
 
     def filter_items(self, filter_text: str) -> None:
         """Filter list items using n-gram comparison"""

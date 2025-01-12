@@ -182,7 +182,7 @@ class NoteView(QWidget):
 
         # Connect save signal from parent window
         if hasattr(parent, "style_changed"):
-            parent.style_changed.connect(self.content_area.apply_dark_theme)  # type: ignore
+            parent.style_changed.connect(self.content_area.apply_dark_theme)  # type: ignore [attr-defined]
         else:
             raise AttributeError(
                 "Parent window must have a style_changed signal otherwise the dark theme will not be applied"
