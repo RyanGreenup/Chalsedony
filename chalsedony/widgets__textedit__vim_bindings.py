@@ -136,10 +136,19 @@ class VimTextEdit(QTextEdit):
                     cursor.removeSelectedText()
             case Qt.Key.Key_U:
                 self.undo()
-            # Implement Shift+R for replace mode AI!
             case Qt.Key.Key_R:
-                # Enter a special one-shot insert mode that replaces just one character
-                self.mode = EditorMode.INSERT
+                if e.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+                    # Enter replace mode which overwrites existing text
+                    self.mode = EditorMode.INSERT
+                    cursor.movePosition(
+                        QTextCursor.MoveOperation.EndOfBlock,
+                        QTextCursor.MoveMode.KeepAnchor
+                    )
+                    # Store text for potential undo
+                    self.yanked_text = cursor.selectedText()
+                else:
+                    # Single character replace (lowercase r)
+                    self.mode = EditorMode.INSERT
                 cursor.movePosition(
                     QTextCursor.MoveOperation.Right,
                     QTextCursor.MoveMode.KeepAnchor
