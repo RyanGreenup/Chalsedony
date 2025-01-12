@@ -161,6 +161,12 @@ QListWidget::item:focus {
     border: none;
     outline: none;
 }
+
+/* Style for first item when widget is focused but no selection */
+QListWidget[focusFirstItem="true"]::item:first {
+    background: palette(shadow);
+    border-left: 2px solid palette(highlight);
+}
 """
 
 
