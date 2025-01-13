@@ -863,6 +863,13 @@ class MainWindow(QMainWindow):
         """Set a message in the status bar"""
         self.statusBar().showMessage(message)
 
+    def _connect_signals(self) -> None:
+        """Connect signals from child widgets"""
+        # From Widgets
+        if view := self.current_view:
+            view.status_bar_message.connect(self.set_status_message)
+
+
     # This doesn't work, but the idea is there so I'll leave it in for now
     def create_notification_popup(self, message: str) -> None:
         """Create an elegant, unfocused notification popup.
@@ -946,8 +953,5 @@ class MainWindow(QMainWindow):
                     if (note_id := view.current_note_id) is not None:
                         view._handle_note_selection_from_id(note_id)
 
-    def _connect_signals(self) -> None:
-        """Connect signals from child widgets"""
-        # From Widgets
-        if view := self.current_view:
-            view.status_bar_message.connect(self.set_status_message)
+
+    # Create a function to create a popup of all the past notification messages AI!
