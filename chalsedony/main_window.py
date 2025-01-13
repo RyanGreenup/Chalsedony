@@ -662,10 +662,24 @@ class MainWindow(QMainWindow):
     def add_new_tab(
         self, initial_note: Optional[str] = None, focus_journal: Optional[bool] = None
     ) -> NoteView:
-        """Create and add a new NoteView tab"""
+        """
+        Create and add a new NoteView tab
+
+        Args:
+            initial_note: The note title to open initially (TODO this should probably be ID)
+            focus_journal: Whether to focus the journal tree
+        """
         tree_data = None
         if self.current_view:
+            # Get the tree data from the current view
             tree_data = self.current_view.tree_widget.tree_data
+            # If no initial note is provided, use the current note
+            if not initial_note:
+                if initial_note_id := self.current_view.current_note_id:
+                    if initial_note_meta := self.note_model.get_note_meta_by_id(
+                        initial_note_id
+                    ):
+                        initial_note = initial_note_meta.title
 
         view = NoteView(
             parent=self,
