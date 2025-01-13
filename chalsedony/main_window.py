@@ -3,6 +3,14 @@ from PySide6.QtGui import QAction, QPalette
 import sqlite3
 from sqlite3 import Connection
 from pathlib import Path
+from utils__neovim_ipc_handler import (
+    InvalidEditorWidgetError,
+    NeovimAlreadyRunning,
+    NeovimHandler,
+    Result,
+    Ok,
+    Err,
+)
 from note_view import NoteView
 from note_model import (
     NoteModel,
@@ -14,6 +22,7 @@ from PySide6.QtWidgets import (
     QStyle,
     QMainWindow,
     QMenuBar,
+    QTextEdit,
     QToolBar,
     QStatusBar,
     QMessageBox,
@@ -106,6 +115,9 @@ class MainWindow(QMainWindow):
             focus_journal=focus_journal,
         )
 
+        # Connect the neovim handler
+        self._nvim_handler: NeovimHandler | None = None
+
         # Connect signals to the view
         # Ask the model to refresh the data (which will emit a signal to refresh the view)
         self.refresh.connect(self.note_model.refresh)
@@ -115,6 +127,35 @@ class MainWindow(QMainWindow):
 
         # Connect signals
         self._connect_signals()
+
+    @property
+    def nvim_handler(self) -> NeovimHandler:
+        if self._nvim_handler is None:
+            match self.connect_neovim_handler():
+                case Ok():
+                    pass
+                case Err(error=e):
+                    _ = e  # Unused variable
+                    self._nvim_handler = NeovimHandler()
+                    self.set_status_message(
+                        "Warning: Neovim is not running but NOT connected to the editor! This is a bug"
+                    )
+        if self._nvim_handler:
+            return self._nvim_handler
+        else:
+            message = "No neovim handler found, This is a bug as the neovim handler should have been created."
+            self.set_status_message(message)
+            raise ValueError(message)
+
+    @nvim_handler.setter
+    def nvim_handler(self, value: NeovimHandler) -> None:
+        self._nvim_handler = value
+
+    @nvim_handler.deleter
+    def nvim_handler(self) -> None:
+        if self._nvim_handler:
+            self._nvim_handler.cleanup()
+        self._nvim_handler = None
 
     def toggle_style(self) -> None:
         """Toggle between light and dark mode"""
@@ -337,6 +378,29 @@ class MainWindow(QMainWindow):
                     ],
                 ),
                 MenuStructure(
+                    name="&Edit",
+                    actions=[
+                        MenuAction(
+                            id="start_nvim_session",
+                            text="Start Neovim Session",
+                            shortcut="Ctrl+Alt+N",
+                            handler="start_nvim_session",
+                        ),
+                        MenuAction(
+                            id="stop_nvim_session",
+                            text="stop Neovim Session",
+                            shortcut="Ctrl+Alt+X",
+                            handler="stop_nvim_session",
+                        ),
+                        MenuAction(
+                            id="open_neovim_gui",
+                            text="Open Neovim GUI (Automatically Starts Session)",
+                            shortcut="Ctrl+Alt+E",
+                            handler="open_neovim_gui",
+                        ),
+                    ],
+                ),
+                MenuStructure(
                     name="&Options",
                     actions=[
                         MenuAction(
@@ -359,6 +423,56 @@ class MainWindow(QMainWindow):
                 ),
             ]
         )
+
+    # Neovim Methods
+
+    def get_current_editor(self) -> QTextEdit:
+        """
+        Get the current view and in that view get the current editor.
+
+        This should/could handle multiple tabs in the future.
+        """
+        return self.get_current_view().get_current_content_area().editor
+
+    def connect_neovim_handler(self) -> Result[None, Exception]:
+        """
+        Start the neovim handler if necessary and connect it to the current editor.
+        """
+        # If there is no handler, create one (this method wouldn't be called otherwise)
+        if self._nvim_handler is None:
+            self._nvim_handler = NeovimHandler()
+        editor = self.get_current_editor()
+        match self._nvim_handler.connect_editor(editor):
+            case Ok():
+                return Ok(None)
+            case Err(error=e):
+                match e:
+                    case InvalidEditorWidgetError():
+                        self.set_status_message("Invalid editor widget")
+                    case _:
+                        self.set_status_message(f"Error connecting to neovim: {e}")
+                return Err(e)
+
+    def start_nvim_session(self) -> None:
+        match self.nvim_handler.start_nvim_session():
+            case Ok(message):
+                self.set_status_message(message)
+            case Err(error=e):
+                match e:
+                    case NeovimAlreadyRunning():
+                        self.set_status_message("Neovim is already running")
+                    case _:
+                        self.set_status_message(f"Error starting neovim: {e}")
+
+    def stop_nvim_session(self) -> None:
+        self.nvim_handler.stop_nvim_session()
+
+    def open_neovim_gui(self) -> None:
+        match self.nvim_handler.start_gui_neovim():
+            case Ok(pid):
+                self.set_status_message(f"Neovim GUI started with PID {pid}")
+            case Err(error=e):
+                self.set_status_message(f"Error starting neovim GUI: {e}")
 
     def zoom_editor_in(self) -> None:
         print("Zooming in")
