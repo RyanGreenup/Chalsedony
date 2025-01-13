@@ -696,9 +696,6 @@ class MainWindow(QMainWindow):
 
     def close_tab(self, index: int) -> None:
         """Close a tab at the given index"""
-        widget = self.tab_widget.widget(index)
-        if widget and isinstance(widget, NoteView):
-            widget.cleanup()
         self.tab_widget.removeTab(index)
 
     def close_current_tab(self) -> None:
