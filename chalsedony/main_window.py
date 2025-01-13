@@ -168,6 +168,7 @@ class MainWindow(QMainWindow):
             if isinstance(app, QApplication):
                 if app.palette() == self.palettes["light"]:
                     # Switch to dark mode
+                    # Run this async so the user can still use the application AI!
                     app.setPalette(self.palettes["dark"])
                     app.setProperty("darkMode", True)
                     app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
