@@ -487,9 +487,16 @@ class WebPreview(QWebEngineView):
             if isinstance(app, QApplication):
                 app.fontChanged.connect(self._update_zoom_from_font)
 
+        # Make it transparent
+        self.reset_transparency()
+
         # Enable search functionality
         self._search_text = ""
         self._search_flags = cast(QWebEnginePage.FindFlag, 0)
+
+    def reset_transparency(self) -> None:
+        self.page().setBackgroundColor(Qt.GlobalColor.transparent)
+        self.setStyleSheet("background: transparent;")
 
     def findText(
         self,
