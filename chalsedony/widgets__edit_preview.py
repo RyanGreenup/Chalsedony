@@ -502,7 +502,7 @@ class WebPreview(QWebEngineView):
         self,
         subString: str,
         options: QWebEnginePage.FindFlag = QWebEnginePage.FindFlag(0),
-        resultCallback: Callable | None = None,
+        resultCallback: Callable | None = None,  # type:ignore [type-arg]
     ) -> None:
         """Search for text in the preview with browser-like functionality"""
         _ = resultCallback  # Unused

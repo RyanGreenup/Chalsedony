@@ -169,6 +169,25 @@ QListWidget[focusFirstItem="true"]::item:first {
 }
 """
 
+# Tabs must be transparent otherwise the webview will not match the background
+# We are simply using the DarkMode on the web preview not CSS, so this is needed
+tabs = """
+QTabWidget::pane {
+    border: 0;
+    background: transparent;
+}
+QTabBar::tab {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 5px;
+    margin: 2px;
+    border-radius: 3px;
+}
+QTabBar::tab:selected {
+    background: rgba(255, 255, 255, 0.2);
+}
+"""
+
 
 buttons = """
 
@@ -536,4 +555,5 @@ QSS_STYLE = (
     + menus
     + override_text_edit_background
     + note_list_style
+    + tabs
 )

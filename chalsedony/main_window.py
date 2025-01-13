@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QTimer
 from PySide6.QtGui import QAction, QPalette
 import sqlite3
 from sqlite3 import Connection
@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
     QToolBar,
     QStatusBar,
     QMessageBox,
+    QTabWidget,
 )
 from typing import List, Dict, Optional, TypedDict
 from pydantic import BaseModel
@@ -106,24 +107,28 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Chalsedony")
         self.setGeometry(100, 100, 800, 600)
 
-        # Initialize model and view
+        # Initialize model
         self.note_model = NoteModel(self.db_connection, assets)
-        self.note_view = NoteView(
-            parent=self,
-            model=self.note_model,
-            initial_note=initial_note,
-            focus_journal=focus_journal,
-        )
+
+        # Create tab widget for multiple views
+        self.tab_widget = QTabWidget(self)
+        self.tab_widget.setTabsClosable(True)
+        self.tab_widget.tabCloseRequested.connect(self.close_tab)
+
+        # Create initial view
+        self.add_new_tab(initial_note, focus_journal)
 
         # Connect the neovim handler
         self._nvim_handler: NeovimHandler | None = None
 
+        # Connect tab change signal
+        self.tab_widget.currentChanged.connect(self._on_tab_change)
+
         # Connect signals to the view
-        # Ask the model to refresh the data (which will emit a signal to refresh the view)
         self.refresh.connect(self.note_model.refresh)
 
-        # Set the view as the central widget
-        self.setCentralWidget(self.note_view)
+        # Set tab widget as central widget
+        self.setCentralWidget(self.tab_widget)
 
         # Connect signals
         self._connect_signals()
@@ -161,18 +166,35 @@ class MainWindow(QMainWindow):
         """Toggle between light and dark mode"""
         if app := QApplication.instance():
             if isinstance(app, QApplication):
+                self.statusBar().showMessage(
+                    "Toggling style... (this may take a moment)"
+                )
                 if app.palette() == self.palettes["light"]:
-                    # Switch to dark mode
-                    app.setPalette(self.palettes["dark"])
-                    app.setProperty("darkMode", True)
-                    app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
-                    self.style_changed.emit(True)
+                    # Switch to dark mode asynchronously
+                    QTimer.singleShot(
+                        0,
+                        lambda: (
+                            app.setPalette(self.palettes["dark"]),
+                            app.setProperty("darkMode", True),
+                            app.setStyleSheet(QSS_STYLE),  # type: ignore # Reapply stylesheet to trigger update
+                            self.style_changed.emit(True),  # type: ignore
+                            None,
+                        ),
+                    )
                 else:
-                    # Switch to light mode
-                    app.setPalette(self.palettes["light"])
-                    app.setProperty("darkMode", False)
-                    app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
-                    self.style_changed.emit(False)
+                    # Switch to light mode asynchronously
+                    QTimer.singleShot(
+                        0,
+                        lambda: (
+                            app.setPalette(self.palettes["light"]),
+                            app.setProperty("darkMode", False),
+                            app.setStyleSheet(  # type: ignore
+                                QSS_STYLE
+                            ),  # Reapply stylesheet to trigger update
+                            self.style_changed.emit(False),  # type: ignore
+                            None,
+                        ),
+                    )
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
@@ -209,6 +231,30 @@ class MainWindow(QMainWindow):
                             text="&Save Note",
                             handler="save_note",
                             shortcut="Ctrl+S",
+                        ),
+                        MenuAction(
+                            id="new_tab",
+                            text="New &Tab",
+                            handler="add_new_tab",
+                            shortcut="Ctrl+Alt+T",
+                        ),
+                        MenuAction(
+                            id="close_tab",
+                            text="&Close Tab",
+                            handler="close_current_tab",
+                            shortcut="Ctrl+W",
+                        ),
+                        MenuAction(
+                            id="next_tab",
+                            text="Next &Tab",
+                            handler="next_tab",
+                            shortcut="Ctrl+]",
+                        ),
+                        MenuAction(
+                            id="previous_tab",
+                            text="Previous &Tab",
+                            handler="previous_tab",
+                            shortcut="Ctrl+[",
                         ),
                     ],
                 ),
@@ -438,7 +484,7 @@ class MainWindow(QMainWindow):
 
     # Searching
     def get_text(self) -> str | None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             text = view.search_tab.search_input.text()
             if not text:
                 text = view.note_filter.text()
@@ -446,14 +492,14 @@ class MainWindow(QMainWindow):
         return None
 
     def search_preview_previous(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             if (text := self.get_text()) is not None:
                 view.get_current_content_area().preview.findPrevious(text)
             else:
                 self.set_status_message("No text to search for")
 
     def search_preview_next(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             if (text := self.get_text()) is not None:
                 view.get_current_content_area().preview.findNext(text)
             else:
@@ -467,7 +513,7 @@ class MainWindow(QMainWindow):
 
         This should/could handle multiple tabs in the future.
         """
-        return self.get_current_view().get_current_content_area().editor
+        return self.current_view.get_current_content_area().editor
 
     def connect_neovim_handler(self) -> Result[None, Exception]:
         """
@@ -517,39 +563,39 @@ class MainWindow(QMainWindow):
         self.zoom_editor.emit(0.9)
 
     def focus_editor(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_editor()
 
     def focus_note_tree(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_note_tree()
 
     def focus_backlinks(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_backlinks()
 
     def focus_forwardlinks(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_forwardlinks()
 
     def focus_filter_bar(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_filter_bar()
 
     def focus_search_bar(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_search_bar()
 
     def back_history(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.go_back_in_history()
 
     def forward_history(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.go_forward_in_history()
 
     def toggle_follow_mode(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.follow_mode = not view.follow_mode
             # Update the menu action's checked state
             if action := self.menu_actions.get("toggle_follow_mode"):
@@ -559,15 +605,15 @@ class MainWindow(QMainWindow):
             )
 
     def todays_journal(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_todays_journal()
 
     def note_selection_palette(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.note_selection_palette()
 
     def note_link_palette(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.note_link_palette()
 
     def zoom(self, factor: float) -> None:
@@ -610,12 +656,88 @@ class MainWindow(QMainWindow):
                 # app.setStyleSheet(app.styleSheet())
 
     def upload_resource(self) -> None:
-        view = self.get_current_view()
-        view.upload_resource()
+        if view := self.current_view:
+            view.upload_resource()
 
-    # TODO use setter getter, need to handle the current view in tabs
-    def get_current_view(self) -> NoteView:
-        return self.note_view
+    @property
+    def current_view(self) -> NoteView:
+        """Get the currently active NoteView from the tab widget"""
+        if current_widget := self.tab_widget.currentWidget():
+            if isinstance(current_widget, NoteView):
+                return current_widget
+            else:
+                message = "Current widget is not a NoteView, this is a bug"
+                print("ERROR:", message)
+                self.set_status_message(message)
+                raise RuntimeError(message)
+        else:
+            # This will happen when there are no tabs
+            # On startup it will happen because there are no tabs yet, this is ok
+            # QT deals with this and we can just return the empty tab widget
+            # Possibly review this though, but it seems ok
+            return current_widget  # type: ignore [return-value]
+
+    def add_new_tab(
+        self, initial_note: Optional[str] = None, focus_journal: Optional[bool] = None
+    ) -> NoteView:
+        """
+        Create and add a new NoteView tab
+
+        Args:
+            initial_note: The note title to open initially (TODO this should probably be ID)
+            focus_journal: Whether to focus the journal tree
+        """
+        tree_data = None
+        if self.current_view:
+            # Get the tree data from the current view
+            tree_data = self.current_view.tree_widget.tree_data
+            # If no initial note is provided, use the current note
+            if not initial_note:
+                if initial_note_id := self.current_view.current_note_id:
+                    if initial_note_meta := self.note_model.get_note_meta_by_id(
+                        initial_note_id
+                    ):
+                        initial_note = initial_note_meta.title
+
+        view = NoteView(
+            parent=self,
+            model=self.note_model,
+            # TODO if this is none, it should be the last viewed note
+            initial_note=initial_note,
+            focus_journal=focus_journal,
+            tree_data=tree_data,
+        )
+
+        tab_index = self.tab_widget.addTab(view, "New Note")
+        self.tab_widget.setCurrentIndex(tab_index)
+        view.status_bar_message.connect(self.set_status_message)
+        return view
+
+    def close_tab(self, index: int) -> None:
+        """Close a tab at the given index"""
+        self.tab_widget.removeTab(index)
+
+    def close_current_tab(self) -> None:
+        """Close the currently active tab"""
+        current_index = self.tab_widget.currentIndex()
+        if current_index >= 0:
+            self.close_tab(current_index)
+
+    def next_tab(self) -> None:
+        """Switch to the next tab"""
+        current_index = self.tab_widget.currentIndex()
+        if current_index < self.tab_widget.count() - 1:
+            self.tab_widget.setCurrentIndex(current_index + 1)
+        else:
+            self.tab_widget.setCurrentIndex(0)
+
+    def previous_tab(self) -> None:
+        """Switch to the previous tab"""
+        current_index = self.tab_widget.currentIndex()
+        if current_index > 0:
+            self.tab_widget.setCurrentIndex(current_index - 1)
+        else:
+            self.tab_widget.setCurrentIndex(self.tab_widget.count() - 1)
 
     def zoom_in(self) -> None:
         """Increase the UI scale factor by 10%"""
@@ -627,33 +749,33 @@ class MainWindow(QMainWindow):
 
     def toggle_sidebar(self) -> None:
         """Toggle the left sidebar visibility"""
-        if self.note_view:
-            self.note_view.toggle_left_sidebar()
+        if view := self.current_view:
+            view.toggle_left_sidebar()
 
     def toggle_right_sidebar(self) -> None:
         """Toggle the right sidebar visibility"""
-        if self.note_view:
-            self.note_view.toggle_right_sidebar()
+        if view := self.current_view:
+            view.toggle_right_sidebar()
 
     def maximize_editor(self) -> None:
         """Maximize the editor panel"""
-        if self.note_view:
-            self.note_view.maximize_editor()
+        if view := self.current_view:
+            view.maximize_editor()
 
     def maximize_preview(self) -> None:
         """Maximize the preview panel"""
-        if self.note_view:
-            self.note_view.maximize_preview()
+        if view := self.current_view:
+            view.maximize_preview()
 
     def equal_split_editor(self) -> None:
         """Split editor and preview equally"""
-        if self.note_view:
-            self.note_view.equal_split_editor()
+        if view := self.current_view:
+            view.equal_split_editor()
 
     def toggle_editor_preview(self) -> None:
         """Toggle between maximized editor and preview"""
-        if self.note_view:
-            self.note_view.toggle_editor_preview()
+        if view := self.current_view:
+            view.toggle_editor_preview()
 
     def show_settings(self) -> None:
         """Show the settings dialog"""
@@ -663,7 +785,7 @@ class MainWindow(QMainWindow):
     # TODO ensure this works when multiple tabs are implemented
     def save_note(self) -> None:
         """Trigger note save with title update from heading"""
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.save_current_note()
 
     def show_about_dialog(self) -> None:
@@ -739,8 +861,30 @@ class MainWindow(QMainWindow):
         """Set a message in the status bar"""
         self.statusBar().showMessage(message)
 
+    def _on_tab_change(self, index: int) -> None:
+        """Handle tab changes by updating status and reconnecting signals"""
+        if index >= 0:
+            if view := self.tab_widget.widget(index):
+                if isinstance(view, NoteView):
+                    # Update status message
+                    self.set_status_message(
+                        f"Switched to tab: {self.tab_widget.tabText(index)}"
+                    )
+
+                    # Reconnect signals for the new view
+                    view.status_bar_message.connect(self.set_status_message)
+
+                    # Update neovim handler connection
+                    if self._nvim_handler:
+                        self._nvim_handler.connect_editor(
+                            view.get_current_content_area().editor
+                        )
+
+                    if (note_id := view.current_note_id) is not None:
+                        view._handle_note_selection_from_id(note_id)
+
     def _connect_signals(self) -> None:
         """Connect signals from child widgets"""
         # From Widgets
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.status_bar_message.connect(self.set_status_message)
