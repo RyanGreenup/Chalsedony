@@ -188,14 +188,11 @@ class MainWindow(QMainWindow):
                         lambda: (
                             app.setPalette(self.palettes["light"]),
                             app.setProperty("darkMode", False),
-                            app.setStyleSheet(
-                                QSS_STYLE
-                            ),  # Reapply stylesheet to trigger update
+                            app.setStyleSheet(QSS_STYLE),  # Reapply stylesheet to trigger update
                             self.style_changed.emit(False),
+                            None
                         ),
                     )
-                    return None
-        return None
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
