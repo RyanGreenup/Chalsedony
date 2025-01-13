@@ -636,33 +636,33 @@ class MainWindow(QMainWindow):
 
     def toggle_sidebar(self) -> None:
         """Toggle the left sidebar visibility"""
-        if self.note_view:
-            self.note_view.toggle_left_sidebar()
+        if view := self.current_view:
+            view.toggle_left_sidebar()
 
     def toggle_right_sidebar(self) -> None:
         """Toggle the right sidebar visibility"""
-        if self.note_view:
-            self.note_view.toggle_right_sidebar()
+        if view := self.current_view:
+            view.toggle_right_sidebar()
 
     def maximize_editor(self) -> None:
         """Maximize the editor panel"""
-        if self.note_view:
-            self.note_view.maximize_editor()
+        if view := self.current_view:
+            view.maximize_editor()
 
     def maximize_preview(self) -> None:
         """Maximize the preview panel"""
-        if self.note_view:
-            self.note_view.maximize_preview()
+        if view := self.current_view:
+            view.maximize_preview()
 
     def equal_split_editor(self) -> None:
         """Split editor and preview equally"""
-        if self.note_view:
-            self.note_view.equal_split_editor()
+        if view := self.current_view:
+            view.equal_split_editor()
 
     def toggle_editor_preview(self) -> None:
         """Toggle between maximized editor and preview"""
-        if self.note_view:
-            self.note_view.toggle_editor_preview()
+        if view := self.current_view:
+            view.toggle_editor_preview()
 
     def show_settings(self) -> None:
         """Show the settings dialog"""
