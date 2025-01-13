@@ -227,6 +227,18 @@ class MainWindow(QMainWindow):
                             handler="close_current_tab",
                             shortcut="Ctrl+W",
                         ),
+                        MenuAction(
+                            id="next_tab",
+                            text="Next &Tab",
+                            handler="next_tab",
+                            shortcut="Ctrl+Tab",
+                        ),
+                        MenuAction(
+                            id="previous_tab",
+                            text="Previous &Tab",
+                            handler="previous_tab",
+                            shortcut="Ctrl+Shift+Tab",
+                        ),
                     ],
                 ),
                 MenuStructure(
@@ -674,6 +686,22 @@ class MainWindow(QMainWindow):
         current_index = self.tab_widget.currentIndex()
         if current_index >= 0:
             self.close_tab(current_index)
+
+    def next_tab(self) -> None:
+        """Switch to the next tab"""
+        current_index = self.tab_widget.currentIndex()
+        if current_index < self.tab_widget.count() - 1:
+            self.tab_widget.setCurrentIndex(current_index + 1)
+        else:
+            self.tab_widget.setCurrentIndex(0)
+
+    def previous_tab(self) -> None:
+        """Switch to the previous tab"""
+        current_index = self.tab_widget.currentIndex()
+        if current_index > 0:
+            self.tab_widget.setCurrentIndex(current_index - 1)
+        else:
+            self.tab_widget.setCurrentIndex(self.tab_widget.count() - 1)
 
     def zoom_in(self) -> None:
         """Increase the UI scale factor by 10%"""
