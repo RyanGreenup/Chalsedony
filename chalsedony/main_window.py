@@ -1,3 +1,5 @@
+from PySide6 import QtGui
+from PySide6 import QtCore
 from PySide6.QtCore import Signal, QTimer
 from PySide6.QtGui import QAction, QPalette
 import sqlite3
@@ -860,22 +862,23 @@ class MainWindow(QMainWindow):
     def set_status_message(self, message: str) -> None:
         """Set a message in the status bar"""
         self.statusBar().showMessage(message)
+        self.create_notification_popup(message)
 
     def create_notification_popup(self, message: str) -> None:
         """Create an elegant, unfocused notification popup.
-        
+
         The notification appears in the bottom-right corner and fades out automatically.
         It does not steal focus or require user interaction.
         """
         from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
         from PySide6.QtWidgets import QLabel, QWidget, QVBoxLayout
-        
+
         # Create notification widget
         notification = QWidget(self)
         notification.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
-        notification.setAttribute(Qt.WA_TranslucentBackground)
+        notification.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         notification.setAttribute(Qt.WA_ShowWithoutActivating)
-        
+
         # Style the notification
         layout = QVBoxLayout(notification)
         label = QLabel(message)
@@ -890,7 +893,7 @@ class MainWindow(QMainWindow):
         """)
         layout.addWidget(label)
         layout.setContentsMargins(0, 0, 0, 0)
-        
+
         # Position in bottom-right corner
         notification.adjustSize()
         screen_geometry = self.screen().geometry()
@@ -898,7 +901,7 @@ class MainWindow(QMainWindow):
             screen_geometry.width() - notification.width() - 20,
             screen_geometry.height() - notification.height() - 40
         )
-        
+
         # Show with fade-in animation
         notification.show()
         fade_in = QPropertyAnimation(notification, b"windowOpacity")
@@ -907,7 +910,7 @@ class MainWindow(QMainWindow):
         fade_in.setDuration(200)
         fade_in.setEasingCurve(QEasingCurve.InOutQuad)
         fade_in.start()
-        
+
         # Set up fade-out and cleanup
         def fade_out():
             fade = QPropertyAnimation(notification, b"windowOpacity")
@@ -917,7 +920,7 @@ class MainWindow(QMainWindow):
             fade.setEasingCurve(QEasingCurve.InOutQuad)
             fade.finished.connect(notification.deleteLater)
             fade.start()
-        
+
         # Schedule fade-out
         QTimer.singleShot(3000, fade_out)
 
