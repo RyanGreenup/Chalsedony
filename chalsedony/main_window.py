@@ -438,7 +438,7 @@ class MainWindow(QMainWindow):
 
     # Searching
     def get_text(self) -> str | None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             text = view.search_tab.search_input.text()
             if not text:
                 text = view.note_filter.text()
@@ -446,14 +446,14 @@ class MainWindow(QMainWindow):
         return None
 
     def search_preview_previous(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             if (text := self.get_text()) is not None:
                 view.get_current_content_area().preview.findPrevious(text)
             else:
                 self.set_status_message("No text to search for")
 
     def search_preview_next(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             if (text := self.get_text()) is not None:
                 view.get_current_content_area().preview.findNext(text)
             else:
@@ -467,7 +467,7 @@ class MainWindow(QMainWindow):
 
         This should/could handle multiple tabs in the future.
         """
-        return self.get_current_view().get_current_content_area().editor
+        return self.current_view.get_current_content_area().editor
 
     def connect_neovim_handler(self) -> Result[None, Exception]:
         """
@@ -517,39 +517,39 @@ class MainWindow(QMainWindow):
         self.zoom_editor.emit(0.9)
 
     def focus_editor(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_editor()
 
     def focus_note_tree(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_note_tree()
 
     def focus_backlinks(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_backlinks()
 
     def focus_forwardlinks(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_forwardlinks()
 
     def focus_filter_bar(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_filter_bar()
 
     def focus_search_bar(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_search_bar()
 
     def back_history(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.go_back_in_history()
 
     def forward_history(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.go_forward_in_history()
 
     def toggle_follow_mode(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.follow_mode = not view.follow_mode
             # Update the menu action's checked state
             if action := self.menu_actions.get("toggle_follow_mode"):
@@ -559,15 +559,15 @@ class MainWindow(QMainWindow):
             )
 
     def todays_journal(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.focus_todays_journal()
 
     def note_selection_palette(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.note_selection_palette()
 
     def note_link_palette(self) -> None:
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.note_link_palette()
 
     def zoom(self, factor: float) -> None:
@@ -610,12 +610,21 @@ class MainWindow(QMainWindow):
                 # app.setStyleSheet(app.styleSheet())
 
     def upload_resource(self) -> None:
-        view = self.get_current_view()
-        view.upload_resource()
+        if view := self.current_view:
+            view.upload_resource()
 
     # TODO use setter getter, need to handle the current view in tabs
+    # Working on it here setter TODO remove this
     def get_current_view(self) -> NoteView:
         return self.note_view
+
+    @property
+    def current_view(self) -> NoteView:
+        return self.note_view
+
+    @current_view.setter
+    def current_view(self, view: NoteView) -> None:
+        self.note_view = view
 
     def zoom_in(self) -> None:
         """Increase the UI scale factor by 10%"""
@@ -663,7 +672,7 @@ class MainWindow(QMainWindow):
     # TODO ensure this works when multiple tabs are implemented
     def save_note(self) -> None:
         """Trigger note save with title update from heading"""
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.save_current_note()
 
     def show_about_dialog(self) -> None:
@@ -742,5 +751,5 @@ class MainWindow(QMainWindow):
     def _connect_signals(self) -> None:
         """Connect signals from child widgets"""
         # From Widgets
-        if view := self.get_current_view():
+        if view := self.current_view:
             view.status_bar_message.connect(self.set_status_message)
