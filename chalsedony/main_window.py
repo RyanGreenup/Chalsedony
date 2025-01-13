@@ -176,6 +176,7 @@ class MainWindow(QMainWindow):
                     app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
                     self.style_changed.emit(False)
 
+    # Create keybindings so the user can create and remove tabs AI!
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
         return MenuConfig(
