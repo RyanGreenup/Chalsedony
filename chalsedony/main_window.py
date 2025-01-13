@@ -108,6 +108,8 @@ class MainWindow(QMainWindow):
 
         # Initialize model and view
         self.note_model = NoteModel(self.db_connection, assets)
+        # AI: The  note view is created here
+        # Improve this so the user can create multiple tabs, each with a separate note_view AI!
         self.note_view = NoteView(
             parent=self,
             model=self.note_model,
@@ -123,6 +125,7 @@ class MainWindow(QMainWindow):
         self.refresh.connect(self.note_model.refresh)
 
         # Set the view as the central widget
+        # AI: The note_view is set as the central widget here
         self.setCentralWidget(self.note_view)
 
         # Connect signals
@@ -613,15 +616,13 @@ class MainWindow(QMainWindow):
         if view := self.current_view:
             view.upload_resource()
 
-    # TODO use setter getter, need to handle the current view in tabs
-    # Working on it here setter TODO remove this
-    def get_current_view(self) -> NoteView:
-        return self.note_view
 
+    # AI: The current_view property is defined here
     @property
     def current_view(self) -> NoteView:
         return self.note_view
 
+    # AI: The current_view setter is here
     @current_view.setter
     def current_view(self, view: NoteView) -> None:
         self.note_view = view
