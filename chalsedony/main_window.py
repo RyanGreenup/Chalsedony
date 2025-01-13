@@ -213,6 +213,18 @@ class MainWindow(QMainWindow):
                             handler="save_note",
                             shortcut="Ctrl+S",
                         ),
+                        MenuAction(
+                            id="new_tab",
+                            text="New &Tab",
+                            handler="add_new_tab",
+                            shortcut="Ctrl+T",
+                        ),
+                        MenuAction(
+                            id="close_tab",
+                            text="&Close Tab",
+                            handler="close_current_tab",
+                            shortcut="Ctrl+W",
+                        ),
                     ],
                 ),
                 MenuStructure(
@@ -644,6 +656,12 @@ class MainWindow(QMainWindow):
         if widget and isinstance(widget, NoteView):
             widget.cleanup()
         self.tab_widget.removeTab(index)
+
+    def close_current_tab(self) -> None:
+        """Close the currently active tab"""
+        current_index = self.tab_widget.currentIndex()
+        if current_index >= 0:
+            self.close_tab(current_index)
 
     def zoom_in(self) -> None:
         """Increase the UI scale factor by 10%"""
