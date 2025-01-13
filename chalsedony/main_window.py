@@ -176,9 +176,9 @@ class MainWindow(QMainWindow):
                         lambda: (
                             app.setPalette(self.palettes["dark"]),
                             app.setProperty("darkMode", True),
-                            app.setStyleSheet(QSS_STYLE),  # Reapply stylesheet to trigger update
-                            self.style_changed.emit(True),
-                            None
+                            app.setStyleSheet(QSS_STYLE),  # type: ignore # Reapply stylesheet to trigger update
+                            self.style_changed.emit(True),  # type: ignore
+                            None,
                         ),
                     )
                 else:
@@ -188,9 +188,11 @@ class MainWindow(QMainWindow):
                         lambda: (
                             app.setPalette(self.palettes["light"]),
                             app.setProperty("darkMode", False),
-                            app.setStyleSheet(QSS_STYLE),  # Reapply stylesheet to trigger update
-                            self.style_changed.emit(False),
-                            None
+                            app.setStyleSheet(  # type: ignore
+                                QSS_STYLE
+                            ),  # Reapply stylesheet to trigger update
+                            self.style_changed.emit(False),  # type: ignore
+                            None,
                         ),
                     )
 
@@ -669,10 +671,11 @@ class MainWindow(QMainWindow):
                 self.set_status_message(message)
                 raise RuntimeError(message)
         else:
-            message = "No current widget, this is a bug"
-            print("ERROR:", message)
-            self.set_status_message(message)
-            return current_widget
+            # This will happen when there are no tabs
+            # On startup it will happen because there are no tabs yet, this is ok
+            # QT deals with this and we can just return the empty tab widget
+            # Possibly review this though, but it seems ok
+            return current_widget  # type: ignore [return-value]
 
     def add_new_tab(
         self, initial_note: Optional[str] = None, focus_journal: Optional[bool] = None
