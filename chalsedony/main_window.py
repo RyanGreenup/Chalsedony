@@ -909,7 +909,7 @@ class MainWindow(QMainWindow):
         fade_in.setStartValue(0.0)
         fade_in.setEndValue(1.0)
         fade_in.setDuration(200)
-        fade_in.setEasingCurve(QEasingCurve.InOutQuad)
+        fade_in.setEasingCurve(QEasingCurve.Type.InOutQuad)
         fade_in.start()
 
         # Set up fade-out and cleanup
@@ -918,7 +918,7 @@ class MainWindow(QMainWindow):
             fade.setStartValue(1.0)
             fade.setEndValue(0.0)
             fade.setDuration(500)
-            fade.setEasingCurve(QEasingCurve.InOutQuad)
+            fade.setEasingCurve(QEasingCurve.Type.InOutQuad)
             fade.finished.connect(notification.deleteLater)
             fade.start()
 
