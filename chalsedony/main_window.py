@@ -864,6 +864,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(message)
         self.create_notification_popup(message)
 
+    # This is still centred, fix this so it is in the top right cornder AI!
     def create_notification_popup(self, message: str) -> None:
         """Create an elegant, unfocused notification popup.
 
