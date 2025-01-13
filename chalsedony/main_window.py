@@ -861,8 +861,65 @@ class MainWindow(QMainWindow):
         """Set a message in the status bar"""
         self.statusBar().showMessage(message)
 
-    # Create an elegant, unfocused popup notification consistent with modern UIs, This should NOT steal focus or be clickable, just a notification AI!
     def create_notification_popup(self, message: str) -> None:
+        """Create an elegant, unfocused notification popup.
+        
+        The notification appears in the bottom-right corner and fades out automatically.
+        It does not steal focus or require user interaction.
+        """
+        from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
+        from PySide6.QtWidgets import QLabel, QWidget, QVBoxLayout
+        
+        # Create notification widget
+        notification = QWidget(self)
+        notification.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
+        notification.setAttribute(Qt.WA_TranslucentBackground)
+        notification.setAttribute(Qt.WA_ShowWithoutActivating)
+        
+        # Style the notification
+        layout = QVBoxLayout(notification)
+        label = QLabel(message)
+        label.setStyleSheet("""
+            QLabel {
+                color: #ffffff;
+                background-color: rgba(40, 40, 40, 0.9);
+                border-radius: 8px;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        """)
+        layout.addWidget(label)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Position in bottom-right corner
+        notification.adjustSize()
+        screen_geometry = self.screen().geometry()
+        notification.move(
+            screen_geometry.width() - notification.width() - 20,
+            screen_geometry.height() - notification.height() - 40
+        )
+        
+        # Show with fade-in animation
+        notification.show()
+        fade_in = QPropertyAnimation(notification, b"windowOpacity")
+        fade_in.setStartValue(0.0)
+        fade_in.setEndValue(1.0)
+        fade_in.setDuration(200)
+        fade_in.setEasingCurve(QEasingCurve.InOutQuad)
+        fade_in.start()
+        
+        # Set up fade-out and cleanup
+        def fade_out():
+            fade = QPropertyAnimation(notification, b"windowOpacity")
+            fade.setStartValue(1.0)
+            fade.setEndValue(0.0)
+            fade.setDuration(500)
+            fade.setEasingCurve(QEasingCurve.InOutQuad)
+            fade.finished.connect(notification.deleteLater)
+            fade.start()
+        
+        # Schedule fade-out
+        QTimer.singleShot(3000, fade_out)
 
     def _on_tab_change(self, index: int) -> None:
         """Handle tab changes by updating status and reconnecting signals"""
