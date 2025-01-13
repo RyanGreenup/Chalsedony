@@ -121,6 +121,9 @@ class MainWindow(QMainWindow):
         # Connect the neovim handler
         self._nvim_handler: NeovimHandler | None = None
 
+        # Connect tab change signal
+        self.tab_widget.currentChanged.connect(self._on_tab_change)
+
         # Connect signals to the view
         self.refresh.connect(self.note_model.refresh)
 
@@ -783,6 +786,21 @@ class MainWindow(QMainWindow):
     def set_status_message(self, message: str) -> None:
         """Set a message in the status bar"""
         self.statusBar().showMessage(message)
+
+    def _on_tab_change(self, index: int) -> None:
+        """Handle tab changes by updating status and reconnecting signals"""
+        if index >= 0:
+            if view := self.tab_widget.widget(index):
+                if isinstance(view, NoteView):
+                    # Update status message
+                    self.set_status_message(f"Switched to tab: {self.tab_widget.tabText(index)}")
+                    
+                    # Reconnect signals for the new view
+                    view.status_bar_message.connect(self.set_status_message)
+                    
+                    # Update neovim handler connection
+                    if self._nvim_handler:
+                        self._nvim_handler.connect_editor(view.get_current_content_area().editor)
 
     def _connect_signals(self) -> None:
         """Connect signals from child widgets"""
