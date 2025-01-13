@@ -954,4 +954,6 @@ class MainWindow(QMainWindow):
                         view._handle_note_selection_from_id(note_id)
 
 
-    # Create a function to create a popup of all the past notification messages AI!
+    # TODO Create a method and keybinding to create a popup of all the past notification messages
+    # Track past notifications as a log
+    # That way the user can find the socket, pid etc. of neovim and other such info
