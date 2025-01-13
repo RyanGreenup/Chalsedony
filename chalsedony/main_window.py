@@ -862,7 +862,6 @@ class MainWindow(QMainWindow):
     def set_status_message(self, message: str) -> None:
         """Set a message in the status bar"""
         self.statusBar().showMessage(message)
-        self.create_notification_popup(message)
 
     # This doesn't work, but the idea is there so I'll leave it in for now
     def create_notification_popup(self, message: str) -> None:
