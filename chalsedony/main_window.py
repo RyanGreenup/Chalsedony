@@ -114,6 +114,25 @@ class MainWindow(QMainWindow):
         self.tab_widget = QTabWidget(self)
         self.tab_widget.setTabsClosable(True)
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
+        
+        # Make tab widget transparent
+        self.tab_widget.setAttribute(Qt.WA_TranslucentBackground)
+        self.tab_widget.setStyleSheet("""
+            QTabWidget::pane {
+                border: 0;
+                background: transparent;
+            }
+            QTabBar::tab {
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                padding: 5px;
+                margin: 2px;
+                border-radius: 3px;
+            }
+            QTabBar::tab:selected {
+                background: rgba(255, 255, 255, 0.2);
+            }
+        """)
 
         # Create initial view
         self.add_new_tab(initial_note, focus_journal)
@@ -690,7 +709,11 @@ class MainWindow(QMainWindow):
             tree_data=tree_data,
         )
         
-        # Ensure transparency settings are maintained
+        # Make the entire view transparent
+        view.setAttribute(Qt.WA_TranslucentBackground)
+        view.setStyleSheet("background: transparent;")
+        
+        # Ensure preview transparency settings are maintained
         if preview := view.get_current_content_area().preview:
             preview.setAttribute(Qt.WA_TranslucentBackground)
             preview.setStyleSheet("background: transparent;")
