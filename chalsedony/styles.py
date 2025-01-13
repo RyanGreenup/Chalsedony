@@ -543,6 +543,24 @@ override_text_edit_background = """
 """
 
 # QSS_STYLE = command_palette_style + buttons + settings_dialog + tree_view + scrollbars + labels + toolbar + menus
+status_bar = """
+QStatusBar {
+    background: palette(window);
+    border-top: 1px solid palette(mid);
+    padding: 2px 4px;
+    color: palette(disabled-text);
+}
+
+QStatusBar QLabel {
+    font-size: 12px;
+    padding: 2px 8px;
+}
+
+QStatusBar::item {
+    border: none;
+}
+"""
+
 QSS_STYLE = (
     base_style
     + command_palette_style
@@ -556,4 +574,5 @@ QSS_STYLE = (
     + override_text_edit_background
     + note_list_style
     + tabs
+    + status_bar
 )
