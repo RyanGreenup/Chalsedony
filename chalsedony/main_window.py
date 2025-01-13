@@ -861,6 +861,9 @@ class MainWindow(QMainWindow):
         """Set a message in the status bar"""
         self.statusBar().showMessage(message)
 
+    # Create an elegant, unfocused popup notification consistent with modern UIs, This should NOT steal focus or be clickable, just a notification AI!
+    def create_notification_popup(self, message: str) -> None:
+
     def _on_tab_change(self, index: int) -> None:
         """Handle tab changes by updating status and reconnecting signals"""
         if index >= 0:
