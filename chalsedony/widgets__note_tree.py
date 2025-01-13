@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
 from pydantic import BaseModel
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QTreeWidget
@@ -103,6 +103,8 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         self.setup_ui()
         menu = self.build_context_menu_actions(None)
         self.addActions(menu.actions())
+        # Store the tree_data because it's expensive to compute
+        self.tree_data: Dict[str, FolderTreeItem] | None = None
 
     def move_folder_to_root(self, item_data: TreeItemData | None) -> None:
         item_data = item_data or self.get_current_item_data()
@@ -132,12 +134,21 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         # Initialize drag and drop handler
         self.drag_drop_handler = DragDropHandler(self)
 
-    def populate_tree(self) -> None:
-        """Populate the tree widget with folders and notes from the model."""
+    def populate_tree(self, tree_data: Dict[str, FolderTreeItem] | None = None) -> None:
+        """
+        Populate the tree widget with folders and notes from the model.
+
+        params:
+            tree_data: A dictionary containing the tree structure
+                       this is used to populate the tree widget more quickly,
+                       useful if the tree structure is already available
+                       (e.g. from a previous tab)
+        """
         self.clear()
 
         # Get the tree structure from the model
-        tree_data = self.note_model.get_note_tree_structure()
+        tree_data = tree_data or self.note_model.get_note_tree_structure()
+        self.tree_data = tree_data
 
         # Create a dict to store folder items for quick lookup
         folder_items = {}

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -14,7 +14,7 @@ from command_palette import NoteSelectionPalette, NoteLinkPalette
 
 
 from pathlib import Path
-from db_api import ItemType
+from db_api import FolderTreeItem, ItemType
 from PySide6.QtCore import (
     QItemSelection,
     QTimer,
@@ -47,6 +47,10 @@ class NoteView(QWidget):
         initial_note (Optional[str]): Title of note to open initially
         focus_journal (Optional[bool]): Whether to focus today's journal on startup
         follow_mode (Optional[bool]): Whether to follow note selections automatically
+        tree_data: A dictionary containing the tree structure
+                   this is used to populate the tree widget more quickly,
+                   useful if the tree structure is already available
+                   (e.g. from a previous tab)
 
     Signals:
         note_content_changed(int, str): Emitted when note content changes (note_id, content)
@@ -66,6 +70,7 @@ class NoteView(QWidget):
         initial_note: Optional[str] = None,
         focus_journal: Optional[bool] = True,
         follow_mode: Optional[bool] = True,
+        tree_data: Dict[str, FolderTreeItem] | None = None,
     ) -> None:
         super().__init__(parent)
         self.model = model
@@ -76,7 +81,7 @@ class NoteView(QWidget):
         self._right_animation: QPropertyAnimation | None = None
         self._sidebar_width = self.DEFAULT_SIDEBAR_WIDTH
         self.setup_ui()
-        self._populate_ui()
+        self._populate_ui(tree_data)
         self._connect_signals()
         self._setup_history()
         if focus_journal:
@@ -114,8 +119,8 @@ class NoteView(QWidget):
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
 
-    def _populate_ui(self) -> None:
-        self.tree_widget.populate_tree()
+    def _populate_ui(self, tree_data: Dict[str, FolderTreeItem] | None = None) -> None:
+        self.tree_widget.populate_tree(tree_data)
         self._populate_notes_list()
 
     def setup_ui(self) -> None:

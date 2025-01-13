@@ -663,11 +663,17 @@ class MainWindow(QMainWindow):
         self, initial_note: Optional[str] = None, focus_journal: Optional[bool] = None
     ) -> NoteView:
         """Create and add a new NoteView tab"""
+        tree_data = None
+        if self.current_view:
+            tree_data = self.current_view.tree_widget.tree_data
+
         view = NoteView(
             parent=self,
             model=self.note_model,
+            # TODO if this is none, it should be the last viewed note
             initial_note=initial_note,
             focus_journal=focus_journal,
+            tree_data=tree_data,
         )
         tab_index = self.tab_widget.addTab(view, "New Note")
         self.tab_widget.setCurrentIndex(tab_index)
