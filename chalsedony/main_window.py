@@ -166,22 +166,35 @@ class MainWindow(QMainWindow):
         """Toggle between light and dark mode"""
         if app := QApplication.instance():
             if isinstance(app, QApplication):
+                self.statusBar().showMessage(
+                    "Toggling style... (this may take a moment)"
+                )
                 if app.palette() == self.palettes["light"]:
                     # Switch to dark mode asynchronously
-                    QTimer.singleShot(0, lambda: (
-                        app.setPalette(self.palettes["dark"]),
-                        app.setProperty("darkMode", True),
-                        app.setStyleSheet(QSS_STYLE),  # Reapply stylesheet to trigger update
-                        self.style_changed.emit(True)
-                    ))
+                    QTimer.singleShot(
+                        0,
+                        lambda: (
+                            app.setPalette(self.palettes["dark"]),
+                            app.setProperty("darkMode", True),
+                            app.setStyleSheet(
+                                QSS_STYLE
+                            ),  # Reapply stylesheet to trigger update
+                            self.style_changed.emit(True),
+                        ),
+                    )
                 else:
                     # Switch to light mode asynchronously
-                    QTimer.singleShot(0, lambda: (
-                        app.setPalette(self.palettes["light"]),
-                        app.setProperty("darkMode", False),
-                        app.setStyleSheet(QSS_STYLE),  # Reapply stylesheet to trigger update
-                        self.style_changed.emit(False)
-                    ))
+                    QTimer.singleShot(
+                        0,
+                        lambda: (
+                            app.setPalette(self.palettes["light"]),
+                            app.setProperty("darkMode", False),
+                            app.setStyleSheet(
+                                QSS_STYLE
+                            ),  # Reapply stylesheet to trigger update
+                            self.style_changed.emit(False),
+                        ),
+                    )
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
