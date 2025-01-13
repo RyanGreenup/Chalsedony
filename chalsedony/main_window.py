@@ -170,20 +170,17 @@ class MainWindow(QMainWindow):
                     "Toggling style... (this may take a moment)"
                 )
                 if app.palette() == self.palettes["light"]:
-                    # Resolve the mypy error [func-returns-value] AI!
                     # Switch to dark mode asynchronously
                     QTimer.singleShot(
                         0,
                         lambda: (
                             app.setPalette(self.palettes["dark"]),
                             app.setProperty("darkMode", True),
-                            app.setStyleSheet(
-                                QSS_STYLE
-                            ),  # Reapply stylesheet to trigger update
+                            app.setStyleSheet(QSS_STYLE),  # Reapply stylesheet to trigger update
                             self.style_changed.emit(True),
+                            None
                         ),
                     )
-                    return None
                 else:
                     # Switch to light mode asynchronously
                     QTimer.singleShot(
@@ -673,7 +670,7 @@ class MainWindow(QMainWindow):
                 message = "Current widget is not a NoteView, this is a bug"
                 print("ERROR:", message)
                 self.set_status_message(message)
-                return current_widget  # type: ignore
+                raise RuntimeError(message)
         else:
             message = "No current widget, this is a bug"
             print("ERROR:", message)
