@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
     QToolBar,
     QStatusBar,
     QMessageBox,
+    QTabWidget,
 )
 from typing import List, Dict, Optional, TypedDict
 from pydantic import BaseModel
@@ -106,27 +107,25 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Chalsedony")
         self.setGeometry(100, 100, 800, 600)
 
-        # Initialize model and view
+        # Initialize model
         self.note_model = NoteModel(self.db_connection, assets)
-        # AI: The  note view is created here
-        # Improve this so the user can create multiple tabs, each with a separate note_view AI!
-        self.note_view = NoteView(
-            parent=self,
-            model=self.note_model,
-            initial_note=initial_note,
-            focus_journal=focus_journal,
-        )
+        
+        # Create tab widget for multiple views
+        self.tab_widget = QTabWidget(self)
+        self.tab_widget.setTabsClosable(True)
+        self.tab_widget.tabCloseRequested.connect(self.close_tab)
+        
+        # Create initial view
+        self.add_new_tab(initial_note, focus_journal)
 
         # Connect the neovim handler
         self._nvim_handler: NeovimHandler | None = None
 
         # Connect signals to the view
-        # Ask the model to refresh the data (which will emit a signal to refresh the view)
         self.refresh.connect(self.note_model.refresh)
 
-        # Set the view as the central widget
-        # AI: The note_view is set as the central widget here
-        self.setCentralWidget(self.note_view)
+        # Set tab widget as central widget
+        self.setCentralWidget(self.tab_widget)
 
         # Connect signals
         self._connect_signals()
@@ -617,15 +616,33 @@ class MainWindow(QMainWindow):
             view.upload_resource()
 
 
-    # AI: The current_view property is defined here
     @property
-    def current_view(self) -> NoteView:
-        return self.note_view
+    def current_view(self) -> NoteView | None:
+        """Get the currently active NoteView from the tab widget"""
+        if current_widget := self.tab_widget.currentWidget():
+            if isinstance(current_widget, NoteView):
+                return current_widget
+        return None
 
-    # AI: The current_view setter is here
-    @current_view.setter
-    def current_view(self, view: NoteView) -> None:
-        self.note_view = view
+    def add_new_tab(self, initial_note: Optional[str] = None, focus_journal: Optional[bool] = None) -> NoteView:
+        """Create and add a new NoteView tab"""
+        view = NoteView(
+            parent=self,
+            model=self.note_model,
+            initial_note=initial_note,
+            focus_journal=focus_journal,
+        )
+        tab_index = self.tab_widget.addTab(view, "New Note")
+        self.tab_widget.setCurrentIndex(tab_index)
+        view.status_bar_message.connect(self.set_status_message)
+        return view
+
+    def close_tab(self, index: int) -> None:
+        """Close a tab at the given index"""
+        widget = self.tab_widget.widget(index)
+        if widget and isinstance(widget, NoteView):
+            widget.cleanup()
+        self.tab_widget.removeTab(index)
 
     def zoom_in(self) -> None:
         """Increase the UI scale factor by 10%"""
