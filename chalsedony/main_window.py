@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QTimer
 from PySide6.QtGui import QAction, QPalette
 import sqlite3
 from sqlite3 import Connection
@@ -167,18 +167,21 @@ class MainWindow(QMainWindow):
         if app := QApplication.instance():
             if isinstance(app, QApplication):
                 if app.palette() == self.palettes["light"]:
-                    # Switch to dark mode
-                    # Run this async so the user can still use the application AI!
-                    app.setPalette(self.palettes["dark"])
-                    app.setProperty("darkMode", True)
-                    app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
-                    self.style_changed.emit(True)
+                    # Switch to dark mode asynchronously
+                    QTimer.singleShot(0, lambda: (
+                        app.setPalette(self.palettes["dark"]),
+                        app.setProperty("darkMode", True),
+                        app.setStyleSheet(QSS_STYLE),  # Reapply stylesheet to trigger update
+                        self.style_changed.emit(True)
+                    ))
                 else:
-                    # Switch to light mode
-                    app.setPalette(self.palettes["light"])
-                    app.setProperty("darkMode", False)
-                    app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
-                    self.style_changed.emit(False)
+                    # Switch to light mode asynchronously
+                    QTimer.singleShot(0, lambda: (
+                        app.setPalette(self.palettes["light"]),
+                        app.setProperty("darkMode", False),
+                        app.setStyleSheet(QSS_STYLE),  # Reapply stylesheet to trigger update
+                        self.style_changed.emit(False)
+                    ))
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
