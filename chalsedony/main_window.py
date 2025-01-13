@@ -109,12 +109,12 @@ class MainWindow(QMainWindow):
 
         # Initialize model
         self.note_model = NoteModel(self.db_connection, assets)
-        
+
         # Create tab widget for multiple views
         self.tab_widget = QTabWidget(self)
         self.tab_widget.setTabsClosable(True)
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
-        
+
         # Create initial view
         self.add_new_tab(initial_note, focus_journal)
 
@@ -176,7 +176,6 @@ class MainWindow(QMainWindow):
                     app.setStyleSheet(QSS_STYLE)  # Reapply stylesheet to trigger update
                     self.style_changed.emit(False)
 
-    # Create keybindings so the user can create and remove tabs AI!
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
         return MenuConfig(
@@ -217,7 +216,7 @@ class MainWindow(QMainWindow):
                             id="new_tab",
                             text="New &Tab",
                             handler="add_new_tab",
-                            shortcut="Ctrl+T",
+                            shortcut="Ctrl+Alt+T",
                         ),
                         MenuAction(
                             id="close_tab",
