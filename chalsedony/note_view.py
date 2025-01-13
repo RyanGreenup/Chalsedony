@@ -34,6 +34,25 @@ HISTORY_TIME = 1000
 
 
 class NoteView(QWidget):
+    """Main note viewing and editing interface for the application.
+
+    This widget provides a complete note-taking interface with:
+    - Left sidebar containing folder tree and search
+    - Central editor/preview area
+    - Right sidebar with backlinks and forwardlinks
+
+    Args:
+        model (NoteModel): The data model containing notes and folders
+        parent (QMainWindow): The parent main window
+        initial_note (Optional[str]): Title of note to open initially
+        focus_journal (Optional[bool]): Whether to focus today's journal on startup
+        follow_mode (Optional[bool]): Whether to follow note selections automatically
+
+    Signals:
+        note_content_changed(int, str): Emitted when note content changes (note_id, content)
+        status_bar_message(str): Emitted to send messages to status bar
+    """
+
     note_content_changed = Signal(int, str)  # (note_id, content)
     status_bar_message = Signal(str)  # Signal to send messages to status bar
 
@@ -46,10 +65,11 @@ class NoteView(QWidget):
         parent: QMainWindow,
         initial_note: Optional[str] = None,
         focus_journal: Optional[bool] = True,
+        follow_mode: Optional[bool] = True,
     ) -> None:
         super().__init__(parent)
         self.model = model
-        self.follow_mode = False
+        self.follow_mode = follow_mode
         self.current_note_id: str | None = None
         self._editor_maximized = False  # Track editor maximization state
         self._left_animation: QPropertyAnimation | None = None

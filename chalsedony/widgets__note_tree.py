@@ -81,6 +81,7 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
                 self.note_selected.emit(item)
                 return
         super().keyPressEvent(event)
+
     # This is used to select a note even when follow_mode is disabled, otherwise notes update when moving through the tree
     note_selected = Signal(TreeItemData)  # The selected Item,
     duplicate_note = Signal(str)  # note_id
