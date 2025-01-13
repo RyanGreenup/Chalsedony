@@ -9,6 +9,7 @@ from PySide6.QtGui import (
     QDragEnterEvent,
     QDragMoveEvent,
     QDropEvent,
+    QKeyEvent,
     QMouseEvent,
 )
 from PySide6.QtWidgets import (
@@ -74,7 +75,7 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
     note_created = Signal(str)  # folder_id
     note_deleted = Signal(str)  # note_id
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle key press events, emitting note_selected on Enter"""
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
             if item := self.get_current_item_data():
