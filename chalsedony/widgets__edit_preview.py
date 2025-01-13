@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Callable
 from PySide6.QtWidgets import (
     QApplication,
     QTextEdit,
@@ -10,6 +11,8 @@ from PySide6.QtGui import QFont, QImage, QWheelEvent
 from PySide6.QtCore import Signal
 import tempfile
 import os
+
+from typing import cast
 from widgets__textedit__vim_bindings import VimTextEdit
 from widgets__stateful_tree import TreeItemData
 from utils_html_to_markdown import html_to_markdown
@@ -483,6 +486,48 @@ class WebPreview(QWebEngineView):
         if app := QApplication.instance():
             if isinstance(app, QApplication):
                 app.fontChanged.connect(self._update_zoom_from_font)
+
+        # Enable search functionality
+        self._search_text = ""
+        self._search_flags = cast(QWebEnginePage.FindFlag, 0)
+
+    def findText(
+        self,
+        subString: str,
+        options: QWebEnginePage.FindFlag = QWebEnginePage.FindFlag(0),
+        resultCallback: Callable | None = None,
+    ) -> None:
+        """Search for text in the preview with browser-like functionality"""
+        _ = resultCallback  # Unused
+        self._search_text = subString
+        self._search_flags = options
+        self.page().findText(subString, options)
+
+    def clear_search(self) -> None:
+        """Clear the current search highlights"""
+        # This is the method advised in the docs
+        # https://doc.qt.io/qtforpython-6/PySide6/QtWebEngineCore/QWebEnginePage.html#PySide6.QtWebEngineCore.QWebEnginePage.findText
+        self.page().findText("")
+
+    def findNext(self, search_text: str) -> None:
+        """Find next match of current search"""
+        if search_text:
+            flag = QWebEnginePage.FindFlag(0x0)  # Forward Search
+            if search_text != search_text.lower():
+                flag = QWebEnginePage.FindFlag.FindCaseSensitively
+            self.page().findText(search_text, flag)
+        else:
+            self.clear_search()
+
+    def findPrevious(self, search_text: str) -> None:
+        """Find previous match of current search"""
+        flags = QWebEnginePage.FindFlag.FindBackward
+        if search_text:
+            if search_text != search_text.lower():
+                flags = flags | QWebEnginePage.FindFlag.FindCaseSensitively
+            self.page().findText(search_text, flags)
+        else:
+            self.clear_search()
 
     def _update_zoom_from_font(self, font: QFont) -> None:
         """Update zoom factor based on application font size changes"""

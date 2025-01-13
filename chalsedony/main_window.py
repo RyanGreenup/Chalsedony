@@ -334,6 +334,18 @@ class MainWindow(QMainWindow):
                             handler="back_history",
                             shortcut="Ctrl+Alt+Left",
                         ),
+                        MenuAction(
+                            id="search_preview_next",
+                            text="&Search Preview Next",
+                            handler="search_preview_next",
+                            shortcut="F3",
+                        ),
+                        MenuAction(
+                            id="search_preview_previous",
+                            text="&Search Preview Previous",
+                            handler="search_preview_previous",
+                            shortcut="Shift+F3",
+                        ),
                     ],
                 ),
                 MenuStructure(
@@ -367,13 +379,13 @@ class MainWindow(QMainWindow):
                             id="focus_backlinks",
                             text="&Backlinks",
                             handler="focus_backlinks",
-                            shortcut="F4",
+                            shortcut="F7",
                         ),
                         MenuAction(
                             id="focus_forwardlinks",
                             text="Forward &Links",
                             handler="focus_forwardlinks",
-                            shortcut="F3",
+                            shortcut="F8",
                         ),
                     ],
                 ),
@@ -423,6 +435,29 @@ class MainWindow(QMainWindow):
                 ),
             ]
         )
+
+    # Searching
+    def get_text(self) -> str | None:
+        if view := self.get_current_view():
+            text = view.search_tab.search_input.text()
+            if not text:
+                text = view.note_filter.text()
+            return text
+        return None
+
+    def search_preview_previous(self) -> None:
+        if view := self.get_current_view():
+            if (text := self.get_text()) is not None:
+                view.get_current_content_area().preview.findPrevious(text)
+            else:
+                self.set_status_message("No text to search for")
+
+    def search_preview_next(self) -> None:
+        if view := self.get_current_view():
+            if (text := self.get_text()) is not None:
+                view.get_current_content_area().preview.findNext(text)
+            else:
+                self.set_status_message("No text to search for")
 
     # Neovim Methods
 
