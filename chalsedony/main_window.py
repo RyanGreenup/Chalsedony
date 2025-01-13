@@ -170,6 +170,7 @@ class MainWindow(QMainWindow):
                     "Toggling style... (this may take a moment)"
                 )
                 if app.palette() == self.palettes["light"]:
+                    # Resolve the mypy error [func-returns-value] AI!
                     # Switch to dark mode asynchronously
                     QTimer.singleShot(
                         0,
@@ -182,6 +183,7 @@ class MainWindow(QMainWindow):
                             self.style_changed.emit(True),
                         ),
                     )
+                    return None
                 else:
                     # Switch to light mode asynchronously
                     QTimer.singleShot(
@@ -195,6 +197,8 @@ class MainWindow(QMainWindow):
                             self.style_changed.emit(False),
                         ),
                     )
+                    return None
+        return None
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:
