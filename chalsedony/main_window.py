@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QAction, QPalette
 import sqlite3
 from sqlite3 import Connection
@@ -689,6 +689,12 @@ class MainWindow(QMainWindow):
             focus_journal=focus_journal,
             tree_data=tree_data,
         )
+        
+        # Ensure transparency settings are maintained
+        if preview := view.get_current_content_area().preview:
+            preview.setAttribute(Qt.WA_TranslucentBackground)
+            preview.setStyleSheet("background: transparent;")
+        
         tab_index = self.tab_widget.addTab(view, "New Note")
         self.tab_widget.setCurrentIndex(tab_index)
         view.status_bar_message.connect(self.set_status_message)
