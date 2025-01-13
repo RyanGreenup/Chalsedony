@@ -70,10 +70,17 @@ class TreeWithFilter(QTreeWidget):
             filter_items(self.topLevelItem(i))
 
 
-# Improve this so the enter key emits the note_selected signal AI!
 class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
     note_created = Signal(str)  # folder_id
     note_deleted = Signal(str)  # note_id
+
+    def keyPressEvent(self, event):
+        """Handle key press events, emitting note_selected on Enter"""
+        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+            if item := self.get_current_item_data():
+                self.note_selected.emit(item)
+                return
+        super().keyPressEvent(event)
     # This is used to select a note even when follow_mode is disabled, otherwise notes update when moving through the tree
     note_selected = Signal(TreeItemData)  # The selected Item,
     duplicate_note = Signal(str)  # note_id
