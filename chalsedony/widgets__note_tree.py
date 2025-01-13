@@ -70,6 +70,7 @@ class TreeWithFilter(QTreeWidget):
             filter_items(self.topLevelItem(i))
 
 
+# Improve this so the enter key emits the note_selected signal AI!
 class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
     note_created = Signal(str)  # folder_id
     note_deleted = Signal(str)  # note_id
