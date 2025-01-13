@@ -630,16 +630,26 @@ class MainWindow(QMainWindow):
         if view := self.current_view:
             view.upload_resource()
 
-
     @property
-    def current_view(self) -> NoteView | None:
+    def current_view(self) -> NoteView:
         """Get the currently active NoteView from the tab widget"""
         if current_widget := self.tab_widget.currentWidget():
             if isinstance(current_widget, NoteView):
                 return current_widget
-        return None
+            else:
+                message = "Current widget is not a NoteView, this is a bug"
+                print("ERROR:", message)
+                self.set_status_message(message)
+                return current_widget  # type: ignore
+        else:
+            message = "No current widget, this is a bug"
+            print("ERROR:", message)
+            self.set_status_message(message)
+            return current_widget
 
-    def add_new_tab(self, initial_note: Optional[str] = None, focus_journal: Optional[bool] = None) -> NoteView:
+    def add_new_tab(
+        self, initial_note: Optional[str] = None, focus_journal: Optional[bool] = None
+    ) -> NoteView:
         """Create and add a new NoteView tab"""
         view = NoteView(
             parent=self,
@@ -793,14 +803,21 @@ class MainWindow(QMainWindow):
             if view := self.tab_widget.widget(index):
                 if isinstance(view, NoteView):
                     # Update status message
-                    self.set_status_message(f"Switched to tab: {self.tab_widget.tabText(index)}")
-                    
+                    self.set_status_message(
+                        f"Switched to tab: {self.tab_widget.tabText(index)}"
+                    )
+
                     # Reconnect signals for the new view
                     view.status_bar_message.connect(self.set_status_message)
-                    
+
                     # Update neovim handler connection
                     if self._nvim_handler:
-                        self._nvim_handler.connect_editor(view.get_current_content_area().editor)
+                        self._nvim_handler.connect_editor(
+                            view.get_current_content_area().editor
+                        )
+
+                    if (note_id := view.current_note_id) is not None:
+                        view._handle_note_selection_from_id(note_id)
 
     def _connect_signals(self) -> None:
         """Connect signals from child widgets"""
