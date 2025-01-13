@@ -864,6 +864,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(message)
         self.create_notification_popup(message)
 
+    # This doesn't work, but the idea is there so I'll leave it in for now
     def create_notification_popup(self, message: str) -> None:
         """Create an elegant, unfocused notification popup.
 
