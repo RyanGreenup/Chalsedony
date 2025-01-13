@@ -864,11 +864,10 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(message)
         self.create_notification_popup(message)
 
-    # This is still centred, fix this so it is in the top right cornder AI!
     def create_notification_popup(self, message: str) -> None:
         """Create an elegant, unfocused notification popup.
 
-        The notification appears in the bottom-right corner and fades out automatically.
+        The notification appears in the top-right corner and fades out automatically.
         It does not steal focus or require user interaction.
         """
         from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
@@ -899,8 +898,8 @@ class MainWindow(QMainWindow):
         notification.adjustSize()
         screen_geometry = self.screen().geometry()
         notification.move(
-            screen_geometry.width() - notification.width() - 20,
-            screen_geometry.height() - notification.height() - 40
+            screen_geometry.width() - notification.width() - 20,  # 20px from right edge
+            20  # 20px from top edge
         )
 
         # Show with fade-in animation
