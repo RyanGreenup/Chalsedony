@@ -877,7 +877,7 @@ class MainWindow(QMainWindow):
         notification = QWidget(self)
         notification.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
         notification.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        notification.setAttribute(Qt.WA_ShowWithoutActivating)
+        notification.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
 
         # Style the notification
         layout = QVBoxLayout(notification)
