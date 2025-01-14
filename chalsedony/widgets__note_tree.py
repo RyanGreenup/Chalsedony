@@ -84,6 +84,8 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         super().keyPressEvent(event)
 
     # This is used to select a note even when follow_mode is disabled, otherwise notes update when moving through the tree
+    # AI: The update_note_id signal is defined here, it should contain the current note_id and the new note_id in that order
+    update_note_id = Signal(str, str)  # note_id, new_note_id
     note_selected = Signal(TreeItemData)  # The selected Item,
     duplicate_note = Signal(str)  # note_id
     folder_rename_requested = Signal(str, str)  # (folder_id, new_title)
@@ -282,6 +284,22 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         clipboard = QApplication.clipboard()
         clipboard.setText(text)
 
+    def update_id(self, item_data: TreeItemData | None) -> None:
+        """Update the ID of an item"""
+        item_data = item_data or self.get_current_item_data()
+        if not item_data:
+            return
+        match item_data.type:
+            case ItemType.NOTE:
+                new_id, ok = QInputDialog.getText(
+                    self, "Update ID", "Enter new ID:", text=item_data.id
+                )
+                if ok and new_id:
+                    self.update_note_id.emit(item_data.id, new_id)
+                    self.send_status_message(f"Updated ID for {item_data.title}")
+            case ItemType.FOLDER:
+                self.send_status_message("Update ID for folders not yet implemented")
+
     def create_note(self, item_data: TreeItemData | None) -> None:
         """Create a new note under the selected folder"""
         item_data = item_data or self.get_current_item_data()
@@ -397,6 +415,11 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
                 label=f"Copy {item_type} ID: {item_id}",
                 handler=lambda: self.copy_id(item_data),
                 shortcut="C",
+            ),
+            self.MenuAction(
+                label=f"Change {item_type} ID",
+                handler=lambda: self.update_id(item_data),
+                shortcut=None,
             ),
             self.MenuAction(
                 label="Create Note",

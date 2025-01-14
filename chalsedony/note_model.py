@@ -246,11 +246,7 @@ class NoteModel(QObject):
         """
         return self.find_note_by_id(result.id)
 
-    def update_note_id(
-            self,
-            note_id: str,
-            new_note_id: str
-            ) -> None:
+    def update_note_id(self, note_id: str, new_note_id: str) -> None:
         """Update a note's ID while maintaining all relationships
 
         Args:
@@ -265,30 +261,27 @@ class NoteModel(QObject):
             raise ValueError(f"Note ID {new_note_id} is already in use")
 
         # Update the note ID in the notes table
-        cursor.execute(
-            "UPDATE notes SET id = ? WHERE id = ?",
-            (new_note_id, note_id)
-        )
+        cursor.execute("UPDATE notes SET id = ? WHERE id = ?", (new_note_id, note_id))
 
         # Update any note_resources relationships
         cursor.execute(
             "UPDATE note_resources SET note_id = ? WHERE note_id = ?",
-            (new_note_id, note_id)
+            (new_note_id, note_id),
         )
-
 
         def joplin_link(id: str) -> str:
             return f"](:/{id})"
+
         def wikilink(id: str) -> str:
             return f"[[{id}]]"
-            
+
         # Update both Joplin-style and wiki-style links
         for link_fn in [joplin_link, wikilink]:
             old_pattern = link_fn(note_id)
             new_pattern = link_fn(new_note_id)
             cursor.execute(
                 "UPDATE notes SET body = REPLACE(body, ?, ?)",
-                (old_pattern, new_pattern)
+                (old_pattern, new_pattern),
             )
 
         self.db_connection.commit()

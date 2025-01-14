@@ -242,6 +242,7 @@ class NoteView(QWidget):
         self.tree_widget.folder_rename_requested.connect(self.update_folder_title)
         self.tree_widget.folder_moved.connect(self.update_folder_parent)
         self.tree_widget.note_moved.connect(self.update_note_folder)
+        self.tree_widget.update_note_id.connect(self.update_note_id)
         self.tree_widget.status_bar_message.connect(self.send_status_message)
         self.tree_widget.folder_duplicated.connect(self.model.copy_folder_recursive)
         # TODO consider focusing the note, this returns the new id
@@ -328,6 +329,15 @@ class NoteView(QWidget):
                 refresh=True,
                 update_title_from_heading=True,
             )
+
+    def update_note_id(self, old_id: str, new_id: str) -> None:
+        """Update the Note ID"""
+        try:
+            self.model.update_note_id(old_id, new_id)
+        except ValueError as e:
+            status_message = f"Failed to update note ID: {e}"
+            print(status_message)
+            self.send_status_message(status_message)
 
     def update_note_folder(self, note_id: str, new_folder_id: str) -> None:
         """Update which folder a note belongs to"""
