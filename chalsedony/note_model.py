@@ -246,6 +246,13 @@ class NoteModel(QObject):
         """
         return self.find_note_by_id(result.id)
 
+    # Finish this implementation AI!
+    def update_note_id(
+            self,
+            note_id: str,
+            new_note_id: str
+            ) -> None:
+
     def update_note(
         self,
         note_id: str,
