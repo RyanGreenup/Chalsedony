@@ -84,7 +84,6 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         super().keyPressEvent(event)
 
     # This is used to select a note even when follow_mode is disabled, otherwise notes update when moving through the tree
-    # AI: The update_note_id signal is defined here, it should contain the current note_id and the new note_id in that order
     update_note_id = Signal(str, str)  # note_id, new_note_id
     note_selected = Signal(TreeItemData)  # The selected Item,
     duplicate_note = Signal(str)  # note_id
@@ -289,10 +288,25 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         item_data = item_data or self.get_current_item_data()
         if not item_data:
             return
+
+        def get_new_id() -> tuple[str, bool]:
+            new_id, ok = QInputDialog.getText(
+                self,
+                "Update ID",
+                "Enter new ID (WARNING: Breaks Links in Joplin):",
+                text=item_data.id,
+            )
+            # Right now the logic for links in the web preview and model.backlinks /forwardlinks relies on this assumption:
+            new_id = new_id.strip().lower().replace(" ", "_")
+            return new_id, ok
+
         match item_data.type:
             case ItemType.NOTE:
                 new_id, ok = QInputDialog.getText(
-                        self, "Update ID", "Enter new ID (WARNING: Breaks Links in Joplin):", text=item_data.id
+                    self,
+                    "Update ID",
+                    "Enter new ID (WARNING: Breaks Links in Joplin):",
+                    text=item_data.id,
                 )
                 if ok and new_id:
                     self.update_note_id.emit(item_data.id, new_id)
