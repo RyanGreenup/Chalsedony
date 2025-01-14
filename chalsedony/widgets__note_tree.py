@@ -585,6 +585,7 @@ class DragDropHandler:
         if target_data.id == dragged_data.id:
             self.tree_widget.send_status_message("Cannot drop onto itself")
             event.ignore()
+            return None
         # Invalid assignment
         if target_data.type != ItemType.FOLDER:
             match (dragged_data.type, target_data.type):
