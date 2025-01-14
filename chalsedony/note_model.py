@@ -246,12 +246,33 @@ class NoteModel(QObject):
         """
         return self.find_note_by_id(result.id)
 
-    # Finish this implementation AI!
     def update_note_id(
             self,
             note_id: str,
             new_note_id: str
             ) -> None:
+        """Update a note's ID while maintaining all relationships
+
+        Args:
+            note_id: Current ID of the note
+            new_note_id: New ID to assign to the note
+        """
+        cursor = self.db_connection.cursor()
+        
+        # Update the note ID in the notes table
+        cursor.execute(
+            "UPDATE notes SET id = ? WHERE id = ?",
+            (new_note_id, note_id)
+        )
+        
+        # Update any note_resources relationships
+        cursor.execute(
+            "UPDATE note_resources SET note_id = ? WHERE note_id = ?",
+            (new_note_id, note_id)
+        )
+        
+        self.db_connection.commit()
+        self.refreshed.emit()
 
     def update_note(
         self,
