@@ -401,6 +401,9 @@ class NoteModel(QObject):
         updates = []
         params = []
 
+        if folder_id == parent_id:
+            raise ValueError("Cannot set parent folder to itself")
+
         if title is not None:
             updates.append("title = ?")
             params.append(title)
@@ -955,6 +958,17 @@ class NoteModel(QObject):
         )
 
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
+
+    def fix_things(self) -> None:
+        """Fix things in the database
+
+        This is a utility method to fix things in the database. This can be used to
+        perform cleanup operations or fix inconsistencies in the database.
+        """
+        # Example: Delete all notes with empty titles
+        cursor = self.db_connection.cursor()
+        cursor.execute("UPDATE folders SET parent_id = '' where id == parent_id;")
+        self.db_connection.commit()
 
 
 # Footnotes

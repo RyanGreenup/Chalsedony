@@ -339,6 +339,10 @@ class NoteView(QWidget):
 
     def update_folder_parent(self, folder_id: str, new_parent_id: str) -> None:
         """Update a folder's parent ID and refresh the view"""
+        if folder_id == new_parent_id:
+            print(
+                "BUG: This should have been caught by DND -- Cannot Assign Folder as it's own parent"
+            )
         self.model.update_folder(folder_id, parent_id=new_parent_id)
 
     def _on_note_created(self, folder_id: str) -> None:
