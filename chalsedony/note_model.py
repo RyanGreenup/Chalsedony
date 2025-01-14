@@ -281,13 +281,11 @@ class NoteModel(QObject):
             return f"](:/{id})"
         def wikilink(id: str) -> str:
             return f"[[{id}]]"
-        # Refactor this to use the joplin_link and wikilink functions and be more DRY AI!
-        link_patterns = [
-            (f")[:/{note_id}]", f")[:/{new_note_id}]"),
-            (f"[[{note_id}]]", f"[[{new_note_id}]]")
-        ]
-        
-        for old_pattern, new_pattern in link_patterns:
+            
+        # Update both Joplin-style and wiki-style links
+        for link_fn in [joplin_link, wikilink]:
+            old_pattern = link_fn(note_id)
+            new_pattern = link_fn(new_note_id)
             cursor.execute(
                 "UPDATE notes SET body = REPLACE(body, ?, ?)",
                 (old_pattern, new_pattern)
