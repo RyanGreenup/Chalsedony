@@ -292,7 +292,7 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
         match item_data.type:
             case ItemType.NOTE:
                 new_id, ok = QInputDialog.getText(
-                    self, "Update ID", "Enter new ID:", text=item_data.id
+                        self, "Update ID", "Enter new ID (WARNING: Breaks Links in Joplin):", text=item_data.id
                 )
                 if ok and new_id:
                     self.update_note_id.emit(item_data.id, new_id)
