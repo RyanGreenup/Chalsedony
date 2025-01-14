@@ -277,13 +277,16 @@ class NoteModel(QObject):
         )
 
 
-        # Refactor this to be more DRY AI!
-        froms = [f")[:/{note_id}]", f"[[{note_id}]]"]]
-        tos = [f")[:/{new_note_id}]", f"[[{new_note_id}]]"]
-        for old, new in zip(froms, tos):
+        # Update all note links in other notes
+        link_patterns = [
+            (f")[:/{note_id}]", f")[:/{new_note_id}]"),
+            (f"[[{note_id}]]", f"[[{new_note_id}]]")
+        ]
+        
+        for old_pattern, new_pattern in link_patterns:
             cursor.execute(
-                f"UPDATE notes SET body = REPLACE(body, ?, ?)",
-                (old, new)
+                "UPDATE notes SET body = REPLACE(body, ?, ?)",
+                (old_pattern, new_pattern)
             )
 
         self.db_connection.commit()
