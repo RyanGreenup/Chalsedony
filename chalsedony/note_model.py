@@ -263,19 +263,29 @@ class NoteModel(QObject):
         cursor.execute("SELECT id FROM notes WHERE id = ?", (new_note_id,))
         if cursor.fetchone():
             raise ValueError(f"Note ID {new_note_id} is already in use")
-        
+
         # Update the note ID in the notes table
         cursor.execute(
             "UPDATE notes SET id = ? WHERE id = ?",
             (new_note_id, note_id)
         )
-        
+
         # Update any note_resources relationships
         cursor.execute(
             "UPDATE note_resources SET note_id = ? WHERE note_id = ?",
             (new_note_id, note_id)
         )
-        
+
+
+        # Refactor this to be more DRY AI!
+        froms = [f")[:/{note_id}]", f"[[{note_id}]]"]]
+        tos = [f")[:/{new_note_id}]", f"[[{new_note_id}]]"]
+        for old, new in zip(froms, tos):
+            cursor.execute(
+                f"UPDATE notes SET body = REPLACE(body, ?, ?)",
+                (old, new)
+            )
+
         self.db_connection.commit()
         self.refreshed.emit()
 
