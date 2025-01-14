@@ -258,6 +258,8 @@ class NoteModel(QObject):
             new_note_id: New ID to assign to the note
         """
         cursor = self.db_connection.cursor()
+
+        # First check  if the id is already in use AI!
         
         # Update the note ID in the notes table
         cursor.execute(
