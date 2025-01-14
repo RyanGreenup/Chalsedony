@@ -259,7 +259,10 @@ class NoteModel(QObject):
         """
         cursor = self.db_connection.cursor()
 
-        # First check  if the id is already in use AI!
+        # Check if the new ID is already in use
+        cursor.execute("SELECT id FROM notes WHERE id = ?", (new_note_id,))
+        if cursor.fetchone():
+            raise ValueError(f"Note ID {new_note_id} is already in use")
         
         # Update the note ID in the notes table
         cursor.execute(
