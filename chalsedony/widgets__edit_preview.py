@@ -369,8 +369,8 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         # Find all image markdown patterns
         import re
 
-        # Fix this pattern so it would match the following: ![img_2894.jpeg](:/c9c682d9881c4a3293e11d02dfdcf640)  AI!
-        image_pattern = re.compile(r'!\[.*?\]\(:/(\d+)\)')
+        # Match markdown image syntax with alphanumeric resource IDs
+        image_pattern = re.compile(r'!\[.*?\]\(:/([a-f0-9]{32}|[a-f0-9-]{36})\)')
 
         # Remove any existing images
         block = document.begin()
@@ -387,11 +387,11 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
 
         # Add new images
         for match in image_pattern.finditer(full_text):
-            # AI: Nothing gets printed
-            print(match)
+            print(f"Found image markdown: {match.group(0)}")
             resource_id = match.group(1)
+            print(f"Extracted resource ID: {resource_id}")
             if filepath := self.note_model.get_resource_path(resource_id):
-                print("Insert Image: ", filepath)
+                print(f"Found resource file: {filepath}")
                 if filepath.exists():
                     image = QImage(str(filepath))
                     if not image.isNull():
