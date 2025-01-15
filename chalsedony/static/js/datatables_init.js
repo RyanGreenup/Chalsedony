@@ -3,7 +3,7 @@ $(document).ready(function() {
     if (!$.fn.DataTable.isDataTable('.dataTablesContainer table')) {
         $('.dataTablesContainer table').DataTable({
             pageLength: 50, // Number of rows
-            ordering: false // Disable default sorting
+            ordering: true // Disable default sorting
         });
     }
 });
