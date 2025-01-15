@@ -162,39 +162,35 @@ class MainWindow(QMainWindow):
             self._nvim_handler.cleanup()
         self._nvim_handler = None
 
+    def set_style(self, dark_mode: bool) -> None:
+        """Set the application style to dark or light mode
+        
+        Args:
+            dark_mode: True for dark mode, False for light mode
+        """
+        if app := QApplication.instance():
+            if isinstance(app, QApplication):
+                self.statusBar().showMessage(
+                    "Changing style... (this may take a moment)"
+                )
+                palette = self.palettes["dark"] if dark_mode else self.palettes["light"]
+                QTimer.singleShot(
+                    0,
+                    lambda: (
+                        app.setPalette(palette),
+                        app.setProperty("darkMode", dark_mode),
+                        app.setStyleSheet(QSS_STYLE),  # type: ignore # Reapply stylesheet to trigger update
+                        self.style_changed.emit(dark_mode),  # type: ignore
+                        None,
+                    ),
+                )
+
     def toggle_style(self) -> None:
         """Toggle between light and dark mode"""
         if app := QApplication.instance():
             if isinstance(app, QApplication):
-                self.statusBar().showMessage(
-                    "Toggling style... (this may take a moment)"
-                )
-                if app.palette() == self.palettes["light"]:
-                    # Switch to dark mode asynchronously
-                    QTimer.singleShot(
-                        0,
-                        lambda: (
-                            app.setPalette(self.palettes["dark"]),
-                            app.setProperty("darkMode", True),
-                            app.setStyleSheet(QSS_STYLE),  # type: ignore # Reapply stylesheet to trigger update
-                            self.style_changed.emit(True),  # type: ignore
-                            None,
-                        ),
-                    )
-                else:
-                    # Switch to light mode asynchronously
-                    QTimer.singleShot(
-                        0,
-                        lambda: (
-                            app.setPalette(self.palettes["light"]),
-                            app.setProperty("darkMode", False),
-                            app.setStyleSheet(  # type: ignore
-                                QSS_STYLE
-                            ),  # Reapply stylesheet to trigger update
-                            self.style_changed.emit(False),  # type: ignore
-                            None,
-                        ),
-                    )
+                is_dark = app.palette() != self.palettes["dark"]
+                self.set_style(is_dark)
 
     @classmethod
     def get_menu_config(cls) -> MenuConfig:

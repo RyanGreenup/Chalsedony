@@ -46,21 +46,11 @@ def main(
     """
     app = QApplication(sys.argv)
 
-    # Determine dark mode setting
-    use_dark = dark_mode if dark_mode is not None else is_system_dark_mode()
-
-    # Set the appropriate palette and dark mode property
-    if use_dark:
-        app.setPalette(create_dark_palette())
-        app.setProperty("darkMode", True)
-    else:
-        app.setPalette(create_light_palette())
-        app.setProperty("darkMode", False)
-
     # Apply the modern style sheet
     app.setStyleSheet(QSS_STYLE)
 
     window = MainWindow(database, assets, initial_note, focus_journal)
+    window.set_style(dark_mode if dark_mode is not None else is_system_dark_mode())
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     window.show()
     sys.exit(app.exec())
