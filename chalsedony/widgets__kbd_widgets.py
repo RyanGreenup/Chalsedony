@@ -1,5 +1,6 @@
+from typing import Dict
 from PySide6.QtGui import QKeyEvent
-from PySide6.QtWidgets import QListWidget, QTreeWidget, QWidget
+from PySide6.QtWidgets import QListWidget, QTreeWidget, QTreeWidgetItem, QWidget
 from PySide6.QtCore import Qt
 
 
@@ -65,3 +66,40 @@ class KbdTreeWidget(QTreeWidget):
                 current.setExpanded(not current.isExpanded())
             case _:
                 super().keyPressEvent(event)
+
+class TreeWidgetWithCycle(KbdTreeWidget):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.cycle_states: Dict[QTreeWidgetItem, int] = {}  # Track cycle state for each item
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        current_item = self.currentItem()
+        if not current_item:
+            super().keyPressEvent(event)
+            return
+
+        if event.key() == Qt.Key.Key_Backslash:
+            # Cycle the folding state
+            state = self.cycle_states.get(current_item, 0)
+            if state == 0:
+                # Collapse the current item
+                current_item.setExpanded(False)
+            elif state == 1:
+                # Expand current item, collapse descendants
+                current_item.setExpanded(True)
+                self._set_descendants_expanded(current_item, False)
+            elif state == 2:
+                # Expand current item and all descendants
+                current_item.setExpanded(True)
+                self._set_descendants_expanded(current_item, True)
+            # Update the cycle state
+            self.cycle_states[current_item] = (state + 1) % 3  # Cycle through 0, 1, 2
+        else:
+            super().keyPressEvent(event)
+
+    def _set_descendants_expanded(self, item: QTreeWidgetItem, expanded: bool) -> None:
+        """Recursively set the expanded state of all descendants of the given item."""
+        for i in range(item.childCount()):
+            child = item.child(i)
+            child.setExpanded(expanded)
+            self._set_descendants_expanded(child, expanded)

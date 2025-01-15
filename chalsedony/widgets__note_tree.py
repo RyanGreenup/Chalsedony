@@ -2,7 +2,7 @@ from typing import Callable, Dict, List, Optional
 from pydantic import BaseModel
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QTreeWidget
-from widgets__kbd_widgets import KbdTreeWidget
+from widgets__kbd_widgets import TreeWidgetWithCycle
 
 from PySide6.QtGui import (
     QAction,
@@ -71,7 +71,7 @@ class TreeWithFilter(QTreeWidget):
             filter_items(self.topLevelItem(i))
 
 
-class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
+class NoteTree(StatefulTree, TreeWithFilter, TreeWidgetWithCycle):
     note_created = Signal(str)  # folder_id
     note_deleted = Signal(str)  # note_id
 
