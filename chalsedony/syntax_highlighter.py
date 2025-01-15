@@ -1,5 +1,5 @@
 import sys
-from typing import NamedTuple
+from typing import NamedTuple, final, override
 from PySide6.QtWidgets import QApplication, QMainWindow, QTextEdit
 from PySide6.QtGui import (
     QSyntaxHighlighter,
@@ -45,11 +45,15 @@ class MarkdownHighlighter(QSyntaxHighlighter):
             HighlightRule(QRegularExpression(r"\*(.+?)\*"), italicFormat)
         )
 
+    @override
     def highlightBlock(self, text: str) -> None:
         """Highlight a block of text using the defined rules."""
+        # Note that this is line by line
+        line_of_text = text
+        # Apply the highlighting rules
         for rule in self.highlightingRules:
             expression = rule.pattern
-            index = expression.globalMatch(text)
+            index = expression.globalMatch(line_of_text)
             while index.hasNext():
                 match = index.next()
                 start = match.capturedStart()
@@ -57,19 +61,20 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                 self.setFormat(start, length, rule.format)
 
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super(MainWindow, self).__init__()
-
-        self.setWindowTitle("Markdown Syntax Highlighter")
-
-        textEdit = QTextEdit()
-        self.setCentralWidget(textEdit)
-
-        self.highlighter = MarkdownHighlighter(textEdit.document())
-
-
 if __name__ == "__main__":
+
+    @final
+    class MainWindow(QMainWindow):
+        def __init__(self) -> None:
+            super(MainWindow, self).__init__()
+
+            self.setWindowTitle("Markdown Syntax Highlighter")
+
+            textEdit = QTextEdit()
+            self.setCentralWidget(textEdit)
+
+            self.highlighter = MarkdownHighlighter(textEdit.document())
+
     app = QApplication(sys.argv)
     window = MainWindow()
     window.resize(800, 600)
