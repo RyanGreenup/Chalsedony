@@ -33,6 +33,7 @@ from PySide6.QtCore import (
     QEasingCurve,
     QUrl,
     QMimeData,
+    QTimer,
 )
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from bs4 import BeautifulSoup, Tag
@@ -358,6 +359,26 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         # Connect text changes to update images
         self.textChanged.connect(self._update_inline_images)
 
+    def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        # Enable rich text paste handling
+        self.setAcceptRichText(True)
+        # Create a persistent temp directory for pasted images
+        self.temp_dir: str = tempfile.mkdtemp(prefix="chalsedony_")
+        self.highlighter: MarkdownHighlighter = MarkdownHighlighter(self.document())
+        self.note_model: NoteModel = note_model
+        
+        # Image cache
+        self._image_cache: dict[str, QImage] = {}
+        self._last_text_hash: str = ""
+        
+        # Connect text changes to update images with a debouncer
+        self._update_timer = QTimer()
+        self._update_timer.setInterval(500)  # 500ms debounce
+        self._update_timer.setSingleShot(True)
+        self._update_timer.timeout.connect(self._update_inline_images)
+        self.textChanged.connect(self._update_timer.start)
+
     def _update_inline_images(self) -> None:
         """Update inline images when text changes"""
         # Block signals to prevent recursion
@@ -367,46 +388,72 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
             cursor = self.textCursor()
             document = self.document()
 
-            # Get full text
+            # Get full text and check if it's changed
             full_text = self.toPlainText()
+            current_hash = hash(full_text)
+            if current_hash == self._last_text_hash:
+                return
+            self._last_text_hash = current_hash
 
             # Find all image markdown patterns
             import re
-
-            # Match markdown image syntax with alphanumeric resource IDs
             image_pattern = re.compile(r'!\[.*?\]\(:/([a-f0-9]{32}|[a-f0-9-]{36})\)')
 
-            # Remove any existing images
-            block = document.begin()
-            while block.isValid():
-                it = block.begin()
-                while not it.atEnd():
-                    fragment = it.fragment()
-                    if fragment.isValid() and fragment.charFormat().isImageFormat():
-                        cursor.setPosition(fragment.position())
-                        cursor.setPosition(fragment.position() + fragment.length(), QTextCursor.KeepAnchor)
-                        cursor.removeSelectedText()
-                    it += 1
-                block = block.next()
+            # Get all matches and positions
+            matches = list(image_pattern.finditer(full_text))
+            
+            # Remove only images that are no longer in the text
+            cursor.beginEditBlock()
+            try:
+                # First pass: Remove images that don't match current positions
+                block = document.begin()
+                while block.isValid():
+                    it = block.begin()
+                    while not it.atEnd():
+                        fragment = it.fragment()
+                        if fragment.isValid() and fragment.charFormat().isImageFormat():
+                            pos = fragment.position()
+                            # Check if this position matches any current image markdown
+                            if not any(m.start() <= pos < m.end() for m in matches):
+                                cursor.setPosition(pos)
+                                cursor.setPosition(pos + fragment.length(), QTextCursor.KeepAnchor)
+                                cursor.removeSelectedText()
+                        it += 1
+                    block = block.next()
 
-            # Add new images
-            for match in image_pattern.finditer(full_text):
-                print(f"Found image markdown: {match.group(0)}")
-                resource_id = match.group(1)
-                print(f"Extracted resource ID: {resource_id}")
-                if filepath := self.note_model.get_resource_path(resource_id):
-                    print(f"Found resource file: {filepath}")
-                    if filepath.exists():
-                        image = QImage(str(filepath))
-                        if not image.isNull():
-                            # Scale image to fit width while maintaining aspect ratio
-                            max_width = self.width() - 50  # Leave some margin
-                            if image.width() > max_width:
-                                image = image.scaledToWidth(max_width, Qt.TransformationMode.SmoothTransformation)
+                # Second pass: Insert/update images
+                for match in matches:
+                    resource_id = match.group(1)
+                    if resource_id in self._image_cache:
+                        # Use cached image
+                        image = self._image_cache[resource_id]
+                    else:
+                        # Load and cache new image
+                        if filepath := self.note_model.get_resource_path(resource_id):
+                            if filepath.exists():
+                                image = QImage(str(filepath))
+                                if not image.isNull():
+                                    # Scale image to fit width while maintaining aspect ratio
+                                    max_width = self.width() - 50  # Leave some margin
+                                    if image.width() > max_width:
+                                        image = image.scaledToWidth(max_width, Qt.TransformationMode.SmoothTransformation)
+                                    self._image_cache[resource_id] = image
+                                else:
+                                    continue
+                            else:
+                                continue
+                        else:
+                            continue
 
-                            # Insert image at correct position
-                            cursor.setPosition(match.start())
-                            cursor.insertImage(image)
+                    # Check if image already exists at this position
+                    cursor.setPosition(match.start())
+                    cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+                    if not cursor.charFormat().isImageFormat():
+                        # Insert new image
+                        cursor.setPosition(match.start())
+                        cursor.insertImage(image)
+            finally:
+                cursor.endEditBlock()
         finally:
             # Restore signal handling
             self.blockSignals(False)
