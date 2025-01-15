@@ -355,18 +355,6 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         self.temp_dir: str = tempfile.mkdtemp(prefix="chalsedony_")
         self.highlighter: MarkdownHighlighter = MarkdownHighlighter(self.document())
         self.note_model: NoteModel = note_model
-
-        # Connect text changes to update images
-        self.textChanged.connect(self._update_inline_images)
-
-    def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
-        # Enable rich text paste handling
-        self.setAcceptRichText(True)
-        # Create a persistent temp directory for pasted images
-        self.temp_dir: str = tempfile.mkdtemp(prefix="chalsedony_")
-        self.highlighter: MarkdownHighlighter = MarkdownHighlighter(self.document())
-        self.note_model: NoteModel = note_model
         
         # Image cache
         self._image_cache: dict[str, QImage] = {}
