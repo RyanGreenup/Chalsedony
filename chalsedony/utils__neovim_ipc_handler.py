@@ -296,7 +296,7 @@ class NeovimHandler(QObject):
         else:
             return Err(ValueError("Neovim Buffer is None"))
 
-    # In the editor the cursor consistently moves to the top of the document whenever neovim is edited, fix this AI!
+    # In the editor the cursor consistently moves to the top of the document whenever neovim is edited, fix this so the cursor stays in the same position no matter what AI!
     def sync_to_editor(self) -> Result[None, Exception]:
         """Sync Neovim content to the editor"""
         if (nvim_buffer := self.nvim_buffer) is None:
