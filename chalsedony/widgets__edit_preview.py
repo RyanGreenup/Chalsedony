@@ -7,12 +7,12 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QSplitter,
 )
-from PySide6.QtGui import QFont, QImage, QWheelEvent
+from PySide6.QtGui import QFont, QImage, QTextCursor, QWheelEvent
 from PySide6.QtCore import Signal
 import tempfile
 import os
 from syntax_highlighter import MarkdownHighlighter
-from note_model import NoteModel
+from note_model import NoteModel, ResourceType
 
 from typing import cast
 from widgets__textedit__vim_bindings import VimTextEdit
@@ -41,7 +41,6 @@ from utils__markdown_extensions import CustomWikiLinkExtension
 import pymdownx.superfences
 
 from db_api import IdTable, ItemType
-from note_model import ResourceType
 
 import subprocess
 import platform
@@ -86,7 +85,7 @@ class EditPreview(QWidget):
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
         self.splitter.setHandleWidth(15)
 
-        self.editor = MDTextEdit()
+        self.editor = MDTextEdit(note_model=self.note_model)
         self.preview = WebPreview(note_model=self.note_model)
 
         # The background should be transparent to match the UI
@@ -347,14 +346,15 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested: Signal = Signal(str)  # Filepath
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         # Enable rich text paste handling
         self.setAcceptRichText(True)
         # Create a persistent temp directory for pasted images
         self.temp_dir: str = tempfile.mkdtemp(prefix="chalsedony_")
         self.highlighter: MarkdownHighlighter = MarkdownHighlighter(self.document())
-        
+        self.note_model: NoteModel = note_model
+
         # Connect text changes to update images
         self.textChanged.connect(self._update_inline_images)
 
@@ -362,14 +362,16 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         """Update inline images when text changes"""
         cursor = self.textCursor()
         document = self.document()
-        
+
         # Get full text
         full_text = self.toPlainText()
-        
+
         # Find all image markdown patterns
         import re
+
+        # Fix this pattern so it would match the following: ![img_2894.jpeg](:/c9c682d9881c4a3293e11d02dfdcf640)  AI!
         image_pattern = re.compile(r'!\[.*?\]\(:/(\d+)\)')
-        
+
         # Remove any existing images
         block = document.begin()
         while block.isValid():
@@ -382,11 +384,14 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
                     cursor.removeSelectedText()
                 it += 1
             block = block.next()
-        
+
         # Add new images
         for match in image_pattern.finditer(full_text):
+            # AI: Nothing gets printed
+            print(match)
             resource_id = match.group(1)
             if filepath := self.note_model.get_resource_path(resource_id):
+                print("Insert Image: ", filepath)
                 if filepath.exists():
                     image = QImage(str(filepath))
                     if not image.isNull():
@@ -394,7 +399,7 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
                         max_width = self.width() - 50  # Leave some margin
                         if image.width() > max_width:
                             image = image.scaledToWidth(max_width, Qt.TransformationMode.SmoothTransformation)
-                        
+
                         # Insert image at correct position
                         cursor.setPosition(match.start())
                         cursor.insertImage(image)
