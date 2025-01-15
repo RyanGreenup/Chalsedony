@@ -164,11 +164,11 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                     start = match.capturedStart()
                     length = match.capturedLength()
                     self.setFormat(start, length, rule.format)
-                    # Debug print to verify matches
-                    if rule.level > 0:  # Only print for header rules
-                        print(
-                            f"Matched header level {rule.level} at {start}:{length} - '{text[start:start+length]}'"
-                        )
+                    # # Debug print to verify matches
+                    # if rule.level > 0:  # Only print for header rules
+                    #     print(
+                    #         f"Matched header level {rule.level} at {start}:{length} - '{text[start:start+length]}'"
+                    #     )
 
 
 if __name__ == "__main__":
