@@ -1,4 +1,5 @@
 import sys
+from typing import NamedTuple
 from PySide6.QtWidgets import QApplication, QMainWindow, QTextEdit
 from PySide6.QtGui import (
     QSyntaxHighlighter,
@@ -10,6 +11,11 @@ from PySide6.QtGui import (
 from PySide6.QtCore import QRegularExpression
 
 
+class HighlightRule(NamedTuple):
+    pattern: QRegularExpression
+    format: QTextCharFormat
+
+
 class MarkdownHighlighter(QSyntaxHighlighter):
     def __init__(self, document: QTextDocument):
         super(MarkdownHighlighter, self).__init__(document)
@@ -19,23 +25,25 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         headerFormat = QTextCharFormat()
         headerFormat.setForeground(QColor("blue"))
         headerFormat.setFontWeight(QFont.Weight.Bold)
-        # Create a named tuple to represent the pattern and format AI!
-        tuple = (QRegularExpression(r"^(#{1,6})\s.*"), headerFormat)
-        self.highlightingRules.append(tuple)
+        self.highlightingRules.append(
+            HighlightRule(QRegularExpression(r"^(#{1,6})\s.*"), headerFormat)
+        )
 
         # Bold
         boldFormat = QTextCharFormat()
         boldFormat.setForeground(QColor("darkRed"))
         boldFormat.setFontWeight(QFont.Weight.Bold)
         self.highlightingRules.append(
-            (QRegularExpression(r"\*\*(.+?)\*\*"), boldFormat)
+            HighlightRule(QRegularExpression(r"\*\*(.+?)\*\*"), boldFormat)
         )
 
         # Italic
         italicFormat = QTextCharFormat()
         italicFormat.setForeground(QColor("darkGreen"))
         italicFormat.setFontItalic(True)
-        self.highlightingRules.append((QRegularExpression(r"\*(.+?)\*"), italicFormat))
+        self.highlightingRules.append(
+            HighlightRule(QRegularExpression(r"\*(.+?)\*"), italicFormat)
+        )
 
     def highlightBlock(self, text):
         for pattern, format in self.highlightingRules:
