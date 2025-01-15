@@ -45,15 +45,17 @@ class MarkdownHighlighter(QSyntaxHighlighter):
             HighlightRule(QRegularExpression(r"\*(.+?)\*"), italicFormat)
         )
 
-    # basedpyright: Method "highlightBlock" is not marked as override but is overriding a method in class "QSyntaxHighlighter" [reportImplicitOverride] def highlightBlock(self, text: str): AI!
-        for pattern, format in self.highlightingRules:
+    def highlightBlock(self, text: str) -> None:
+        """Highlight a block of text using the defined rules."""
+        for rule in self.highlightingRules:
+            expression = rule.pattern
             expression = pattern
             index = expression.globalMatch(text)
             while index.hasNext():
                 match = index.next()
                 start = match.capturedStart()
                 length = match.capturedLength()
-                self.setFormat(start, length, format)
+                self.setFormat(start, length, rule.format)
 
 
 class MainWindow(QMainWindow):
