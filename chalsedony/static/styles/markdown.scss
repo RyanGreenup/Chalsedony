@@ -108,10 +108,10 @@
   }
 
   pre {
-    padding: 16px;
+    padding: 8px;
     overflow: auto;
     line-height: 1.45;
-    border-radius: 15px;
+    border-radius: 5px;
     border: 1px solid #e1e4e8;
   }
 
@@ -144,6 +144,38 @@
     border-radius: 8px;
     padding: 16px;
   }
+
+
+# Resolve this error - **`color.scale`:** This function adjusts the lightness of `$warning-border-color`. The `$lightness: -16.2420382166%` parameter is based on the suggestion provided in the deprecation warning to achieve a similar effect as `darken($warning-border-color, 10%)`. AI!
+$warning-background: #fff3cd;  // Light yellow background
+$warning-border-color: #ffeb3b; // Yellow border color
+$warning-text-color: #8a6d3b;   // Darker text for contrast
+
+details.warning {
+    margin-bottom: 1em;
+    padding: 0.5em 1em;
+    background-color: $warning-background;
+    border: 1px solid $warning-border-color;
+    border-radius: 4px;
+
+    summary {
+        cursor: pointer;
+        font-weight: bold;
+        color: $warning-text-color;
+        outline: none; // Remove default focus outline
+
+        &:focus-visible { // Add a custom focus indicator
+            outline: 2px solid darken($warning-border-color, 10%);
+        }
+    }
+
+    p {
+        margin-top: 0.5em;
+        color: $warning-text-color;
+    }
+}
+
+
 
 
 }
