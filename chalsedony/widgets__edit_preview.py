@@ -419,13 +419,31 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
                         # Load and cache new image
                         if filepath := self.note_model.get_resource_path(resource_id):
                             if filepath.exists():
-                                image = QImage(str(filepath))
-                                if not image.isNull():
+                                from PIL import Image
+                                from PIL.ImageQt import ImageQt
+                                
+                                # Load image with PIL to handle orientation
+                                pil_img = Image.open(str(filepath))
+                                # Rotate based on EXIF orientation
+                                if hasattr(pil_img, '_getexif'):
+                                    exif = pil_img._getexif()
+                                    if exif:
+                                        orientation = exif.get(0x0112)
+                                        if orientation == 3:
+                                            pil_img = pil_img.rotate(180, expand=True)
+                                        elif orientation == 6:
+                                            pil_img = pil_img.rotate(270, expand=True)
+                                        elif orientation == 8:
+                                            pil_img = pil_img.rotate(90, expand=True)
+                                
+                                # Convert to QImage
+                                qimage = ImageQt(pil_img)
+                                if not qimage.isNull():
                                     # Scale image to fit width while maintaining aspect ratio
                                     max_width = self.width() - 50  # Leave some margin
-                                    if image.width() > max_width:
-                                        image = image.scaledToWidth(max_width, Qt.TransformationMode.SmoothTransformation)
-                                    self._image_cache[resource_id] = image
+                                    if qimage.width() > max_width:
+                                        qimage = qimage.scaledToWidth(max_width, Qt.TransformationMode.SmoothTransformation)
+                                    self._image_cache[resource_id] = qimage
                                 else:
                                     continue
                             else:
