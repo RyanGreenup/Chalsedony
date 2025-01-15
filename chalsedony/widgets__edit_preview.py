@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable
+from typing import Callable, final, override
 from PySide6.QtWidgets import (
     QApplication,
     QTextEdit,
@@ -11,6 +11,8 @@ from PySide6.QtGui import QFont, QImage, QWheelEvent
 from PySide6.QtCore import Signal
 import tempfile
 import os
+from syntax_highlighter import MarkdownHighlighter
+from note_model import NoteModel
 
 from typing import cast
 from widgets__textedit__vim_bindings import VimTextEdit
@@ -39,13 +41,12 @@ from utils__markdown_extensions import CustomWikiLinkExtension
 import pymdownx.superfences
 
 from db_api import IdTable, ItemType
-from note_model import NoteModel, ResourceType
+from note_model import ResourceType
 
 import subprocess
 import platform
-import static_resources_rc  # pyright: ignore # noqa
-import katex_resources_rc  # pyright: ignore   # noqa
-import katex_fonts_rc  # pyright: ignore # noqa
+import katex_resources_rc  # pyright: ignore [reportUnusedImport]  # noqa
+import katex_fonts_rc  # pyright: ignore [reportUnusedImport] # noqa
 
 
 # Register custom schemes for the Web Engine Preview
@@ -66,6 +67,7 @@ register_scheme("note")
 register_scheme("qrc")
 
 
+@final
 class EditPreview(QWidget):
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
 
@@ -92,8 +94,10 @@ class EditPreview(QWidget):
         self.preview.page().setBackgroundColor(Qt.GlobalColor.transparent)
 
         # Connect the edit widget to update preview and scroll
-        self.editor.textChanged.connect(self.update_preview_local)
-        self.editor.verticalScrollBar().valueChanged.connect(self._sync_preview_scroll)
+        _ = self.editor.textChanged.connect(self.update_preview_local)
+        _ = self.editor.verticalScrollBar().valueChanged.connect(
+            self._sync_preview_scroll
+        )
 
         self.splitter.addWidget(self.editor)
         self.splitter.addWidget(self.preview)
@@ -114,7 +118,7 @@ class EditPreview(QWidget):
         picked up the static css asset, then it will be included.
 
         """
-        css_links = []
+        css_links: list[str] = []
         it = QDirIterator(
             ":/css", QDir.Filter.Files, QDirIterator.IteratorFlag.Subdirectories
         )
@@ -187,13 +191,13 @@ class EditPreview(QWidget):
         scroll_fraction = self.editor.verticalScrollFraction()
 
         # Convert markdown to HTML
-        extension_configs = {
+        extension_configs = {  # pyright: ignore [reportUnknownVariableType]
             "pymdownx.superfences": {
                 "custom_fences": [
                     {
                         "name": "mermaid",
                         "class": "mermaid",
-                        "format": pymdownx.superfences.fence_div_format,
+                        "format": pymdownx.superfences.fence_div_format,  # pyright: ignore [reportUnknownMemberType]
                     }
                 ]
             }
@@ -213,7 +217,7 @@ class EditPreview(QWidget):
                 "pymdownx.highlight",
                 CustomWikiLinkExtension(note_model=self.note_model, base_url="note://"),
             ],
-            extension_configs=extension_configs,
+            extension_configs=extension_configs,  # pyright: ignore [reportUnknownArgumentType]
         )
 
         html = md.convert(self.editor.toPlainText())
@@ -228,11 +232,13 @@ class EditPreview(QWidget):
 
         # Disconnect any previous connections to avoid multiple handlers
         try:
-            self.preview.page().loadFinished.disconnect()
+            if not self.preview.page().loadFinished.disconnect():
+                print("Failed to disconnect loadFinished signal")
         except Exception:
             pass
 
-        self.preview.page().loadFinished.connect(restore_scroll)
+        if not self.preview.page().loadFinished.connect(restore_scroll):
+            print("Failed to connect loadFinished signal")
         self.preview.setHtml(html, QUrl("note://"))
 
     def _get_editor_width(self) -> float:
@@ -302,9 +308,10 @@ class EditPreview(QWidget):
 class MyTextEdit(QTextEdit):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.base_font_size = self.font().pointSize()
-        self.current_scale = 1.0
+        self.base_font_size: int = self.font().pointSize()
+        self.current_scale: float = 1.0
 
+    @override
     def wheelEvent(self, e: QWheelEvent) -> None:
         """Handle mouse wheel events for zooming when Ctrl is pressed"""
         event = e
@@ -338,19 +345,25 @@ class MyTextEdit(QTextEdit):
 
 class MDTextEdit(MyTextEdit, VimTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
-    imageUploadRequested = Signal(str)  # Filepath
+    imageUploadRequested: Signal = Signal(str)  # Filepath
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         # Enable rich text paste handling
         self.setAcceptRichText(True)
         # Create a persistent temp directory for pasted images
-        self.temp_dir = tempfile.mkdtemp(prefix="chalsedony_")
+        self.temp_dir: str = tempfile.mkdtemp(prefix="chalsedony_")
+        self.highlighter: MarkdownHighlighter = MarkdownHighlighter(self.document())
 
+    # This is needed to paste HTML but copy plain text
+    @override
     def createMimeDataFromSelection(self) -> QMimeData:
-        """Override to ensure copied text is plain text only"""
+        """Override to ensure copied text is plain text only while preserving newlines"""
         mime_data = QMimeData()
-        mime_data.setText(self.textCursor().selectedText())
+        cursor = self.textCursor()
+        # Get the full selected text including formatting
+        text = cursor.selection().toPlainText()
+        mime_data.setText(text)
         return mime_data
 
     def insert_text_at_cursor(self, text: str, copy: bool = False) -> None:
@@ -370,16 +383,17 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         cursor.setPosition(pos + len(text))
         self.setTextCursor(cursor)
 
+    @override
     def insertFromMimeData(self, source: QMimeData) -> None:
         """Handle paste events and transform HTML content using markdownify"""
         if source.hasImage():
-            image = QImage(source.imageData())
+            image = QImage(source.imageData())  # pyright: ignore [reportAny]
             if not image.isNull():
                 # Save image to temp file
                 temp_path = os.path.join(self.temp_dir, f"pasted_image_{id(image)}.png")
-                image.save(temp_path)
-                # Emit signal for upload
-                self.imageUploadRequested.emit(temp_path)
+                if image.save(temp_path):
+                    # Emit signal for upload
+                    self.imageUploadRequested.emit(temp_path)
                 return
 
         elif source.hasHtml():
@@ -424,8 +438,9 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
 
     def __init__(self, note_model: NoteModel) -> None:
         super().__init__()
-        self.note_model = note_model
+        self.note_model: NoteModel = note_model
 
+    @override
     def interceptRequest(self, info: QWebEngineUrlRequestInfo) -> None:
         url = info.requestUrl()
 
@@ -469,17 +484,15 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                                 )
                             info.redirect(url)
                             return
-                    case _:
-                        info.block(True)
 
 
 class WebPreview(QWebEngineView):
-    note_selected = Signal(TreeItemData)  # TreeItemData: Note ID and type
+    note_selected: Signal = Signal(TreeItemData)  # TreeItemData: Note ID and type
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setPage(NoteLinkPage(parent=self, note_model=note_model))
-        self.note_model = note_model
+        self.note_model: NoteModel = note_model
         self.setZoomFactor(1.0)  # Initialize zoom factor
 
         # Connect to application font changes
