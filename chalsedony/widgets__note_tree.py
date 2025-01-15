@@ -71,6 +71,7 @@ class TreeWithFilter(QTreeWidget):
             filter_items(self.topLevelItem(i))
 
 
+# When this widget is focused, the main window can't accept keybindings AI!
 class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
     note_created = Signal(str)  # folder_id
     note_deleted = Signal(str)  # note_id
