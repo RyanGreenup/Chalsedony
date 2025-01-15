@@ -354,6 +354,50 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         # Create a persistent temp directory for pasted images
         self.temp_dir: str = tempfile.mkdtemp(prefix="chalsedony_")
         self.highlighter: MarkdownHighlighter = MarkdownHighlighter(self.document())
+        
+        # Connect text changes to update images
+        self.textChanged.connect(self._update_inline_images)
+
+    def _update_inline_images(self) -> None:
+        """Update inline images when text changes"""
+        cursor = self.textCursor()
+        document = self.document()
+        
+        # Get full text
+        full_text = self.toPlainText()
+        
+        # Find all image markdown patterns
+        import re
+        image_pattern = re.compile(r'!\[.*?\]\(:/(\d+)\)')
+        
+        # Remove any existing images
+        block = document.begin()
+        while block.isValid():
+            it = block.begin()
+            while not it.atEnd():
+                fragment = it.fragment()
+                if fragment.isValid() and fragment.charFormat().isImageFormat():
+                    cursor.setPosition(fragment.position())
+                    cursor.setPosition(fragment.position() + fragment.length(), QTextCursor.KeepAnchor)
+                    cursor.removeSelectedText()
+                it += 1
+            block = block.next()
+        
+        # Add new images
+        for match in image_pattern.finditer(full_text):
+            resource_id = match.group(1)
+            if filepath := self.note_model.get_resource_path(resource_id):
+                if filepath.exists():
+                    image = QImage(str(filepath))
+                    if not image.isNull():
+                        # Scale image to fit width while maintaining aspect ratio
+                        max_width = self.width() - 50  # Leave some margin
+                        if image.width() > max_width:
+                            image = image.scaledToWidth(max_width, Qt.TransformationMode.SmoothTransformation)
+                        
+                        # Insert image at correct position
+                        cursor.setPosition(match.start())
+                        cursor.insertImage(image)
 
     # This is needed to paste HTML but copy plain text
     @override
