@@ -155,6 +155,10 @@ class NeovimHandler(QObject):
 
             # Must check that it's a valid widget
             if (e := self.editor) is not None:
+                # First sync the text from the editor to Neovim
+                # Otherwise the buffer won't correspond to the editor
+                self.sync_to_nvim(e)
+                # Now connect the signals
                 e.textChanged.connect(self.on_editor_changed)
                 return Ok(None)
             else:
