@@ -145,7 +145,18 @@
     padding: 16px;
   }
 
+  /*
+  These do the details blocks:
 
+  /// details | Some summary
+      type: danger
+
+  Some content
+  ///
+  */
+
+
+# Extend the details classes to ensure they include: Note, abstract, info, tip, success, question, warning, failure, danger, bug, example, quote  AI!
 $warning-background: #fff3cd;  // Light yellow background
 $warning-border-color: #ffeb3b; // Yellow border color
 $warning-text-color: #8a6d3b;   // Darker text for contrast
