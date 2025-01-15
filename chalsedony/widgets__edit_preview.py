@@ -212,9 +212,13 @@ class EditPreview(QWidget):
                 # Allow md in html
                 "md_in_html",
                 "pymdownx.blocks.admonition",
+                "pymdownx.blocks.details",
                 "pymdownx.blocks.tab",
-                "pymdownx.superfences",
                 "pymdownx.highlight",
+                "attr_list",
+                "pymdownx.superfences",
+                'pymdownx.blocks.caption',
+                'pymdownx.progressbar',
                 CustomWikiLinkExtension(note_model=self.note_model, base_url="note://"),
             ],
             extension_configs=extension_configs,  # pyright: ignore [reportUnknownArgumentType]
