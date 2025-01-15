@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
 from typing import Optional
 import typer
 import signal
-from palettes import create_dark_palette, create_light_palette
 from main_window import MainWindow
 
 

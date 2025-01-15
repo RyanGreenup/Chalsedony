@@ -164,7 +164,7 @@ class MainWindow(QMainWindow):
 
     def set_style(self, dark_mode: bool) -> None:
         """Set the application style to dark or light mode
-        
+
         Args:
             dark_mode: True for dark mode, False for light mode
         """

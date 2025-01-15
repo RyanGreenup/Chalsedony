@@ -1,5 +1,5 @@
 import sys
-from typing import NamedTuple, final, override, Optional
+from typing import NamedTuple, final, override
 from PySide6.QtWidgets import QApplication, QMainWindow, QTextEdit
 from PySide6.QtGui import (
     QSyntaxHighlighter,
@@ -10,7 +10,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtCore import QRegularExpression
 
-BLUE =  "#89b4fa"
+BLUE = "#89b4fa"
 
 
 class HighlightRule(NamedTuple):
@@ -74,10 +74,13 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.inlineMathFormat = QTextCharFormat()
         self.inlineMathFormat.setForeground(QColor("darkBlue"))
         self.inlineMathFormat.setFontFamily("Fira Code")
-        self.inlineMathFormat.setBackground(QColor( "#9ca0b0"))
+        self.inlineMathFormat.setBackground(QColor("#9ca0b0"))
         # Inline math (but not LaTeX block fences)
         self.highlightingRules.append(
-            HighlightRule(QRegularExpression(r"(?<!\$)\$([^$\n]+?)\$(?!\$)"), self.inlineMathFormat)
+            HighlightRule(
+                QRegularExpression(r"(?<!\$)\$([^$\n]+?)\$(?!\$)"),
+                self.inlineMathFormat,
+            )
         )
 
         # Inline code format
@@ -87,7 +90,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.inlineCodeFormat.setBackground(QColor("#9ca0b0"))
         # Inline code (but not code fences)
         self.highlightingRules.append(
-            HighlightRule(QRegularExpression(r"(?<!`)`([^`\n]+?)`(?!`)"), self.inlineCodeFormat)
+            HighlightRule(
+                QRegularExpression(r"(?<!`)`([^`\n]+?)`(?!`)"), self.inlineCodeFormat
+            )
         )
 
         # Bold

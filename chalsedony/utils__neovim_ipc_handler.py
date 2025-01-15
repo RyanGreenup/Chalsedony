@@ -304,20 +304,20 @@ class NeovimHandler(QObject):
             return Err(EditorError("Editor is None"))
         try:
             self.is_syncing = True
-            
+
             # Get current cursor position before changing text
             cursor = editor.textCursor()
             old_position = cursor.position()
-            
+
             if nvim_text := nvim_buffer[:]:
                 nvim_text = "\n".join(nvim_text)
                 editor.setPlainText(nvim_text)
-                
+
                 # Restore cursor position after text change
                 new_position = min(old_position, len(nvim_text))
                 cursor.setPosition(new_position)
                 editor.setTextCursor(cursor)
-                
+
             self.is_syncing = False
             return Ok(None)
         except Exception as e:
@@ -375,10 +375,10 @@ class NeovimHandler(QObject):
                     # Get current cursor position
                     cursor = editor.textCursor()
                     old_position = cursor.position()
-                    
+
                     if nvim_text != "":
                         editor.setPlainText(nvim_text)
-                        
+
                         # Restore cursor position
                         new_position = min(old_position, len(nvim_text))
                         cursor.setPosition(new_position)

@@ -67,11 +67,14 @@ class KbdTreeWidget(QTreeWidget):
             case _:
                 super().keyPressEvent(event)
 
+
 # Allow the user to press Z to scroll the selection to the top AI!
 class TreeWidgetWithCycle(KbdTreeWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.cycle_states: Dict[QTreeWidgetItem, int] = {}  # Track cycle state for each item
+        self.cycle_states: Dict[
+            QTreeWidgetItem, int
+        ] = {}  # Track cycle state for each item
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         current_item = self.currentItem()
