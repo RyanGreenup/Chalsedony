@@ -10,6 +10,8 @@ from PySide6.QtGui import (
 )
 from PySide6.QtCore import QRegularExpression
 
+BLUE =  "#89b4fa"
+
 
 class HighlightRule(NamedTuple):
     pattern: QRegularExpression
@@ -102,6 +104,20 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         italicFormat.setFontItalic(True)
         self.highlightingRules.append(
             HighlightRule(QRegularExpression(r"\*(.+?)\*"), italicFormat)
+        )
+
+        # Links
+        linkFormat = QTextCharFormat()
+        linkFormat.setForeground(QColor(BLUE))
+        linkFormat.setFontWeight(QFont.Weight.Bold)
+        linkFormat.setFontUnderline(True)
+        # Inline links: [text](url)
+        self.highlightingRules.append(
+            HighlightRule(QRegularExpression(r"\[([^\]]+)\]\([^\)]+\)"), linkFormat)
+        )
+        # Reference-style links: [text][ref]
+        self.highlightingRules.append(
+            HighlightRule(QRegularExpression(r"\[([^\]]+)\]\[[^\]]+\]"), linkFormat)
         )
 
     @override
