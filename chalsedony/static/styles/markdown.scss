@@ -146,7 +146,6 @@
   }
 
 
-# Resolve this error - **`color.scale`:** This function adjusts the lightness of `$warning-border-color`. The `$lightness: -16.2420382166%` parameter is based on the suggestion provided in the deprecation warning to achieve a similar effect as `darken($warning-border-color, 10%)`. AI!
 $warning-background: #fff3cd;  // Light yellow background
 $warning-border-color: #ffeb3b; // Yellow border color
 $warning-text-color: #8a6d3b;   // Darker text for contrast
@@ -165,7 +164,7 @@ details.warning {
         outline: none; // Remove default focus outline
 
         &:focus-visible { // Add a custom focus indicator
-            outline: 2px solid darken($warning-border-color, 10%);
+            outline: 2px solid scale-color($warning-border-color, $lightness: -16.2420382166%);
         }
     }
 
