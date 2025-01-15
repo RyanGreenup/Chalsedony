@@ -108,6 +108,9 @@ class EditPreview(QWidget):
         # Set initial sizes after adding to layout
         self.splitter.setSizes([300, 300])
 
+        if app := QApplication.instance():
+            self.apply_dark_theme(app.property("darkMode") or False)  # Don't Flash at Night
+
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
 
