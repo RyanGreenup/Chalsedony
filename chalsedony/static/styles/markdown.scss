@@ -163,6 +163,7 @@ details.warning {
         color: $warning-text-color;
         outline: none; // Remove default focus outline
 
+        # Deprecation Warning [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0. Use color.scale instead. AI!
         &:focus-visible { // Add a custom focus indicator
             outline: 2px solid scale-color($warning-border-color, $lightness: -16.2420382166%);
         }
