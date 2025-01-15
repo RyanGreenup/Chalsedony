@@ -81,8 +81,11 @@ class NoteTree(StatefulTree, TreeWithFilter, KbdTreeWidget):
             if item := self.get_current_item_data():
                 self.note_selected.emit(item)
                 return
-        # Let other key events propagate to parent widgets
-        event.ignore()
+        # Only handle navigation keys, let others propagate
+        if event.key() in (Qt.Key.Key_Up, Qt.Key.Key_Down, Qt.Key.Key_Left, Qt.Key.Key_Right):
+            super().keyPressEvent(event)
+        else:
+            event.ignore()
 
     # This is used to select a note even when follow_mode is disabled, otherwise notes update when moving through the tree
     update_note_id = Signal(str, str)  # note_id, new_note_id
