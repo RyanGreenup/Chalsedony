@@ -174,7 +174,61 @@ details.warning {
     }
 }
 
-# Write similar classes for tip, info etc. AI!
+$tip-background: #e6f4ff;  // Light blue background
+$tip-border-color: #91d5ff; // Blue border color
+$tip-text-color: #096dd9;   // Darker text for contrast
+
+$info-background: #f6ffed;  // Light green background
+$info-border-color: #b7eb8f; // Green border color
+$info-text-color: #389e0d;   // Darker text for contrast
+
+$danger-background: #fff1f0;  // Light red background
+$danger-border-color: #ffa39e; // Red border color
+$danger-text-color: #cf1322;   // Darker text for contrast
+
+$success-background: #f6ffed;  // Light green background
+$success-border-color: #b7eb8f; // Green border color
+$success-text-color: #389e0d;   // Darker text for contrast
+
+@mixin note-box($background, $border-color, $text-color) {
+    margin-bottom: 1em;
+    padding: 0.5em 1em;
+    background-color: $background;
+    border: 1px solid $border-color;
+    border-radius: 4px;
+
+    summary {
+        cursor: pointer;
+        font-weight: bold;
+        color: $text-color;
+        outline: none;
+
+        &:focus-visible {
+            outline: 2px solid scale-color($border-color, $lightness: -16.2420382166%);
+        }
+    }
+
+    p {
+        margin-top: 0.5em;
+        color: $text-color;
+    }
+}
+
+details.tip {
+    @include note-box($tip-background, $tip-border-color, $tip-text-color);
+}
+
+details.info {
+    @include note-box($info-background, $info-border-color, $info-text-color);
+}
+
+details.danger {
+    @include note-box($danger-background, $danger-border-color, $danger-text-color);
+}
+
+details.success {
+    @include note-box($success-background, $success-border-color, $success-text-color);
+}
 
 
 
