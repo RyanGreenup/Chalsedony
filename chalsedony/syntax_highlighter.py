@@ -49,7 +49,6 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         """Highlight a block of text using the defined rules."""
         for rule in self.highlightingRules:
             expression = rule.pattern
-            expression = pattern
             index = expression.globalMatch(text)
             while index.hasNext():
                 match = index.next()
