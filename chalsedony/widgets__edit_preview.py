@@ -179,8 +179,8 @@ class EditPreview(QWidget):
             {html}
             </div>
             <script src="qrc:/katex/katex.min.js"></script>
-            <script src="qrc:js/mkdocs_katex_auto_render.js"></script>
             <script src="qrc:/katex/config.js"></script>
+            <script src="qrc:/katex/contrib/auto-render.min.js"></script>
             <script src="qrc:/js/pdfjs.js"></script>
             <script src="qrc:/js/my_pdfjs_init.js"></script>
             <script src="qrc:/js/asciinema-player.min.js"></script>
@@ -189,7 +189,8 @@ class EditPreview(QWidget):
         </body>
         </html>
         """
-        # <script src="qrc:/katex/contrib/auto-render.min.js"></script>
+        # <script src="qrc:js/mkdocs_katex_auto_render.js"></script>
+        #
 
     def update_preview_local(self) -> None:
         """
@@ -229,8 +230,8 @@ class EditPreview(QWidget):
                 "pymdownx.extra",  # Replaces md_in_html?
                 "pymdownx.blocks.html",
                 "pymdownx.magiclink",
-                "pymdownx.escapeall",
-                "pymdownx.arithmatex",
+                # "pymdownx.escapeall",  # Breaks math without arithmatex extension # TODO
+                # "pymdownx.arithmatex",
                 "pymdownx.blocks.admonition",
                 "pymdownx.blocks.details",
                 "pymdownx.blocks.tab",
