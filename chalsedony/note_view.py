@@ -59,6 +59,9 @@ class NoteView(QWidget):
 
     note_content_changed = Signal(int, str)  # (note_id, content)
     status_bar_message = Signal(str)  # Signal to send messages to status bar
+    current_note_changed = Signal(
+        str
+    )  # Signal to notify current note change (for tab title), contains the id
 
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
     DEFAULT_SIDEBAR_WIDTH = 200  # Default sidebar width
@@ -75,7 +78,7 @@ class NoteView(QWidget):
         super().__init__(parent)
         self.model = model
         self.follow_mode = follow_mode
-        self.current_note_id: str | None = None
+        self._current_note_id: str | None = None
         self._editor_maximized = False  # Track editor maximization state
         self._left_animation: QPropertyAnimation | None = None
         self._right_animation: QPropertyAnimation | None = None
@@ -96,6 +99,15 @@ class NoteView(QWidget):
                 else:
                     self.send_status_message(f"Note '{initial_note}' not found")
         self.focus_note_tree()
+
+    @property
+    def current_note_id(self) -> str | None:
+        return self._current_note_id
+
+    @current_note_id.setter
+    def current_note_id(self, note_id: str | None) -> None:
+        self._current_note_id = note_id
+        self.current_note_changed.emit(note_id)
 
     def _setup_history(self) -> None:
         self.history: List[TreeItemData] = []

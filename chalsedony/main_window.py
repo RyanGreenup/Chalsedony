@@ -704,7 +704,12 @@ class MainWindow(QMainWindow):
             tree_data=tree_data,
         )
 
-        tab_index = self.tab_widget.addTab(view, "New Note")
+        title = "Unknown"
+        if view.current_note_id:
+            if note_meta := self.note_model.get_note_meta_by_id(view.current_note_id):
+                title = note_meta.title
+        view.current_note_id
+        tab_index = self.tab_widget.addTab(view, title)
         self.tab_widget.setCurrentIndex(tab_index)
         view.status_bar_message.connect(self.set_status_message)
         return view
@@ -867,9 +872,6 @@ class MainWindow(QMainWindow):
                         f"Switched to tab: {self.tab_widget.tabText(index)}"
                     )
 
-                    # Reconnect signals for the new view
-                    view.status_bar_message.connect(self.set_status_message)
-
                     # Update neovim handler connection
                     if self._nvim_handler:
                         self._nvim_handler.connect_editor(
@@ -879,8 +881,36 @@ class MainWindow(QMainWindow):
                     if (note_id := view.current_note_id) is not None:
                         view._handle_note_selection_from_id(note_id)
 
+                    # Disconnect the old signals just in case
+                    self._disconnect_signals()
+
+                    # Connect the signals for the new tab
+                    self._connect_signals()
+
     def _connect_signals(self) -> None:
         """Connect signals from child widgets"""
         # From Widgets
         if view := self.current_view:
             view.status_bar_message.connect(self.set_status_message)
+            view.current_note_changed.connect(self._on_note_change)
+
+    def _disconnect_signals(self) -> None:
+        if view := self.current_view:
+            view.status_bar_message.disconnect(self.set_status_message)
+            view.current_note_changed.disconnect(self._on_note_change)
+
+    def _on_note_change(self, note_id: str) -> None:
+        """Handle note changes by updating the tab title"""
+        if view := self.current_view:
+            _ = view  # Only need to know that we can get it. -- Avoid odd state
+            if note_meta := self.note_model.get_note_meta_by_id(note_id):
+                title = (
+                    note_meta.title[:20] + "..."
+                    if len(note_meta.title) > 20
+                    else note_meta.title
+                )
+                self.tab_widget.setTabText(self.tab_widget.currentIndex(), title)
+            else:
+                self.set_status_message("Note not found")
+        else:
+            self.set_status_message("No current view")
