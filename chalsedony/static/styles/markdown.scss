@@ -156,7 +156,6 @@
   */
 
 
-// Improve this style of the details admonitions to have the fold in the top right and an opaque strip on the top that is shown when collapsed, like the material mkdocs theme AI!
 $note-background: #f8f9fa;  // Light gray background
 $note-border-color: #dee2e6; // Gray border color
 $note-text-color: #212529;   // Dark text for contrast
@@ -296,7 +295,7 @@ details.example {
 details.quote {
     @include note-box($quote-background, $quote-border-color, $quote-text-color);
     font-style: italic;
-    
+
     &::before {
         content: "“";
         font-size: 2em;
@@ -304,7 +303,7 @@ details.quote {
         margin-right: 0.1em;
         vertical-align: -0.4em;
     }
-    
+
     &::after {
         content: "”";
         font-size: 2em;
@@ -320,4 +319,68 @@ details.quote {
 }
 
 
+
+/* Progress Bars */
+.progress-label {
+  position: absolute;
+  text-align: center;
+  font-weight: 700;
+  width: 100%;
+  margin: 0;
+  line-height: 1.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 1.2rem;
+  float: left;
+  background-color: #2979ff;
+}
+
+.progress {
+  display: block;
+  width: 100%;
+  margin: 0.5rem 0;
+  height: 1.2rem;
+  background-color: #eeeeee;
+  position: relative;
+}
+
+.progress.thin {
+  margin-top: 0.9rem;
+  height: 0.4rem;
+}
+
+.progress.thin .progress-label {
+  margin-top: -0.4rem;
+}
+
+.progress.thin .progress-bar {
+  height: 0.4rem;
+}
+
+.progress-100plus .progress-bar {
+  background-color: #00e676;
+}
+
+.progress-80plus .progress-bar {
+  background-color: #fbc02d;
+}
+
+.progress-60plus .progress-bar {
+  background-color: #ff9100;
+}
+
+.progress-40plus .progress-bar {
+  background-color: #ff5252;
+}
+
+.progress-20plus .progress-bar {
+  background-color: #ff1744;
+}
+
+.progress-0plus .progress-bar {
+  background-color: #f50057;
+}
 

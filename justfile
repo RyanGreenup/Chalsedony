@@ -15,6 +15,10 @@ run:
 
 
 embed-assets:
+    # todo finish sas
+    npx sass chalsedony/static/styles/markdown.scss chalsedony/static/css/markdown.css
+
+    # QRC
     pyside6-rcc chalsedony/static/static.qrc                       -o chalsedony/static_resources_rc.py
     pyside6-rcc chalsedony/static/katex/dist/katex.qrc             -o chalsedony/katex_resources_rc.py
     # Katex looks under /fonts first, then looks relative

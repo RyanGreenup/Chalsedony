@@ -129,6 +129,8 @@ class EditPreview(QWidget):
         )
         while it.hasNext():
             file_path = it.next()
+            if "vector" in file_path:
+                continue
             css_links.append(f'<link rel="stylesheet" href="qrc{file_path}">')
 
         # If needed to debug
@@ -205,7 +207,13 @@ class EditPreview(QWidget):
                         "format": pymdownx.superfences.fence_div_format,  # pyright: ignore [reportUnknownMemberType]
                     }
                 ]
-            }
+            },
+            "pymdownx.highlight": {
+                "auto_title": True,
+                "auto_title_map": {"Python Console Session": "Python"},
+                "linenums_style": "inline",
+                "line_spans": "__codeline",
+            },
         }
 
         md = markdown.Markdown(
@@ -215,7 +223,9 @@ class EditPreview(QWidget):
                 "footnotes",
                 "pymdownx.tasklist",
                 # Allow md in html
-                "md_in_html",
+                # "md_in_html",
+                "pymdownx.extra",  # Replaces md_in_html?
+                "pymdownx.blocks.html",
                 "pymdownx.blocks.admonition",
                 "pymdownx.blocks.details",
                 "pymdownx.blocks.tab",
