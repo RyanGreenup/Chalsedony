@@ -437,7 +437,7 @@ class MainWindow(QMainWindow):
                         MenuAction(
                             id="start_nvim_session",
                             text="Start Neovim Session",
-                            shortcut="Ctrl+Alt+N",
+                            shortcut="Ctrl+Alt+U",
                             handler="start_nvim_session",
                         ),
                         MenuAction(
