@@ -66,6 +66,7 @@ def main(
 
 def create_database(path: Path):
     from init_db import init_joplin_db
+
     with sqlite3.connect(path) as conn:
         conn.executescript(init_joplin_db())
         conn.commit()

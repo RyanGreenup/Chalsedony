@@ -3,6 +3,7 @@
 # in particular a closure table would make the tree build faster
 # However, for now, some degree of compatability is the goal
 
+
 def init_joplin_db() -> str:
     sql = """
 CREATE TABLE folders(
@@ -416,6 +417,7 @@ CREATE VIEW tags_with_note_count AS
 INSERT INTO folders VALUES('3e9e56ff5bcd4e6e881aa3aae355df83','Welcome!',1737012599820,1737012599820,1737012599820,1737012599820,'',0,'',0,'','','','',0);
 """
     return sql
+
 
 def simple_db() -> str:
     """
