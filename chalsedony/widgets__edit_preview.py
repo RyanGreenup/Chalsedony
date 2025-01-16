@@ -221,7 +221,7 @@ class EditPreview(QWidget):
                 "fenced_code",
                 "tables",
                 "footnotes",
-                "pymdownx.tasklist",
+                "pymdownx.emoji",
                 # Allow md in html
                 # "md_in_html",
                 "pymdownx.extra",  # Replaces md_in_html?
