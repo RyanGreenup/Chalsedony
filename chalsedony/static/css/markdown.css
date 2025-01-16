@@ -134,7 +134,7 @@
   outline: none;
 }
 .markdown details.warning summary:focus-visible {
-  outline: 2px solid rgb(255, 229.7959183673, 7.9999999999);
+  outline: 2px solid rgb(255, 229.7965714286, 8.0064);
 }
 .markdown details.warning p {
   margin-top: 0.5em;
@@ -154,7 +154,7 @@
   outline: none;
 }
 .markdown details.tip summary:focus-visible {
-  outline: 2px solid rgb(80.0318471336, 188.1939779965, 255);
+  outline: 2px solid rgb(80.04, 188.1970909091, 255);
 }
 .markdown details.tip p {
   margin-top: 0.5em;
@@ -174,7 +174,7 @@
   outline: none;
 }
 .markdown details.info summary:focus-visible {
-  outline: 2px solid rgb(149.5118702952, 225.6977417487, 90.9073537926);
+  outline: 2px solid rgb(149.5160727273, 225.6989090909, 90.9138909091);
 }
 .markdown details.info p {
   margin-top: 0.5em;
@@ -194,7 +194,7 @@
   outline: none;
 }
 .markdown details.danger summary:focus-visible {
-  outline: 2px solid rgb(255, 99.378094425, 90.9203821654);
+  outline: 2px solid rgb(255, 99.3860783505, 90.9288);
 }
 .markdown details.danger p {
   margin-top: 0.5em;
@@ -214,7 +214,7 @@
   outline: none;
 }
 .markdown details.success summary:focus-visible {
-  outline: 2px solid rgb(149.5118702952, 225.6977417487, 90.9073537926);
+  outline: 2px solid rgb(149.5160727273, 225.6989090909, 90.9138909091);
 }
 .markdown details.success p {
   margin-top: 0.5em;
@@ -234,7 +234,7 @@
   outline: none;
 }
 .markdown details.note summary:focus-visible {
-  outline: 2px solid rgb(180.2299582692, 189.2929936305, 198.3560289918);
+  outline: 2px solid rgb(180.2352, 189.2976, 198.36);
 }
 .markdown details.note p {
   margin-top: 0.5em;
@@ -254,7 +254,7 @@
   outline: none;
 }
 .markdown details.abstract summary:focus-visible {
-  outline: 2px solid rgb(180.2299582692, 189.2929936305, 198.3560289918);
+  outline: 2px solid rgb(180.2352, 189.2976, 198.36);
 }
 .markdown details.abstract p {
   margin-top: 0.5em;
@@ -274,7 +274,7 @@
   outline: none;
 }
 .markdown details.question summary:focus-visible {
-  outline: 2px solid rgb(255, 195.6861196128, 107.6719745221);
+  outline: 2px solid rgb(255, 195.6896727273, 107.6808);
 }
 .markdown details.question p {
   margin-top: 0.5em;
@@ -294,7 +294,7 @@
   outline: none;
 }
 .markdown details.failure summary:focus-visible {
-  outline: 2px solid rgb(255, 130.2866242036, 142.7579617833);
+  outline: 2px solid rgb(255, 130.296, 142.7664);
 }
 .markdown details.failure p {
   margin-top: 0.5em;
@@ -314,7 +314,7 @@
   outline: none;
 }
 .markdown details.bug summary:focus-visible {
-  outline: 2px solid rgb(241.4057324841, 122.9414012737, 163.7242038215);
+  outline: 2px solid rgb(241.40656, 122.94944, 163.72976);
 }
 .markdown details.bug p {
   margin-top: 0.5em;
@@ -334,7 +334,7 @@
   outline: none;
 }
 .markdown details.example summary:focus-visible {
-  outline: 2px solid rgb(119.8121019107, 189.3941082802, 247.0477707006);
+  outline: 2px solid rgb(119.8205333333, 189.3982, 247.0482666667);
 }
 .markdown details.example p {
   margin-top: 0.5em;
@@ -355,7 +355,7 @@
   outline: none;
 }
 .markdown details.quote summary:focus-visible {
-  outline: 2px solid rgb(187.6178343948, 187.6178343948, 187.6178343948);
+  outline: 2px solid rgb(187.6224, 187.6224, 187.6224);
 }
 .markdown details.quote p {
   margin-top: 0.5em;
