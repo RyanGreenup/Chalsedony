@@ -6,7 +6,22 @@
 
   .admonition-title {
     font-weight: bold;
-    margin-bottom: 10px;
+    margin: -15px -15px 15px -15px;
+    padding: 12px 15px;
+    border-radius: 4px 4px 0 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    
+    &::before {
+      content: "";
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
   }
 
   &.note {
@@ -15,6 +30,11 @@
 
     .admonition-title {
       color: #2557a1; // Dark blue
+      background-color: rgba(76, 154, 255, 0.1);
+      
+      &::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232557a1'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
+      }
     }
   }
 
@@ -24,6 +44,11 @@
 
     .admonition-title {
       color: #2e7d32; // Dark green
+      background-color: rgba(76, 175, 80, 0.1);
+      
+      &::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232e7d32'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z'/%3E%3C/svg%3E");
+      }
     }
   }
 
@@ -33,6 +58,11 @@
 
     .admonition-title {
       color: #f57c00; // Dark orange
+      background-color: rgba(255, 152, 0, 0.1);
+      
+      &::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f57c00'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
+      }
     }
   }
 
@@ -42,6 +72,11 @@
 
     .admonition-title {
       color: #d32f2f; // Dark red
+      background-color: rgba(244, 67, 54, 0.1);
+      
+      &::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d32f2f'%3E%3Cpath d='M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z'/%3E%3C/svg%3E");
+      }
     }
   }
 
@@ -51,6 +86,11 @@
 
     .admonition-title {
       color: #fbc02d; // Dark yellow
+      background-color: rgba(255, 235, 59, 0.1);
+      
+      &::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fbc02d'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
+      }
     }
   }
 
@@ -72,6 +112,11 @@
 
       .admonition-title {
         color: #bbdfff;
+        background-color: rgba(128, 191, 255, 0.1);
+        
+        &::before {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23bbdfff'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
+        }
       }
     }
 
@@ -81,6 +126,11 @@
 
       .admonition-title {
         color: #a8e3a8;
+        background-color: rgba(119, 217, 119, 0.1);
+        
+        &::before {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23a8e3a8'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z'/%3E%3C/svg%3E");
+        }
       }
     }
 
@@ -90,6 +140,11 @@
 
       .admonition-title {
         color: #ffd480;
+        background-color: rgba(255, 184, 77, 0.1);
+        
+        &::before {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffd480'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
+        }
       }
     }
 
@@ -99,6 +154,11 @@
 
       .admonition-title {
         color: #ff9e9e;
+        background-color: rgba(255, 107, 107, 0.1);
+        
+        &::before {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff9e9e'%3E%3Cpath d='M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z'/%3E%3C/svg%3E");
+        }
       }
     }
 
@@ -108,6 +168,11 @@
 
       .admonition-title {
         color: #ffea99;
+        background-color: rgba(255, 224, 102, 0.1);
+        
+        &::before {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffea99'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
+        }
       }
     }
 
