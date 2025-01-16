@@ -228,6 +228,7 @@ $success-background: #f6ffed;  // Light green background
 $success-border-color: #b7eb8f; // Green border color
 $success-text-color: #389e0d;   // Darker text for contrast
 
+# Error: This at-rule is not allowed here. AI!
 @use "sass:color";
 
 @mixin note-box($background, $border-color, $text-color) {
