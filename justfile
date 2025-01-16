@@ -17,6 +17,7 @@ run:
 embed-assets:
     # todo finish sas
     npx sass chalsedony/static/styles/markdown.scss chalsedony/static/css/markdown.css
+    npx sass chalsedony/static/styles/admonitions.scss chalsedony/static/css/admonitions.css
 
     # QRC
     pyside6-rcc chalsedony/static/static.qrc                       -o chalsedony/static_resources_rc.py

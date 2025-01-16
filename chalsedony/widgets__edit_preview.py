@@ -179,15 +179,17 @@ class EditPreview(QWidget):
             {html}
             </div>
             <script src="qrc:/katex/katex.min.js"></script>
-            <script src="qrc:/katex/contrib/auto-render.min.js"></script>
+            <script src="qrc:js/mkdocs_katex_auto_render.js"></script>
             <script src="qrc:/katex/config.js"></script>
             <script src="qrc:/js/pdfjs.js"></script>
             <script src="qrc:/js/my_pdfjs_init.js"></script>
             <script src="qrc:/js/asciinema-player.min.js"></script>
             <script src="qrc:/js/mermaid.min.js"></script>
+            <script src="qrc:/katex/contrib/auto-render.min.js"></script>
         </body>
         </html>
         """
+        # <script src="qrc:/katex/contrib/auto-render.min.js"></script>
 
     def update_preview_local(self) -> None:
         """
@@ -228,6 +230,7 @@ class EditPreview(QWidget):
                 "pymdownx.blocks.html",
                 "pymdownx.magiclink",
                 "pymdownx.escapeall",
+                "pymdownx.arithmatex",
                 "pymdownx.blocks.admonition",
                 "pymdownx.blocks.details",
                 "pymdownx.blocks.tab",

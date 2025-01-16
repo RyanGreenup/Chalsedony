@@ -19,6 +19,7 @@
         <file>js/dataTables.js</file>
         <file>js/datatables_init.js</file>
         <file>js/mermaid.min.js</file>
+        <file>js/mkdocs_katex_auto_render.js</file>
     </qresource>
     <qresource prefix="/">
         <file>css/fonts.css</file>
@@ -44,6 +45,7 @@
         <file>css/code.css</file>
         <file>css/tasklist.css</file>
         <file>css/my_pdfjs_styling.css</file>
+        <file>css/mkdocs_main.css</file>
     </qresource>
 </RCC>
 

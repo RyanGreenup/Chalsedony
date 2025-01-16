@@ -201,9 +201,6 @@ details.warning {
         color: $warning-text-color;
         outline: none; // Remove default focus outline
 
-        &:focus-visible { // Add a custom focus indicator
-            outline: 2px solid scale-color($warning-border-color, $lightness: -16.2420382166%);
-        }
     }
 
     p {
@@ -241,9 +238,6 @@ $success-text-color: #389e0d;   // Darker text for contrast
         color: $text-color;
         outline: none;
 
-        &:focus-visible {
-            outline: 2px solid scale-color($border-color, $lightness: -16.2420382166%);
-        }
     }
 
     p {
