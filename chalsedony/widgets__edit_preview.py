@@ -227,7 +227,7 @@ class EditPreview(QWidget):
                 "pymdownx.extra",  # Replaces md_in_html?
                 "pymdownx.blocks.html",
                 "pymdownx.magiclink",
-                "pymdownx.escapeall",
+                # "pymdownx.escapeall",  # Breaks math without the arithmatex extension # TODO
                 "pymdownx.blocks.admonition",
                 "pymdownx.blocks.details",
                 "pymdownx.blocks.tab",
