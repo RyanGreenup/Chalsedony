@@ -10,6 +10,7 @@ from typing import Optional
 import typer
 import signal
 from main_window import MainWindow
+import sqlite3
 
 
 app = typer.Typer(pretty_exceptions_enable=False)
@@ -45,6 +46,14 @@ def main(
     """
     app = QApplication(sys.argv)
 
+    if not database.exists():
+        create_database(database)
+    if not database.exists():
+        raise FileNotFoundError(f"Database file not found: {database}")
+    if not assets.exists():
+        # Make the directory
+        assets.mkdir(parents=True, exist_ok=True)
+
     # Apply the modern style sheet
     app.setStyleSheet(QSS_STYLE)
 
@@ -53,6 +62,16 @@ def main(
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     window.show()
     sys.exit(app.exec())
+
+
+def create_database(path: Path):
+    from init_db import init_joplin_db
+    with sqlite3.connect(path) as conn:
+        conn.executescript(init_joplin_db())
+        conn.commit()
+        conn.executescript("""PRAGMA journal_mode = 'WAL';""")
+        conn.executescript("""PRAGMA cache_size = -64000""")
+        conn.commit()
 
 
 if __name__ == "__main__":
