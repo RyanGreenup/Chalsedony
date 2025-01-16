@@ -317,7 +317,7 @@ class NoteView(QWidget):
                 TreeItemData(ItemType.NOTE, note.id, note.title)
             )
 
-    def _on_create_folder_requested(self, title: str, parent_id: str) -> None:
+    def _on_create_folder_requested(self, title: str, parent_id: str | None) -> None:
         try:
             folder_id = self.model.create_folder(title, parent_id)
         except ValueError as e:

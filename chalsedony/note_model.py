@@ -661,7 +661,7 @@ class NoteModel(QObject):
         self.refreshed.emit()
         return new_note_id
 
-    def create_folder(self, title: str, parent_id: str = "") -> str:
+    def create_folder(self, title: str, parent_id: str | None = "") -> str:
         """Create a new folder
 
         Args:

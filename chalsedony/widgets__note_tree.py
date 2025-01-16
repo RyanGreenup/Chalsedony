@@ -242,12 +242,13 @@ class NoteTree(StatefulTree, TreeWithFilter, TreeWidgetWithCycle):
     def create_folder(self, item_data: TreeItemData | None) -> None:
         item_data = item_data or self.get_current_item_data()
         if not item_data:
-            return
-        match item_data.type:
-            case ItemType.FOLDER:
-                parent_id = item_data.id
-            case ItemType.NOTE:
-                parent_id = self.note_model.get_folder_id_from_note(item_data.id)
+            parent_id = None
+        else:
+            match item_data.type:
+                case ItemType.FOLDER:
+                    parent_id = item_data.id
+                case ItemType.NOTE:
+                    parent_id = self.note_model.get_folder_id_from_note(item_data.id)
 
         title, ok = QInputDialog.getText(self, "Create Folder", "Enter folder name:")
         if ok and title:
