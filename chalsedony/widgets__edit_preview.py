@@ -238,7 +238,7 @@ class EditPreview(QWidget):
                 "pymdownx.progressbar",
                 CustomWikiLinkExtension(note_model=self.note_model, base_url="note://"),
             ],
-            extension_configs=extension_configs,  # pyright: ignore [reportUnknownArgumentType]
+            extension_configs=extension_configs,  # pyright: ignore [reportUnknownArgumentType] # type: ignore [arg-type]
         )
 
         html = md.convert(self.editor.toPlainText())

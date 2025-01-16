@@ -64,7 +64,7 @@ def main(
     sys.exit(app.exec())
 
 
-def create_database(path: Path):
+def create_database(path: Path) -> None:
     from init_db import init_joplin_db
 
     with sqlite3.connect(path) as conn:
