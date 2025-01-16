@@ -226,6 +226,8 @@ class EditPreview(QWidget):
                 # "md_in_html",
                 "pymdownx.extra",  # Replaces md_in_html?
                 "pymdownx.blocks.html",
+                "pymdownx.magiclink",
+                "pymdownx.escapeall",
                 "pymdownx.blocks.admonition",
                 "pymdownx.blocks.details",
                 "pymdownx.blocks.tab",
