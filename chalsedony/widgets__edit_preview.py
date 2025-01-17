@@ -427,7 +427,9 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
         # Handle note:// URLs
         if url.scheme() == "note":
             resource_id = url.toString().replace("note://", "")
-            print(f"Intercepted request for resource: {resource_id}")
+
+            # Start debugging around here
+            # print(f"Intercepted request for resource: {resource_id}")
 
             if table := self.note_model.what_is_this(resource_id):
                 match table:
@@ -447,7 +449,8 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                         if filepath := self.note_model.get_resource_path(resource_id):
                             # Allow direct access to resource files
                             url = QUrl.fromLocalFile(str(filepath))
-                            print(f"---> Redirecting to resource file: {url}")
+                            # Start debugging around here
+                            # print(f"---> Redirecting to resource file: {url}")
                             if str(filepath).endswith((".mp4")):
                                 print(
                                     "Proprietary video file, this may not display correctly, try converting to webm"
