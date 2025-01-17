@@ -130,12 +130,12 @@ class EditPreview(QWidget):
                         }
                     ]
                 },
-                "pymdownx.highlight": {
-                    "auto_title": True,
-                    "auto_title_map": {"Python Console Session": "Python"},
-                    "linenums_style": "inline",
-                    "line_spans": "__codeline",
-                },
+                # "pymdownx.highlight": {
+                #     "auto_title": True,
+                #     "auto_title_map": {"Python Console Session": "Python"},
+                #     "linenums_style": "inline",
+                #     "line_spans": "__codeline",
+                # },
             }
             self._md = markdown.Markdown(
                 extensions=[
@@ -166,7 +166,7 @@ class EditPreview(QWidget):
             )
             return self._md
 
-    def convert_md_to_html(self, md_text: str) -> str:
+    def convert_md_to_html(self) -> str:
         html = self.md.convert(self.editor.toPlainText())
         # Replace image URLs to use note: scheme
         html = self.preview.rewrite_html_links(html)
@@ -182,7 +182,7 @@ class EditPreview(QWidget):
         scroll_fraction = self.editor.verticalScrollFraction()
 
         # Convert markdown to HTML
-        html = self.convert_md_to_html(self.editor.toPlainText())
+        html = self.convert_md_to_html()
 
         # Connect to load finished signal to ensure scroll happens after content loads
         def restore_scroll(success: bool) -> None:
@@ -271,7 +271,7 @@ class EditPreview(QWidget):
         """Refresh the preview content"""
         # Reset the HTML base template to ensure the preview is updated
         self.preview._apply_html_template(
-            self.convert_md_to_html(self.editor.toPlainText())
+            self.convert_md_to_html()
         )
 
 
@@ -483,6 +483,7 @@ class WebPreview(QWebEngineView):
         self._search_text = ""
         self._search_flags = cast(QWebEnginePage.FindFlag, 0)
 
+    # Improve this function so any javascript is evaluated after changing the content AI!
     def set_html_content(self, div_class: str, content: str) -> bool:
         """
         Set the inner HTML content of a div with the specified class using JavaScript.
