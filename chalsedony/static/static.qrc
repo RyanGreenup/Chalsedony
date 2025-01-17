@@ -19,6 +19,7 @@
         <file>js/dataTables.js</file>
         <file>js/datatables_init.js</file>
         <file>js/mermaid.min.js</file>
+        <file>js/set_div_content.js</file>
     </qresource>
     <qresource prefix="/">
         <file>css/fonts.css</file>

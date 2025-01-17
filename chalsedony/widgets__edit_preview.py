@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Callable, final, override
+import json
 from PySide6.QtWidgets import (
     QApplication,
     QTextEdit,
@@ -77,6 +78,7 @@ class EditPreview(QWidget):
         self.note_model = note_model
         self.asset_dir = note_model.asset_dir
         self.setup_ui()
+        self._md: markdown.Markdown | None = None
 
     def setup_ui(self) -> None:
         # Create main layout
@@ -113,81 +115,63 @@ class EditPreview(QWidget):
                 app.property("darkMode") or False
             )  # Don't Flash at Night
 
-    def _get_css_resources(self) -> str:
-        """Generate CSS link tags for all CSS files in resources
+    @property
+    def md(self) -> markdown.Markdown:
+        if self._md:
+            return self._md
+        else:
+            extension_configs = {  # pyright: ignore [reportUnknownVariableType]
+                "pymdownx.superfences": {
+                    "custom_fences": [
+                        {
+                            "name": "mermaid",
+                            "class": "mermaid",
+                            "format": pymdownx.superfences.fence_div_format,  # pyright: ignore [reportUnknownMemberType]
+                        }
+                    ]
+                },
+                "pymdownx.highlight": {
+                    "auto_title": True,
+                    "auto_title_map": {"Python Console Session": "Python"},
+                    "linenums_style": "inline",
+                    "line_spans": "__codeline",
+                },
+            }
+            self._md = markdown.Markdown(
+                extensions=[
+                    "fenced_code",
+                    "tables",
+                    "footnotes",
+                    "pymdownx.emoji",
+                    # Allow md in html
+                    # "md_in_html",
+                    "pymdownx.extra",  # Replaces md_in_html?
+                    "pymdownx.blocks.html",
+                    "pymdownx.magiclink",
+                    # "pymdownx.escapeall",  # Breaks math without the arithmatex extension # TODO
+                    "pymdownx.blocks.admonition",
+                    "pymdownx.blocks.details",
+                    "pymdownx.blocks.tab",
+                    "pymdownx.highlight",
+                    "pymdownx.tasklist",
+                    "attr_list",
+                    "pymdownx.superfences",
+                    "pymdownx.blocks.caption",
+                    "pymdownx.progressbar",
+                    CustomWikiLinkExtension(
+                        note_model=self.note_model, base_url="note://"
+                    ),
+                ],
+                extension_configs=extension_configs,  # pyright: ignore [reportUnknownArgumentType] # type: ignore [arg-type]
+            )
+            return self._md
 
-        If the file:
-
-        ./static/static.qrc
-
-        picked up the static css asset, then it will be included.
-
-        """
-        css_links: list[str] = []
-        it = QDirIterator(
-            ":/css", QDir.Filter.Files, QDirIterator.IteratorFlag.Subdirectories
-        )
-        while it.hasNext():
-            file_path = it.next()
-            if "vector" in file_path:
-                continue
-            css_links.append(f'<link rel="stylesheet" href="qrc{file_path}">')
-
-        # If needed to debug
-        # print(css_links)
-        # sys.exit()
-
-        return "\n".join(css_links)
-
-    def _apply_html_template(self, html: str) -> str:
+    def convert_md_to_html(self, md_text: str) -> str:
+        html = self.md.convert(self.editor.toPlainText())
         # Replace image URLs to use note: scheme
         html = self.preview.rewrite_html_links(html)
         html = html.replace('src=":', 'src="note:/')
-        # Allow direct file:// URLs to pass through
-        css_includes = self._get_css_resources()
-        return f"""<!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-            <link rel="stylesheet" href="qrc:/katex/katex.min.css">
-            <script src="qrc:/js/jquery.min.js"></script>
-            <script src="qrc:/js/dataTables.js"></script>
-            <script src="qrc:/js/datatables_init.js"></script>
-
-
-            {css_includes}
-            <style>
-                body {{
-                    background-color: transparent !important;
-                }}
-                .markdown {{
-                    background-color: transparent !important;
-                }}
-
-                :root,
-                [data-theme] {{
-                  background-color: transparent !important;
-                }}
-
-                .prose :where(code):not(:where([class~="not-prose"] *)) {{
-                  background-color: transparent !important;
-                }}
-            </style>
-        </head>
-        <body><div class="markdown">
-            {html}
-            </div>
-            <script src="qrc:/katex/katex.min.js"></script>
-            <script src="qrc:/katex/contrib/auto-render.min.js"></script>
-            <script src="qrc:/katex/config.js"></script>
-            <script src="qrc:/js/pdfjs.js"></script>
-            <script src="qrc:/js/my_pdfjs_init.js"></script>
-            <script src="qrc:/js/asciinema-player.min.js"></script>
-            <script src="qrc:/js/mermaid.min.js"></script>
-        </body>
-        </html>
-        """
+        return html
 
     def update_preview_local(self) -> None:
         """
@@ -198,52 +182,7 @@ class EditPreview(QWidget):
         scroll_fraction = self.editor.verticalScrollFraction()
 
         # Convert markdown to HTML
-        extension_configs = {  # pyright: ignore [reportUnknownVariableType]
-            "pymdownx.superfences": {
-                "custom_fences": [
-                    {
-                        "name": "mermaid",
-                        "class": "mermaid",
-                        "format": pymdownx.superfences.fence_div_format,  # pyright: ignore [reportUnknownMemberType]
-                    }
-                ]
-            },
-            "pymdownx.highlight": {
-                "auto_title": True,
-                "auto_title_map": {"Python Console Session": "Python"},
-                "linenums_style": "inline",
-                "line_spans": "__codeline",
-            },
-        }
-
-        md = markdown.Markdown(
-            extensions=[
-                "fenced_code",
-                "tables",
-                "footnotes",
-                "pymdownx.emoji",
-                # Allow md in html
-                # "md_in_html",
-                "pymdownx.extra",  # Replaces md_in_html?
-                "pymdownx.blocks.html",
-                "pymdownx.magiclink",
-                # "pymdownx.escapeall",  # Breaks math without the arithmatex extension # TODO
-                "pymdownx.blocks.admonition",
-                "pymdownx.blocks.details",
-                "pymdownx.blocks.tab",
-                "pymdownx.highlight",
-                "attr_list",
-                "pymdownx.superfences",
-                "pymdownx.blocks.caption",
-                "pymdownx.progressbar",
-                CustomWikiLinkExtension(note_model=self.note_model, base_url="note://"),
-            ],
-            extension_configs=extension_configs,  # pyright: ignore [reportUnknownArgumentType] # type: ignore [arg-type]
-        )
-
-        html = md.convert(self.editor.toPlainText())
-        # Use note:// as base URL so relative paths are resolved correctly
-        html = self._apply_html_template(html)
+        html = self.convert_md_to_html(self.editor.toPlainText())
 
         # Connect to load finished signal to ensure scroll happens after content loads
         def restore_scroll(success: bool) -> None:
@@ -260,7 +199,8 @@ class EditPreview(QWidget):
 
         if not self.preview.page().loadFinished.connect(restore_scroll):
             print("Failed to connect loadFinished signal")
-        self.preview.setHtml(html, QUrl("note://"))
+
+        self.preview.set_html_content("markdown", html)
 
     def _get_editor_width(self) -> float:
         return float(self.editor.width())
@@ -512,9 +452,12 @@ class WebPreview(QWebEngineView):
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        # TODO Refactor this so the WebPreview sets the content on construction
+        self.content_already_set = False  # Has the content been set?
         self.setPage(NoteLinkPage(parent=self, note_model=note_model))
         self.note_model: NoteModel = note_model
         self.setZoomFactor(1.0)  # Initialize zoom factor
+        self._apply_html_template()
 
         # Connect to application font changes
         if app := QApplication.instance():
@@ -527,6 +470,136 @@ class WebPreview(QWebEngineView):
         # Enable search functionality
         self._search_text = ""
         self._search_flags = cast(QWebEnginePage.FindFlag, 0)
+
+    def set_html_content(self, div_class: str, content: str) -> bool:
+        """
+        Set the inner HTML content of a div with the specified class using JavaScript.
+        This is the appropriate way to set the content to avoid flickering and scrolling of the content.
+
+        Args:
+            div_class: The CSS class name of the div to update
+            content: The HTML content to set inside the div
+
+        Returns:
+            bool: True if the div was found and updated, False otherwise
+        """
+        # First check if the div exists
+        check_js = f"""
+            (function() {{
+                return document.querySelector(".{div_class}") !== null;
+            }})();
+        """
+
+        # Define callback to handle the result
+        def handle_result(result: bool) -> None:
+            if not result:
+                # If there is no matching div, set it first
+                self._apply_html_template(content)
+                handle_result(True)
+            if result:
+                # Div exists, update its content
+                # Improve this to perserve the state of
+                update_js = f"""
+                    set_div_content("{div_class}", {json.dumps(content)});
+                    """
+                self.page().runJavaScript(update_js)
+
+        # Run the check and handle result
+        self.page().runJavaScript(check_js, resultCallback=handle_result)
+        return True
+
+    def _get_css_resources(self) -> str:
+        """Generate CSS link tags for all CSS files in resources
+
+        If the file:
+
+        ./static/static.qrc
+
+        picked up the static css asset, then it will be included.
+
+        """
+        css_links: list[str] = []
+        it = QDirIterator(
+            ":/css", QDir.Filter.Files, QDirIterator.IteratorFlag.Subdirectories
+        )
+        while it.hasNext():
+            file_path = it.next()
+            if "vector" in file_path:
+                continue
+            css_links.append(f'<link rel="stylesheet" href="qrc{file_path}">')
+
+        # If needed to debug
+        # print(css_links)
+        # sys.exit()
+
+        return "\n".join(css_links)
+
+    def _apply_html_template(self, html: str = "PLACEHOLDER_CONTENT") -> None:
+        # Allow direct file:// URLs to pass through
+        css_includes = self._get_css_resources()
+        html = f"""<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            <link rel="stylesheet" href="qrc:/katex/katex.min.css">
+            <script src="qrc:/js/jquery.min.js"></script>
+            <script src="qrc:/js/dataTables.js"></script>
+            <script src="qrc:/js/datatables_init.js"></script>
+
+
+            {css_includes}
+            <style>
+                body {{
+                    background-color: transparent !important;
+                }}
+                .markdown {{
+                    background-color: transparent !important;
+                }}
+
+                :root,
+                [data-theme] {{
+                  background-color: transparent !important;
+                }}
+
+                .prose :where(code):not(:where([class~="not-prose"] *)) {{
+                  background-color: transparent !important;
+                }}
+            </style>
+        </head>
+        <body><div class="markdown">
+            {html}
+            </div>
+            <script src="qrc:/katex/katex.min.js"></script>
+            <script src="qrc:/katex/contrib/auto-render.min.js"></script>
+            <script src="qrc:/katex/config.js"></script>
+            <script src="qrc:/js/pdfjs.js"></script>
+            <script src="qrc:/js/my_pdfjs_init.js"></script>
+            <script src="qrc:/js/asciinema-player.min.js"></script>
+            <script src="qrc:/js/mermaid.min.js"></script>
+            <script src="qrc:/js/set_div_content.js"></script>
+        </body>
+        </html>
+        """
+        self.setHtml(html, QUrl("note://"))
+
+    def get_csrf_token(self) -> str | None:
+        """Get the CSRF token from the page's JavaScript context.
+
+        Returns:
+            The CSRF token as a string if found, None otherwise
+        """
+        token = None
+
+        def callback(result):
+            nonlocal token
+            token = result
+
+        self.page().runJavaScript(
+            "document.querySelector('meta[name=\"csrf-token\"]')?.content",
+            resultCallback=callback,
+        )
+        return token
 
     def reset_transparency(self) -> None:
         self.page().setBackgroundColor(Qt.GlobalColor.transparent)
