@@ -173,7 +173,7 @@ class EditPreview(QWidget):
         html = html.replace('src=":', 'src="note:/')
         return html
 
-    def update_preview_local(self) -> None:
+    def update_preview_local(self, full_load: bool = False) -> None:
         """
         Converts the editor from markdown to HTML and sets the preview HTML content.
         Preserves the current scroll position during updates.
@@ -200,6 +200,8 @@ class EditPreview(QWidget):
         if not self.preview.page().loadFinished.connect(restore_scroll):
             print("Failed to connect loadFinished signal")
 
+        if full_load:
+            self.preview._apply_html_template("")
         self.preview.set_html_content("markdown", html)
 
     def _get_editor_width(self) -> float:
@@ -263,6 +265,13 @@ class EditPreview(QWidget):
     def apply_dark_theme(self, dark_mode: bool) -> None:
         self.preview.settings().setAttribute(
             self.preview.settings().WebAttribute.ForceDarkMode, dark_mode
+        )
+
+    def refresh_preview(self) -> None:
+        """Refresh the preview content"""
+        # Reset the HTML base template to ensure the preview is updated
+        self.preview._apply_html_template(
+            self.convert_md_to_html(self.editor.toPlainText())
         )
 
 
@@ -500,7 +509,13 @@ class WebPreview(QWebEngineView):
                 # Div exists, update its content
                 # Improve this to perserve the state of
                 update_js = f"""
+                try {{
+                    // Code that may throw an error
                     set_div_content("{div_class}", {json.dumps(content)});
+                }} catch (error) {{
+                    // Code to handle the error
+                    console.error("set_div_content does not exist (yet)", error.message);
+                }}
                     """
                 self.page().runJavaScript(update_js)
 

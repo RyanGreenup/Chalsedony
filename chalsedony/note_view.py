@@ -122,7 +122,7 @@ class NoteView(QWidget):
         """Focus on today's journal page, or the most recent one within the last 30 days"""
         # Try today first
         journal_page = self.model.get_journal_page_for_today()
-        
+
         # If not found, look back up to 30 days
         if journal_page is None:
             for days_ago in range(1, 31):
@@ -130,11 +130,11 @@ class NoteView(QWidget):
                 if journal_page is not None:
                     self.send_status_message(f"Showing journal from {days_ago} day{'s' if days_ago > 1 else ''} ago")
                     break
-        
+
         if journal_page is None:
             self.send_status_message("No recent journal page found (last 30 days)")
             return
-            
+
         item_data = TreeItemData(
             ItemType.NOTE, journal_page.id, title=journal_page.title
         )
@@ -421,6 +421,9 @@ class NoteView(QWidget):
 
             # Populate the UI
             self._populate_ui()
+
+            # Reset the Web View
+            self.content_area.refresh_preview()
 
             # Restore the fold state
             self.tree_widget.restore_state(tree_state)

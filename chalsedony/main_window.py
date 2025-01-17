@@ -218,7 +218,7 @@ class MainWindow(QMainWindow):
                         ),
                         MenuAction(
                             id="refresh",
-                            text="&Refresh",
+                            text="&Refresh Current Tab",
                             handler="refresh",
                             shortcut="Ctrl+R",
                         ),
