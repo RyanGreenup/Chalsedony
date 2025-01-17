@@ -1,5 +1,3 @@
-// Improve this so any javascript in the content is not lost and is executed AI!
-
 function set_div_content(div_class, content) {
     // First ensure KaTeX is loaded
     if (typeof renderMathInElement === 'undefined') {
@@ -9,6 +7,11 @@ function set_div_content(div_class, content) {
         */
     } else {
         const container = document.querySelector(`div.${div_class}`);
+        if (!container) return;
+        
+        // Parse content while preserving script tags
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(content, 'text/html');
         // Save open/closed state of all details elements using their summary text as key
         const detailsStates = new Map();
         container.querySelectorAll('details').forEach(details => {
@@ -18,8 +21,21 @@ function set_div_content(div_class, content) {
             }
         });
 
-        // Update content
-        container.innerHTML = content;
+        // Clear container and append new nodes
+        container.innerHTML = '';
+        Array.from(doc.body.childNodes).forEach(node => {
+            container.appendChild(node);
+        });
+
+        // Execute any script tags
+        container.querySelectorAll('script').forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+            });
+            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
 
         // Restore open/closed state using summary text as key
         container.querySelectorAll('details').forEach(newDetails => {
