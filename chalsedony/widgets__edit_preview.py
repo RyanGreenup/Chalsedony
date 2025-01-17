@@ -511,16 +511,46 @@ class WebPreview(QWebEngineView):
                 handle_result(True)
             if result:
                 # Div exists, update its content
-                # Improve this to perserve the state of
                 update_js = f"""
-                try {{
-                    // Code that may throw an error
-                    set_div_content("{div_class}", {json.dumps(content)});
-                }} catch (error) {{
-                    // Code to handle the error
-                    console.error("set_div_content does not exist (yet)", error.message);
-                }}
-                    """
+                (function() {{
+                    try {{
+                        // Save current scroll position
+                        const scrollY = window.scrollY;
+                        const scrollHeight = document.documentElement.scrollHeight;
+                        const scrollFraction = scrollY / scrollHeight;
+
+                        // Update content
+                        set_div_content("{div_class}", {json.dumps(content)});
+
+                        // Wait for content to render
+                        setTimeout(() => {{
+                            // Restore scroll position
+                            const newScrollHeight = document.documentElement.scrollHeight;
+                            window.scrollTo(0, newScrollHeight * scrollFraction);
+
+                            // Re-run any necessary JS after content update
+                            if (typeof renderMathInElement === 'function') {{
+                                renderMathInElement(document.body, {{
+                                    delimiters: [
+                                        {{left: '$$', right: '$$', display: true}},
+                                        {{left: '$', right: '$', display: false}}
+                                    ]
+                                }});
+                            }}
+
+                            if (typeof mermaid !== 'undefined') {{
+                                mermaid.init();
+                            }}
+
+                            if (typeof PDFJS !== 'undefined') {{
+                                initPDFJS();
+                            }}
+                        }}, 50);
+                    }} catch (error) {{
+                        console.error("Error updating content:", error);
+                    }}
+                }})();
+                """
                 self.page().runJavaScript(update_js)
 
         # Run the check and handle result
