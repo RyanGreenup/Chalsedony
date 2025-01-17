@@ -58,6 +58,18 @@ Chalsedony is released under the GPL License.
 
 I figure Chalsedony is a gemstone like Obsidian, but it's a bit more clear and versatile.
 
+## Warning!
+
+Backup `~/.config/joplin-desktop` before using this application, it's rough around the edges and comes with no warranty.
+
+Be particularly careful of the Neovim IPC stuff, it's a bit experimental and tends to crash. **MAKE BACKUPS!**.
+
+I also recommend `WAL` mode so you can have multiple instances open:
+
+```sh
+sqlite3 ~/.config/joplin-desktop/database.sqlite < "PRAGMA journal_mode = 'WAL'"
+```
+
 ## TODO Documentation
 
 There are some additional features like datatables
@@ -141,3 +153,68 @@ There are some additional features like datatables
         class="dataTablesContainer"
         markdown="1">
     </div>
+
+
+## Keyboard Shortcuts
+
+All keyboard shortcuts are documented in the menus and command palette, except for the tree centric ones below (although these should appear in the context menu):
+
+```python
+        return [
+            self.MenuAction(
+                label=f"Copy {item_type} ID: {item_id}",
+                handler=lambda: self.copy_id(item_data),
+                shortcut="C",
+            ),
+            self.MenuAction(
+                label=f"Change {item_type} ID",
+                handler=lambda: self.update_id(item_data),
+                shortcut=None,
+            ),
+            self.MenuAction(
+                label="Create Note",
+                handler=lambda: self.create_note(item_data),
+                shortcut="N",
+            ),
+            self.MenuAction(
+                label="Create Folder",
+                handler=lambda: self.create_folder(item_data),
+                shortcut="Ctrl+Alt+N",
+            ),
+            self.MenuAction(
+                label=f"Duplicate {item_type}",
+                handler=lambda: self.duplicate_item(item_data),
+                shortcut="Print",
+            ),
+            self.MenuAction(
+                label=f"Delete {item_type}",
+                handler=lambda: self.delete_item(item_data),
+                shortcut="Delete",
+            ),
+            self.MenuAction(
+                label="Rename Folder",
+                handler=lambda: self.request_folder_rename(item_data),
+                shortcut="F2",
+            ),
+            self.MenuAction(
+                label="Move to Root",
+                handler=lambda: self.move_folder_to_root(item_data),
+                shortcut="0",
+            ),
+            self.MenuAction(label="Cut", handler=self.cut_selected_items, shortcut="X"),
+            self.MenuAction(
+                label="Paste",
+                handler=lambda: self.paste_items(item_data),
+                shortcut="P",
+                condition=lambda _: bool(self._cut_items),
+            ),
+            self.MenuAction(
+                label="Clear Cut",
+                handler=self.clear_cut_items,
+                shortcut="`",
+                condition=lambda _: bool(self._cut_items),
+            ),
+        ]
+
+```
+
