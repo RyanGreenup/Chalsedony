@@ -119,10 +119,22 @@ class NoteView(QWidget):
         self._history_timer.timeout.connect(self._add_current_note_to_history)
 
     def focus_todays_journal(self) -> None:
+        """Focus on today's journal page, or the most recent one within the last 30 days"""
+        # Try today first
         journal_page = self.model.get_journal_page_for_today()
+        
+        # If not found, look back up to 30 days
         if journal_page is None:
-            self.send_status_message("No journal page found for today")
+            for days_ago in range(1, 31):
+                journal_page = self.model.get_journal_page_for_today(offset=-days_ago)
+                if journal_page is not None:
+                    self.send_status_message(f"Showing journal from {days_ago} day{'s' if days_ago > 1 else ''} ago")
+                    break
+        
+        if journal_page is None:
+            self.send_status_message("No recent journal page found (last 30 days)")
             return
+            
         item_data = TreeItemData(
             ItemType.NOTE, journal_page.id, title=journal_page.title
         )

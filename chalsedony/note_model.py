@@ -7,7 +7,7 @@ from pathlib import Path
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 from db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
-from datetime import date
+from datetime import date, timedelta
 
 
 class ResourceType(Enum):
@@ -892,13 +892,17 @@ class NoteModel(QObject):
             case _:
                 return mime_type, ResourceType.OTHER
 
-    def get_journal_page_for_today(self) -> NoteSearchResult | None:
-        """Get today's journal page note, identified by title matching today's date
+    def get_journal_page_for_today(self, offset: int = 0) -> NoteSearchResult | None:
+        """Get a journal page note, identified by title matching a specific date
+
+        Args:
+            offset: Number of days offset from today (e.g. -1 for yesterday, 1 for tomorrow)
 
         Returns:
             NoteSearchResult containing the matching note's ID and title
         """
-        title = date.today().strftime("%Y-%m-%d")
+        target_date = date.today() + timedelta(days=offset)
+        title = target_date.strftime("%Y-%m-%d")
         cursor = self.db_connection.cursor()
         cursor.execute(
             "SELECT id, title FROM notes WHERE title = ? ORDER BY updated_time DESC LIMIT 1",
