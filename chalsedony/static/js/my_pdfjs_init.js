@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+function init_pdf_js() {
     // Get all elements with class 'pdfjs_preview'
     var pdfContainers = document.querySelectorAll('.pdfjs_preview');
 
@@ -134,4 +134,5 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
-});
+}
+document.addEventListener("DOMContentLoaded", init_pdf_js);

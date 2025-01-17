@@ -1,3 +1,4 @@
+
 function set_div_content(div_class, content) {
     // First ensure KaTeX is loaded
     if (typeof renderMathInElement === 'undefined') {
@@ -7,11 +8,6 @@ function set_div_content(div_class, content) {
         */
     } else {
         const container = document.querySelector(`div.${div_class}`);
-        if (!container) return;
-        
-        // Parse content while preserving script tags
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(content, 'text/html');
         // Save open/closed state of all details elements using their summary text as key
         const detailsStates = new Map();
         container.querySelectorAll('details').forEach(details => {
@@ -21,21 +17,8 @@ function set_div_content(div_class, content) {
             }
         });
 
-        // Clear container and append new nodes
-        container.innerHTML = '';
-        Array.from(doc.body.childNodes).forEach(node => {
-            container.appendChild(node);
-        });
-
-        // Execute any script tags
-        container.querySelectorAll('script').forEach(oldScript => {
-            const newScript = document.createElement('script');
-            Array.from(oldScript.attributes).forEach(attr => {
-                newScript.setAttribute(attr.name, attr.value);
-            });
-            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-            oldScript.parentNode.replaceChild(newScript, oldScript);
-        });
+        // Update content
+        container.innerHTML = content;
 
         // Restore open/closed state using summary text as key
         container.querySelectorAll('details').forEach(newDetails => {
@@ -62,6 +45,34 @@ function set_div_content(div_class, content) {
     }
 }
 
+function set_div_content_and_eval(div_class, content) {
+  try {
+  // Save current scroll position
+  const scrollY = window.scrollY;
+  const scrollHeight = document.documentElement.scrollHeight;
+  const scrollFraction = scrollY / scrollHeight;
+
+  // Wait for content to render
+  setTimeout(() => {
+      // Restore scroll position
+      const newScrollHeight = document.documentElement.scrollHeight;
+      window.scrollTo(0, newScrollHeight * scrollFraction);
+
+      // Update content
+      set_div_content(div_class, content)
+
+      if (typeof mermaid !== 'undefined') {
+          mermaid.init();
+      }
+      init_pdf_js();
+  }, 50);
+} catch (error) {
+  console.error("Error updating content:", error);
+}
+
+
+}
+
 
 // Handle tab clicks to switch between tabbed content
 document.addEventListener('click', function(event) {
@@ -70,15 +81,15 @@ document.addEventListener('click', function(event) {
         // Get tab set number from ID
         const tabId = tab.id;
         const [_, tabSetNumber, tabNumber] = tabId.split('_');
-        
+
         // Get all tabs in this set
         const allTabs = document.querySelectorAll(`[id^="__tabbed_${tabSetNumber}_"]`);
         const allContents = document.querySelectorAll(`[id^="__tabbed_content_${tabSetNumber}_"]`);
-        
+
         // Update tabs and contents
         allTabs.forEach(t => t.classList.remove('active'));
         allContents.forEach(c => c.classList.remove('active'));
-        
+
         // Activate clicked tab and its content
         tab.classList.add('active');
         const content = document.getElementById(`__tabbed_content_${tabSetNumber}_${tabNumber}`);
