@@ -220,12 +220,19 @@ Variables
       border-collapse: collapse;
       margin: 0;
 
-      .filename {
-        padding: 0.5em 1em;
-        background: #e1e4e8;
-        font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
-        font-size: 0.9em;
-        color: #586069;
+      tr:first-child {
+        display: block;
+        width: 100%;
+        
+        th.filename {
+          padding: 0.5em 1em;
+          background: #e1e4e8;
+          font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+          font-size: 0.9em;
+          color: #586069;
+          border-bottom: 1px solid #e1e4e8;
+          display: block;
+        }
       }
 
       td {
