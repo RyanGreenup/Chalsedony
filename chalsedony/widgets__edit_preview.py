@@ -408,20 +408,16 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         menu.exec(self.mapToGlobal(pos))
 
     def _copy_selection_as_html(self) -> None:
-        """
-        Copy selected text as plain text to clipboard
-
-        Parent will convert to html
-        """
+        """Copy selected text as HTML to clipboard while preserving formatting"""
         cursor = self.textCursor()
         if cursor.hasSelection():
-            # Get the markdown content
-            md_text = cursor.selection().toPlainText()
+            # Get the HTML content
+            html = cursor.selection().toHtml()
             # Emit signal with HTML content
-            self.htmlCopied.emit(md_text)
-            # Copy to clipboard
+            self.htmlCopied.emit(html)
+            # Copy to clipboard while preserving HTML formatting
             clipboard = QApplication.clipboard()
-            clipboard.setText(md_text)
+            clipboard.setHtml(html)
 
 
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
