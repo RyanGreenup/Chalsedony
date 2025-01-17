@@ -1,5 +1,5 @@
 
-/* 
+/*
 Variables
 */
 .markdown {
@@ -145,14 +145,14 @@ Variables
     --md-code-hl-color: #4287ff;
     border-collapse: initial;
     border-spacing: 0;
-    font-weight: 400;
+    /* font-weight: 400; */
     line-height: 1.4;
     font-feature-settings: "kern";
     font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
     color: var(--md-code-fg-color, #24292e);
     direction: ltr;
     font-variant-ligatures: none;
-    font-size: .85em;
+    /* font-size: .85em; */
     word-break: normal;
     -webkit-tap-highlight-color: transparent;
     box-sizing: inherit;
