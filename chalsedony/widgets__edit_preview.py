@@ -73,6 +73,7 @@ register_scheme("qrc")
 @final
 class EditPreview(QWidget):
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
+    status_bar_message = Signal(str)  # Signal to send messages to status bar
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -92,6 +93,10 @@ class EditPreview(QWidget):
 
         self.editor = MDTextEdit()
         self.preview = WebPreview(note_model=self.note_model)
+
+        if not self.editor.request_copy_md_as_html.connect(self.copy_md_as_html):
+            # TODO set status message
+            print("Failed to connect request_copy_md_as_html signal")
 
         # The background should be transparent to match the UI
         self.preview.setStyleSheet("background: transparent;")
@@ -116,6 +121,13 @@ class EditPreview(QWidget):
             self.apply_dark_theme(
                 app.property("darkMode") or False
             )  # Don't Flash at Night
+
+    def copy_md_as_html(self, md_text: str) -> None:
+        clipboard = QApplication.clipboard()
+        html = self.convert_md_to_html(md_text)
+        clipboard = QApplication.clipboard()
+        clipboard.setText(html)
+        self.status_bar_message.emit("HTML copied to clipboard")
 
     @property
     def md(self) -> markdown.Markdown:
@@ -168,8 +180,10 @@ class EditPreview(QWidget):
             )
             return self._md
 
-    def convert_md_to_html(self) -> str:
-        html = self.md.convert(self.editor.toPlainText())
+    def convert_md_to_html(self, md_text: str | None = None) -> str:
+        if not md_text:
+            md_text = self.editor.toPlainText()
+        html = self.md.convert(md_text)
         # Replace image URLs to use note: scheme
         html = self.preview.rewrite_html_links(html)
         html = html.replace('src=":', 'src="note:/')
@@ -316,7 +330,7 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested: Signal = Signal(str)  # Filepath
     # Signal emitted with HTML content when copied
-    htmlCopied: Signal = Signal(str)
+    request_copy_md_as_html: Signal = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -413,10 +427,7 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
             # Get the HTML content
             html = cursor.selection().toHtml()
             # Emit signal with HTML content
-            self.htmlCopied.emit(html)
-            # Copy to clipboard while preserving HTML formatting
-            clipboard = QApplication.clipboard()
-            clipboard.setHtml(html)
+            self.request_copy_md_as_html.emit(html)
 
 
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
