@@ -152,11 +152,14 @@ class NoteView(QWidget):
         self._populate_back_and_forward_links()
 
     def _populate_back_and_forward_links(self) -> None:
+        QApplication.processEvents()
         if self.current_note_id:
             self.backlinks_list.populate(self.model.get_backlinks(self.current_note_id))
             self.forwardlinks_list.populate(
                 self.model.get_forwardlinks(self.current_note_id)
             )
+        else:
+            print("unable to populate backlinks and forwardlinks")
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -497,7 +500,12 @@ class NoteView(QWidget):
                         content_area.editor.setPlainText(note.body or "")
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
-                        self._populate_back_and_forward_links()
+                        self.backlinks_list.populate(self.model.get_backlinks(item_data.id))
+                        self.forwardlinks_list.populate(
+                            self.model.get_forwardlinks(item_data.id)
+                        )
+                        # I wanted to do this but it doesn't work # TODO
+                        # self._populate_back_and_forward_links()
                 case ItemType.FOLDER:
                     self.current_note_id = None
                     content_area.editor.clear()

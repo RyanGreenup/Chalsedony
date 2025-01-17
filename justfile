@@ -12,7 +12,7 @@ check-mypy:
 
 run:
     # uv run -- python chalsedony/main.py
-    uv run cy
+    uv run cy & 
 
 
 embed-assets:
