@@ -11,7 +11,8 @@ check-mypy:
     mypy --strict chalsedony | grep -v rc | grep -v missing-import | grep -v 'missing library stubs' | grep -v 'ignore'
 
 run:
-    uv run -- python chalsedony/main.py
+    # uv run -- python chalsedony/main.py
+    uv run cy
 
 
 embed-assets:
@@ -27,3 +28,9 @@ embed-assets:
     # Just make a copy of them I guess
     pyside6-rcc chalsedony/static/katex/dist/fonts/katex_fonts.qrc -o chalsedony/katex_fonts_rc.py
 
+
+build:
+    uv build
+
+install:
+    uv tool install .
