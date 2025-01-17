@@ -1,32 +1,21 @@
-[tool.poetry]
-name = "chalsedony"
+[project]
+name = "Chalsedony"
 version = "0.1.0"
-description = "A GUI for the Chalsedony Notetaking tool"
-authors = ["ryan <exogenesis@protonmail.com>"]
-license = "GPL"
+description = "A Notetaking Application compatible with Joplin built with QT and SQLite"
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = ">=3.12,<3.14"
-pyside6 = "^6.8.1"
-typer = "^0.15.1"
-pyyaml = "^6.0.1"
-beautifulsoup4 = "^4.12.3"
-pymdown-extensions = "^10.14"
-mimetype = "^0.1.5"
-markdown = "^3.7"
-pygments = "^2.19.1"
-markdownify = "^0.14.1"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-# [tool.poetry.scripts]
-# duckdb-browser = "main:app"
-
-packages = [{include = "*", from="chalsedony"}]
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.12.3",
+    "markdownify>=0.14.1",
+    "mimetype>=0.1.5",
+    "pydantic>=2.10.5",
+    "pygments>=2.19.1",
+    "pymdown-extensions>=10.14",
+    "pynvim>=0.5.2",
+    "pyside6>=6.8.1.1",
+    "pyyaml>=6.0.2",
+    "typer>=0.15.1",
+]
 
 [tool.ruff]
 # Exclude directories and files
@@ -43,3 +32,20 @@ exclude = [
     'chalsedony/katex_resources_rc.py'
 ]
 
+
+[project.scripts]
+cy = "chalsedony.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+# [tool.hatch.build.targets.wheel]
+# packages = ["src/chalsedony"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["chalsedony"]

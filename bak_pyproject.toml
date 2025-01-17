@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "chalsedony"
+version = "0.1.0"
+description = "A GUI for the Chalsedony Notetaking tool"
+authors = ["ryan <exogenesis@protonmail.com>"]
+license = "GPL"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.14"
+pyside6 = "^6.8.1"
+typer = "^0.15.1"
+pyyaml = "^6.0.1"
+beautifulsoup4 = "^4.12.3"
+pymdown-extensions = "^10.14"
+mimetype = "^0.1.5"
+markdown = "^3.7"
+pygments = "^2.19.1"
+markdownify = "^0.14.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# [tool.poetry.scripts]
+# duckdb-browser = "main:app"
+
+packages = [{include = "*", from="chalsedony"}]
+
+[tool.ruff]
+# Exclude directories and files
+exclude = [
+    "./chalsedony/static/",
+    "*.pyc",
+    "__pycache__/",
+]
+
+[tool.mypy]
+exclude = [
+    'chalsedony/static',
+    'chalsedony/katex_fonts_rc.py',
+    'chalsedony/katex_resources_rc.py'
+]
+

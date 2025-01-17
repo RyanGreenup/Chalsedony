@@ -1,8 +1,8 @@
 check:
-    ruff format src/**/*.py
-    ruff check src --fix
-    pyright src 
-    ruff format src/**/*.py
+    ruff format chalsedony/**/*.py
+    ruff check chalsedony --fix
+    pyright chalsedony
+    ruff format chalsedony/**/*.py
     mypy --strict chalsedony | grep -v rc | grep -v missing-import | grep -v 'missing library stubs' | grep -v 'ignore'
     # vulture chalsedony/*.py
     check-mypy
@@ -11,7 +11,7 @@ check-mypy:
     mypy --strict chalsedony | grep -v rc | grep -v missing-import | grep -v 'missing library stubs' | grep -v 'ignore'
 
 run:
-    python chalsedony/main.py &
+    uv run -- python chalsedony/main.py
 
 
 embed-assets:
