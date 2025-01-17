@@ -18,7 +18,7 @@ Create connections between notes with a keyboard shortcut for inserting links (N
 📅 **Journal Integration**
 Built-in Keyboard shortcut to focus on today's journal entry (`YYYY-MM-DD`)
 
-🔍 *Search**
+🔍 **Search**
 Uses the Same FTS as Joplin (FTS4 right now `#TODO upgrade to FTS5`)
 
 📝 **Markdown pymdown extensions**
