@@ -147,6 +147,16 @@ class NoteView(QWidget):
     def _populate_ui(self, tree_data: Dict[str, FolderTreeItem] | None = None) -> None:
         self.tree_widget.populate_tree(tree_data)
         self._populate_notes_list()
+        self._populate_back_and_forward_links()
+
+    def _populate_back_and_forward_links(self) -> None:
+        if self.current_note_id:
+            self.backlinks_list.populate(
+                self.model.get_backlinks(self.current_note_id)
+            )
+            self.forwardlinks_list.populate(
+                self.model.get_forwardlinks(self.current_note_id)
+            )
 
     def setup_ui(self) -> None:
         # Main layout to hold the splitter
@@ -484,12 +494,7 @@ class NoteView(QWidget):
                         content_area.editor.setPlainText(note.body or "")
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
-                        self.backlinks_list.populate(
-                            self.model.get_backlinks(item_data.id)
-                        )
-                        self.forwardlinks_list.populate(
-                            self.model.get_forwardlinks(item_data.id)
-                        )
+                        self._populate_back_and_forward_links()
                 case ItemType.FOLDER:
                     self.current_note_id = None
                     content_area.editor.clear()
