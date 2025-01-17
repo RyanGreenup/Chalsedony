@@ -34,7 +34,9 @@ from PySide6.QtCore import (
     QEasingCurve,
     QUrl,
     QMimeData,
+    QPoint,
 )
+from PySide6.QtWidgets import QApplication
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from bs4 import BeautifulSoup, Tag
 import markdown
@@ -314,11 +316,16 @@ class MyTextEdit(QTextEdit):
 class MDTextEdit(MyTextEdit, VimTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested: Signal = Signal(str)  # Filepath
+    # Signal emitted with HTML content when copied
+    htmlCopied: Signal = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         # Enable rich text paste handling
         self.setAcceptRichText(True)
+        # Create context menu
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_context_menu)
         # Create a persistent temp directory for pasted images
         self.temp_dir: str = tempfile.mkdtemp(prefix="chalsedony_")
         self.highlighter: MarkdownHighlighter = MarkdownHighlighter(self.document())
@@ -388,6 +395,29 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         if scrollbar.maximum() == 0:
             return 0
         return scrollbar.value() / scrollbar.maximum()
+
+    def _show_context_menu(self, pos: QPoint) -> None:
+        """Show custom context menu with HTML copy option"""
+        menu = self.createStandardContextMenu()
+        
+        # Add "Copy as HTML" action if there's a selection
+        if self.textCursor().hasSelection():
+            copy_html_action = menu.addAction("Copy Selection as HTML")
+            copy_html_action.triggered.connect(self._copy_selection_as_html)
+        
+        menu.exec(self.mapToGlobal(pos))
+
+    def _copy_selection_as_html(self) -> None:
+        """Copy selected text as HTML to clipboard"""
+        cursor = self.textCursor()
+        if cursor.hasSelection():
+            # Get selected HTML content
+            html = cursor.selection().toHtml()
+            # Emit signal with HTML content
+            self.htmlCopied.emit(html)
+            # Copy to clipboard
+            clipboard = QApplication.clipboard()
+            clipboard.setText(html)
 
 
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
