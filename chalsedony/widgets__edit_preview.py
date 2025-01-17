@@ -399,26 +399,29 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
     def _show_context_menu(self, pos: QPoint) -> None:
         """Show custom context menu with HTML copy option"""
         menu = self.createStandardContextMenu()
-        
+
         # Add "Copy as HTML" action if there's a selection
         if self.textCursor().hasSelection():
             copy_html_action = menu.addAction("Copy Selection as HTML")
             copy_html_action.triggered.connect(self._copy_selection_as_html)
-        
+
         menu.exec(self.mapToGlobal(pos))
 
     def _copy_selection_as_html(self) -> None:
-        """Copy selected text as plain text to clipboard
+        """
+        Copy selected text as plain text to clipboard
+
+        Parent will convert to html
         """
         cursor = self.textCursor()
         if cursor.hasSelection():
             # Get the markdown content
-            html = cursor.selection().toPlainText()
+            md_text = cursor.selection().toPlainText()
             # Emit signal with HTML content
-            self.htmlCopied.emit(html)
+            self.htmlCopied.emit(md_text)
             # Copy to clipboard
             clipboard = QApplication.clipboard()
-            clipboard.setText(html)
+            clipboard.setText(md_text)
 
 
 class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
