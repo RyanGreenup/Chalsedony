@@ -1,7 +1,8 @@
 check:
     ruff format **/*.py
     ruff check chalsedony --fix
-    pyright chalsedony
+    # pyright chalsedony
+    basedpyright chalsedony
     ruff format chalsedony/**/*.py
     mypy --strict chalsedony | grep -v rc | grep -v missing-import | grep -v 'missing library stubs' | grep -v 'ignore'
     # vulture chalsedony/*.py

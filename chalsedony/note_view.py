@@ -500,7 +500,9 @@ class NoteView(QWidget):
                         content_area.editor.setPlainText(note.body or "")
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
-                        self.backlinks_list.populate(self.model.get_backlinks(item_data.id))
+                        self.backlinks_list.populate(
+                            self.model.get_backlinks(item_data.id)
+                        )
                         self.forwardlinks_list.populate(
                             self.model.get_forwardlinks(item_data.id)
                         )
