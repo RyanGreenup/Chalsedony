@@ -218,3 +218,19 @@ All keyboard shortcuts are documented in the menus and command palette, except f
 
 ```
 
+## Contributors
+
+- [Shaira Viaje Greenup](https://github.com/shaira-greenup)
+- Ryan Greenup
+
+## References
+
+- [Aider](https://aider.chat/HISTORY.html) was a massive time saver
+- [Joplin](https://joplinapp.org/)
+    - The Schema was adapted for full compatability
+- [Pymdown Extensions](https://facelessuser.github.io/pymdown-extensions/extensions/superfences/)
+- [Typer](https://github.com/fastapi/typer)
+- [UV](https://github.com/astral-sh/uv)
+- [Markdownify](https://pypi.org/project/markdownify/)
+
+
