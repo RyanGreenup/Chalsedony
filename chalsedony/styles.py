@@ -18,7 +18,6 @@ QLineEdit {
 
 """
 
-
 tree_view = """
 
 QTreeView {
@@ -81,7 +80,24 @@ QTreeView::branch:!has-children:!has-siblings:adjoins-item {
     border-image: none;
     image: none;
 }
+"""
 
+# AI: This is the chevrons
+chevron_down = """
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="6 9 12 15 18 9"></polyline>
+</svg>
+"""
+
+chevron_right = """
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+"""
+
+# Replace the references with the actual SVG directly AI!
+
+tree_view += """
 QTreeView::branch:has-children:!has-siblings:closed,
 QTreeView::branch:closed:has-children:has-siblings {
     image: url(chalsedony/icons/chevron-right.svg);
