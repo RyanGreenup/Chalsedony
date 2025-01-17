@@ -178,9 +178,10 @@ Variables
       font-size: 0.9em;
       color: #586069;
       border-bottom: 1px solid #e1e4e8;
-      display: table-cell;
+      display: block;
       width: 100%;
       text-align: left;
+      box-sizing: border-box;
     }
 
     .md-clipboard {
