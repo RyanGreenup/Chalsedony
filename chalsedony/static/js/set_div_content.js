@@ -1,3 +1,5 @@
+// Improve this so any javascript in the content is not lost and is executed AI!
+
 function set_div_content(div_class, content) {
     // First ensure KaTeX is loaded
     if (typeof renderMathInElement === 'undefined') {
