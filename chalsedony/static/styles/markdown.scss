@@ -177,8 +177,10 @@ Variables
       font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
       font-size: 0.9em;
       color: #586069;
-      display: block;
       border-bottom: 1px solid #e1e4e8;
+      display: table-cell;
+      width: 100%;
+      text-align: left;
     }
 
     .md-clipboard {
