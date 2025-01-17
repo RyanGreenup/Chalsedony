@@ -4,7 +4,8 @@
          "./chalsedony/static_resources_rc.py",
          "./chalsedony/katex_fonts_rc.py",
          "./chalsedony/katex_resources_rc.py",
-         "chalsedony/static/katex/src/"
+         "chalsedony/static/katex/src/",
+         "*/.venv/*"
      ],
 
      "type": {

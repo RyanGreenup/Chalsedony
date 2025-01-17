@@ -1,5 +1,5 @@
 check:
-    ruff format chalsedony/**/*.py
+    ruff format **/*.py
     ruff check chalsedony --fix
     pyright chalsedony
     ruff format chalsedony/**/*.py

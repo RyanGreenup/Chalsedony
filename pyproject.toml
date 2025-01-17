@@ -22,6 +22,7 @@ dependencies = [
 exclude = [
     "./chalsedony/static/",
     "*.pyc",
+    ".venv/**/*",
     "__pycache__/",
 ]
 
