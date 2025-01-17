@@ -128,7 +128,9 @@ class NoteView(QWidget):
             for days_ago in range(1, 31):
                 journal_page = self.model.get_journal_page_for_today(offset=-days_ago)
                 if journal_page is not None:
-                    self.send_status_message(f"Showing journal from {days_ago} day{'s' if days_ago > 1 else ''} ago")
+                    self.send_status_message(
+                        f"Showing journal from {days_ago} day{'s' if days_ago > 1 else ''} ago"
+                    )
                     break
 
         if journal_page is None:
@@ -151,9 +153,7 @@ class NoteView(QWidget):
 
     def _populate_back_and_forward_links(self) -> None:
         if self.current_note_id:
-            self.backlinks_list.populate(
-                self.model.get_backlinks(self.current_note_id)
-            )
+            self.backlinks_list.populate(self.model.get_backlinks(self.current_note_id))
             self.forwardlinks_list.populate(
                 self.model.get_forwardlinks(self.current_note_id)
             )

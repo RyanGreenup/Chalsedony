@@ -173,7 +173,7 @@ class EditPreview(QWidget):
         html = html.replace('src=":', 'src="note:/')
         return html
 
-    def update_preview_local(self, full_load: bool = False) -> None:
+    def update_preview_local(self) -> None:
         """
         Converts the editor from markdown to HTML and sets the preview HTML content.
         Preserves the current scroll position during updates.
@@ -200,9 +200,7 @@ class EditPreview(QWidget):
         if not self.preview.page().loadFinished.connect(restore_scroll):
             print("Failed to connect loadFinished signal")
 
-        if full_load:
-            self.preview._apply_html_template("")
-        self.preview.set_html_content("markdown", html)
+        self.preview.set_html(html)
 
     def _get_editor_width(self) -> float:
         return float(self.editor.width())
@@ -270,9 +268,8 @@ class EditPreview(QWidget):
     def refresh_preview(self) -> None:
         """Refresh the preview content"""
         # Reset the HTML base template to ensure the preview is updated
-        self.preview._apply_html_template(
-            self.convert_md_to_html()
-        )
+        self.preview._content_already_set = False
+        self.preview.set_html(self.convert_md_to_html())
 
 
 class MyTextEdit(QTextEdit):
@@ -465,11 +462,11 @@ class WebPreview(QWebEngineView):
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         # TODO Refactor this so the WebPreview sets the content on construction
-        self.content_already_set = False  # Has the content been set?
+        self._content_already_set: bool = False  # Has the content been set?
+        self._content_div: str = "markdown"
         self.setPage(NoteLinkPage(parent=self, note_model=note_model))
         self.note_model: NoteModel = note_model
         self.setZoomFactor(1.0)  # Initialize zoom factor
-        self._apply_html_template()
 
         # Connect to application font changes
         if app := QApplication.instance():
@@ -483,11 +480,16 @@ class WebPreview(QWebEngineView):
         self._search_text = ""
         self._search_flags = cast(QWebEnginePage.FindFlag, 0)
 
-    # Improve this function so any javascript is evaluated after changing the content AI!
-    def set_html_content(self, div_class: str, content: str) -> bool:
+    def update_content_div(self, div_class: str, content: str) -> None:
         """
         Set the inner HTML content of a div with the specified class using JavaScript.
         This is the appropriate way to set the content to avoid flickering and scrolling of the content.
+
+        This will not evaluate Javascript, so only use this for updating content.
+
+        When the user refreshes the page, the javascript will run.
+        The set_div_content_and_eval function runs some javascript
+        which is useful, e.g. mermaid and katex.
 
         Args:
             div_class: The CSS class name of the div to update
@@ -505,10 +507,6 @@ class WebPreview(QWebEngineView):
 
         # Define callback to handle the result
         def handle_result(result: bool) -> None:
-            if not result:
-                # If there is no matching div, set it first
-                self._apply_html_template(content)
-                handle_result(True)
             if result:
                 # Div exists, update its content
                 # Improve this to perserve the state of
@@ -522,10 +520,22 @@ class WebPreview(QWebEngineView):
                 }}
                     """
                 self.page().runJavaScript(update_js)
+            else:
+                # If there is no matching div, set from scratch
+                self._content_already_set = False
+                self.set_html(content)
 
         # Run the check and handle result
         self.page().runJavaScript(check_js, resultCallback=handle_result)
-        return True
+        self._content_already_set = True
+
+    def set_html(self, html: str) -> None:
+        if self._content_already_set:
+            self.update_content_div(self._content_div, html)
+        else:
+            content = self.get_html_template(html)
+            self.setHtml(content, QUrl("note://"))
+            self._content_already_set = True
 
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
@@ -553,7 +563,7 @@ class WebPreview(QWebEngineView):
 
         return "\n".join(css_links)
 
-    def _apply_html_template(self, html: str = "PLACEHOLDER_CONTENT") -> None:
+    def get_html_template(self, html: str = "PLACEHOLDER_CONTENT") -> str:
         # Allow direct file:// URLs to pass through
         css_includes = self._get_css_resources()
         html = f"""<!DOCTYPE html>
@@ -600,7 +610,8 @@ class WebPreview(QWebEngineView):
         </body>
         </html>
         """
-        self.setHtml(html, QUrl("note://"))
+        # self.setHtml(html, QUrl("note://"))
+        return html
 
     def get_csrf_token(self) -> str | None:
         """Get the CSRF token from the page's JavaScript context.
@@ -610,7 +621,7 @@ class WebPreview(QWebEngineView):
         """
         token = None
 
-        def callback(result):
+        def callback(result) -> None:
             nonlocal token
             token = result
 
