@@ -175,6 +175,7 @@ class NoteView(QWidget):
         self.left_tabs = QTabWidget()
 
         # First tab - Tree view
+        # AI: The tree is created here
         self.tree_widget = NoteTree(self.model)
         self.left_tabs.addTab(self.tree_widget, "Folders")
 
@@ -722,8 +723,10 @@ class NoteView(QWidget):
         # Focus the search bar
         self.search_tab.search_input.setFocus()
 
+    # Fix this method so it focuses the tree, currently it does not focus the tree AI!
     def focus_note_tree(self) -> None:
         """Focus the tree view"""
+        QApplication.processEvents()
         self.left_tabs.setCurrentWidget(self.tree_widget)
         self.tree_widget.setFocus()
 
