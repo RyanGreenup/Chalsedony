@@ -9,6 +9,7 @@ from PySide6.QtGui import (
     QDragEnterEvent,
     QDragMoveEvent,
     QDropEvent,
+    QIcon,
     QKeyEvent,
     QMouseEvent,
 )
@@ -173,6 +174,8 @@ class NoteTree(StatefulTree, TreeWithFilter, TreeWidgetWithCycle):
             )
             # Set folder icon
             folder_icon = self.style().standardIcon(QStyle.StandardPixmap.SP_DirIcon)
+            # icon_path = ":/icons/folder-svgrepo-com.svg"
+            # folder_icon = QIcon(icon_path)
             folder_item.setIcon(0, folder_icon)
             folder_items[folder_data.folder.id] = folder_item
 

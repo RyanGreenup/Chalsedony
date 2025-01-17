@@ -46,6 +46,12 @@
         <file>css/tasklist.css</file>
         <file>css/my_pdfjs_styling.css</file>
     </qresource>
+    <qresource prefix="/">
+        <file>icons/chevron-right.svg</file>
+        <file>icons/chevron-down.svg</file>
+        <file>icons/fa-folder.svg</file>
+        <file>icons/folder-svgrepo-com.svg</file>
+    </qresource>
 </RCC>
 
 

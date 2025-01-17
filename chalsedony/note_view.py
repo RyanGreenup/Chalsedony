@@ -286,6 +286,9 @@ class NoteView(QWidget):
         self.tree_widget.folder_create.connect(self._on_create_folder_requested)
         self.content_area.preview.note_selected.connect(self._handle_note_selection)
 
+        # Content Area
+        self.content_area.status_bar_message.connect(self.send_status_message)
+
         # Connect search tab signals
         self.search_tab.search_text_changed.connect(self._on_search_text_changed)
         # This needs to be reviewed for follow mode with Enter (already implemented in widget
