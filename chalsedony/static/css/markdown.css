@@ -1,4 +1,5 @@
-/* 
+@charset "UTF-8";
+/*
 Variables
 */
 .markdown {
@@ -106,6 +107,158 @@ Variables
 .markdown img {
   max-width: 100%;
   box-sizing: border-box;
+}
+.markdown .hll {
+  --md-code-hl-color: #4287ff;
+  border-collapse: initial;
+  border-spacing: 0;
+  /* font-weight: 400; */
+  line-height: 1.4;
+  font-feature-settings: "kern";
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  color: var(--md-code-fg-color, #24292e);
+  direction: ltr;
+  font-variant-ligatures: none;
+  /* font-size: .85em; */
+  word-break: normal;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: inherit;
+  background-color: var(--md-code-hl-color--light, rgba(66, 135, 255, 0.1));
+  box-shadow: 2px 0 0 0 var(--md-code-hl-color) inset;
+  display: block;
+  margin: 0 -1.1764705882em;
+  padding: 0 1.1764705882em;
+}
+.markdown .highlight {
+  margin: 1em 0;
+  border-radius: 5px;
+  border: 1px solid #e1e4e8;
+  background: #f6f8fa;
+  overflow: hidden;
+  position: relative;
+}
+.markdown .highlight .filename {
+  padding: 0.5em 1em;
+  background: #e1e4e8;
+  /* font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace; */
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #586069;
+  border-bottom: 1px solid #e1e4e8;
+  display: block;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+}
+.markdown .highlight .md-clipboard {
+  position: absolute;
+  right: 0.5em;
+  top: 0.5em;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+  padding: 0.25em;
+  border-radius: 3px;
+}
+.markdown .highlight .md-clipboard:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.2);
+}
+.markdown .highlight .md-clipboard::after {
+  content: "📋";
+  font-size: 0.9em;
+}
+.markdown .highlight pre {
+  margin: 0;
+  padding: 0.5em 1em;
+  overflow-x: auto;
+  line-height: 1.5;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.9em;
+  background: transparent;
+  border: none;
+}
+.markdown .highlight table.highlighttable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+.markdown .highlight table.highlighttable tr:first-child th.filename {
+  padding: 0.5em 1em;
+  background: #e1e4e8;
+  /* font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace; */
+  font-weight: normal;
+  font-size: 0.9em;
+  color: #586069;
+  border-bottom: 1px solid #e1e4e8;
+  display: table-cell;
+  width: 100%;
+  text-align: left;
+}
+.markdown .highlight table.highlighttable td {
+  padding: 0;
+  vertical-align: top;
+}
+.markdown .highlight table.highlighttable .linenos {
+  width: 1%;
+  min-width: 50px;
+  padding: 0.5em;
+  background: #f6f8fa;
+  border-right: 1px solid #e1e4e8;
+  text-align: right;
+  color: #999;
+  user-select: none;
+}
+.markdown .highlight table.highlighttable .linenos .linenodiv pre {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.9em;
+}
+.markdown .highlight table.highlighttable .code {
+  width: 100%;
+  padding: 0.5em 1em;
+  overflow-x: auto;
+}
+.markdown .highlight table.highlighttable .code pre {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.9em;
+  background: transparent;
+  border: none;
+}
+.markdown .grid.cards {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  box-sizing: inherit;
+  grid-gap: 0.4rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  margin: 1em 0;
+}
+.markdown .grid.cards ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: contents;
+}
+.markdown .grid.cards li {
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.markdown .grid.cards li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 /*# sourceMappingURL=markdown.css.map */

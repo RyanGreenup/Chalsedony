@@ -24,6 +24,7 @@ Variables
   $page-title-color: #111; // Darker than standard heading color
   $page-title-margin-bottom: 0.75em;
   $page-title-margin-top: 0; // Start right at the top or adjust for any desired top margin
+  $code-filename-title-weight: 600; // This variable isn't working right, 600 is a magic number, look at the code with and without line numbers
 
   .page-title {
     font-family: $heading-font-family;
@@ -174,8 +175,9 @@ Variables
     .filename {
       padding: 0.5em 1em;
       background: #e1e4e8;
-      font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      /* font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace; */
       font-size: 0.9em;
+      font-weight: $code-filename-title-weight;
       color: #586069;
       border-bottom: 1px solid #e1e4e8;
       display: block;
@@ -226,7 +228,8 @@ Variables
       tr:first-child th.filename {
         padding: 0.5em 1em;
         background: #e1e4e8;
-        font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        /* font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace; */
+        font-weight: normal;
         font-size: 0.9em;
         color: #586069;
         border-bottom: 1px solid #e1e4e8;
