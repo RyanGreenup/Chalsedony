@@ -1,57 +1,143 @@
 # Chalsedony - A Modern Note-Taking Application
 
-Chalsedony is a powerful, open-source note-taking application built with Python and Qt, designed for users who value both simplicity and advanced features. With its clean interface and robust backend, Chalsedony helps you organize your thoughts, ideas, and knowledge efficiently.
+Chalsedony is an open-source note-taking application built with Python and Qt, designed for compatability with [Joplin](https://github.com/laurent22/joplin) it aims to bring a performant keyboard centric UI.
+
+![](./assets/screenshot.png)
 
 ## Key Features
 
-✨ **Modern Qt Interface**  
-Enjoy a sleek, responsive user interface with dark/light mode support and customizable themes.
+✨ **Modern Qt Interface**
+Enjoy a sleek, responsive user interface with dark/light mode support, zoom and Neovim Integration.
 
-📚 **SQLite Backend**  
-Your notes are stored in a reliable SQLite database, ensuring fast performance and easy data management.
+📚 **SQLite Backend**
+Notes are stored in a reliable SQLite database with full compatability with Joplin, this gives us free Full Text Search and no broken links.
 
-🔗 **Note Linking**  
-Create connections between notes with intuitive linking and backlinking capabilities.
+🔗 **Note Linking**
+Create connections between notes with a keyboard shortcut for inserting links (No Plugins needed!)
 
-📅 **Journal Integration**  
-Built-in journal functionality helps you maintain daily notes and track your progress.
+📅 **Journal Integration**
+Built-in Keyboard shortcut to focus on today's journal entry (`YYYY-MM-DD`)
 
-🔍 **Powerful Search**  
-Quickly find what you need with advanced search and filtering options.
+🔍 *Search**
+Uses the Same FTS as Joplin (FTS4 right now `#TODO upgrade to FTS5`)
 
-📝 **Markdown Support**  
-Write and preview notes using Markdown formatting for rich text editing.
+📝 **Markdown pymdown extensions**
+Write and preview notes using Markdown with some extra features like admonitions.
 
-⚙️ **Customizable Workflow**  
-Tailor the interface with customizable shortcuts, layouts, and preferences.
+⚙️ **Hackable**
+Edit the source!
 
 ## Getting Started
 
 ### Prerequisites
-- Python 3.8+
-- PySide6
-- SQLite3
+
+* `uv`
 
 ### Installation
+
 ```bash
-pip install -r requirements.txt
+uv tool install git+https://github.com/ryangreenup/chalsedony
+cy
 ```
 
-### Running the Application
+### Uninstallation
+
 ```bash
-python -m chalsedony.main
+uv tool uninstall chalsedony
 ```
 
 ## Contributing
 
-We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+PR's Welcome!
 
 ## License
 
-Chalsedony is released under the MIT License. See [LICENSE](LICENSE) for more information.
+Chalsedony is released under the GPL License.
 
 ## Why Chalsedony?
 
-Named after the chalcedony gemstone known for its clarity and versatility, this application aims to be a clear and flexible tool for your knowledge management needs. Whether you're a writer, researcher, or just someone who loves organizing information, Chalsedony is designed to grow with you.
+I figure Chalsedony is a gemstone like Obsidian, but it's a bit more clear and versatile.
 
-Join us in building the future of note-taking!
+## TODO Documentation
+
+There are some additional features like datatables
+
+
+
+    /// tab | Previw
+    /// note | Admonitions
+    This is a note
+    ///
+    ///
+    ///tab | Source
+    ```markdown
+    /// note | Admonitions
+    This is a note
+    ///
+    ```
+    ///
+    ///tab | HTML
+    ```html
+    <div class="admonition" markdown="1">
+    <p class="admonition-title" markdown="1"> Some title</p>
+    <p>Some content</p>
+    </div>
+    ```
+    ///
+
+
+    ```mermaid
+    graph TD
+        A[Hard] -->|Text| B(Round)
+        B --> C{Decision}
+        C -->|One| D[Result 1]
+        C -->|Two| E[Result 2]
+    ```
+
+
+
+    [=85% "85%"]{: .candystripe}
+    [=100% "100%"]{: .candystripe .candystripe-animate}
+    [=0%]{: .thin}
+    [=5%]{: .thin}
+    [=25%]{: .thin}
+    [=45%]{: .thin}
+    [=65%]{: .thin}
+    [=85%]{: .thin}
+    [=100%]{: .thin}
+
+
+    Aligned images:
+
+    ![](:/{id}){width="100px" align=right}
+
+    Captions:
+
+    ![](:/{id})
+    /// caption
+        attrs: {class: "thumbnail tiny"}
+    A Caption
+    ///
+
+
+
+    Datatables
+
+
+    /// tab | Output
+    /// html | div.dataTablesContainer[style='border: 1px solid red;']
+
+    | Name                | Position                  | Office        | Age | Start date | Salary    |
+    |---------------------|---------------------------|---------------|-----|------------|-----------|
+    | Tiger Nixon         | System Architect          | Edinburgh     | 61  | 2011-04-25 | \$320,800 |
+    | Garrett Winters     | Accountant                | Tokyo         | 63  | 2011-07-25 | \$170,750 |
+    | Ashton Cox          | Junior Technical Author   | San Francisco | 66  | 2009-01-12 | \$86,000  |
+
+    ///
+
+
+
+    <div
+        class="dataTablesContainer"
+        markdown="1">
+    </div>
