@@ -408,11 +408,12 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         menu.exec(self.mapToGlobal(pos))
 
     def _copy_selection_as_html(self) -> None:
-        """Copy selected text as HTML to clipboard"""
+        """Copy selected text as plain text to clipboard
+        """
         cursor = self.textCursor()
         if cursor.hasSelection():
-            # Get selected HTML content
-            html = cursor.selection().toHtml()
+            # Get the markdown content
+            html = cursor.selection().toPlainText()
             # Emit signal with HTML content
             self.htmlCopied.emit(html)
             # Copy to clipboard
