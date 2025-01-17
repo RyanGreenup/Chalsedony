@@ -45,4 +45,27 @@ function set_div_content(div_class, content) {
 }
 
 
-// I have implemnted that have the following ids: __tabbed_<tab_set_number>_<tab_number>, Write javascript to ensure when one tab is clicked, all tabs change AI!
+// Handle tab clicks to switch between tabbed content
+document.addEventListener('click', function(event) {
+    const tab = event.target.closest('[id^="__tabbed_"]');
+    if (tab) {
+        // Get tab set number from ID
+        const tabId = tab.id;
+        const [_, tabSetNumber, tabNumber] = tabId.split('_');
+        
+        // Get all tabs in this set
+        const allTabs = document.querySelectorAll(`[id^="__tabbed_${tabSetNumber}_"]`);
+        const allContents = document.querySelectorAll(`[id^="__tabbed_content_${tabSetNumber}_"]`);
+        
+        // Update tabs and contents
+        allTabs.forEach(t => t.classList.remove('active'));
+        allContents.forEach(c => c.classList.remove('active'));
+        
+        // Activate clicked tab and its content
+        tab.classList.add('active');
+        const content = document.getElementById(`__tabbed_content_${tabSetNumber}_${tabNumber}`);
+        if (content) {
+            content.classList.add('active');
+        }
+    }
+});
