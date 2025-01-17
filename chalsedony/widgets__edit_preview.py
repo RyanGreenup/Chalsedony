@@ -545,7 +545,6 @@ class WebPreview(QWebEngineView):
                             if (typeof PDFJS !== 'undefined') {{
                                 initPDFJS();
                             }}
-                            init_pdf_js()
                         }}, 50);
                     }} catch (error) {{
                         console.error("Error updating content:", error);
