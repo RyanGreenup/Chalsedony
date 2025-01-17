@@ -163,6 +163,70 @@ Variables
     padding: 0 1.1764705882em;
   }
 
+  .highlight {
+    margin: 1em 0;
+    border-radius: 5px;
+    border: 1px solid #e1e4e8;
+    background: #f6f8fa;
+    overflow: hidden;
+
+    table.highlighttable {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0;
+
+      .filename {
+        padding: 0.5em 1em;
+        background: #e1e4e8;
+        font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        font-size: 0.9em;
+        color: #586069;
+      }
+
+      td {
+        padding: 0;
+        vertical-align: top;
+      }
+
+      .linenos {
+        width: 1%;
+        min-width: 50px;
+        padding: 0.5em;
+        background: #f6f8fa;
+        border-right: 1px solid #e1e4e8;
+        text-align: right;
+        color: #999;
+        user-select: none;
+
+        .linenodiv {
+          pre {
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 0.9em;
+          }
+        }
+      }
+
+      .code {
+        width: 100%;
+        padding: 0.5em 1em;
+        overflow-x: auto;
+
+        pre {
+          margin: 0;
+          padding: 0;
+          line-height: 1.5;
+          font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+          font-size: 0.9em;
+          background: transparent;
+          border: none;
+        }
+      }
+    }
+  }
+
   .grid.cards {
     font-size: .8rem;
     line-height: 1.6;
