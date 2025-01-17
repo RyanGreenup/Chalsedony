@@ -312,7 +312,6 @@ class MyTextEdit(QTextEdit):
         self.setFont(font)
 
 
-# Add a right click menu "Copy Selection as HTML" that emits a signal with the selected content AI!
 class MDTextEdit(MyTextEdit, VimTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested: Signal = Signal(str)  # Filepath
