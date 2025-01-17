@@ -141,6 +141,28 @@ Variables
     box-sizing: border-box;
   }
 
+  .hll {
+    --md-code-hl-color: #4287ff;
+    border-collapse: initial;
+    border-spacing: 0;
+    font-weight: 400;
+    line-height: 1.4;
+    font-feature-settings: "kern";
+    font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    color: var(--md-code-fg-color, #24292e);
+    direction: ltr;
+    font-variant-ligatures: none;
+    font-size: .85em;
+    word-break: normal;
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: inherit;
+    background-color: var(--md-code-hl-color--light, rgba(66, 135, 255, 0.1));
+    box-shadow: 2px 0 0 0 var(--md-code-hl-color) inset;
+    display: block;
+    margin: 0 -1.1764705882em;
+    padding: 0 1.1764705882em;
+  }
+
   .grid.cards {
     font-size: .8rem;
     line-height: 1.6;
