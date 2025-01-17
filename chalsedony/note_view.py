@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 from PySide6.QtWidgets import (
+    QApplication,
     QMainWindow,
     QWidget,
     QHBoxLayout,
@@ -441,6 +442,8 @@ class NoteView(QWidget):
         self, item_data: TreeItemData, change_tree: bool = True
     ) -> None:
         """Common handler for note selection from either tree or list"""
+        # Wait for any signals in case a note is being made
+        QApplication.processEvents()
         # Safely disconnect textChanged signal to prevent update loop
         if self.current_note_id == item_data.id:
             print("Attempting to select the same note")
