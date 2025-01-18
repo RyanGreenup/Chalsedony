@@ -97,7 +97,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         self._sort_order = Qt.SortOrder.AscendingOrder
 
     def populate_tree(
-        self, 
+        self,
         tree_data: dict[str, FolderTreeItem] | None = None,
         sort_by: str = "title",
         sort_order: Qt.SortOrder = Qt.SortOrder.AscendingOrder
@@ -488,14 +488,14 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
 
     def set_sort_order(self, sort_by: str, sort_order: Qt.SortOrder) -> None:
         """Set the sorting order for the tree view
-        
+
         Args:
             sort_by: Field to sort by - "title", "created_time", "updated_time", or "order"
             sort_order: Qt.SortOrder.AscendingOrder or Qt.SortOrder.DescendingOrder
         """
         if sort_by not in ["title", "created_time", "updated_time", "order"]:
             raise ValueError("Invalid sort_by value")
-            
+
         self._sort_by = sort_by
         self._sort_order = sort_order
         self.populate_tree(sort_by=sort_by, sort_order=sort_order)

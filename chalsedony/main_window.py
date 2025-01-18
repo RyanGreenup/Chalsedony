@@ -1,6 +1,6 @@
 import sys
 from PySide6.QtCore import Signal, QTimer
-from PySide6.QtGui import QAction, QPalette
+from PySide6.QtGui import QAction, QPalette, Qt
 import sqlite3
 from sqlite3 import Connection
 from pathlib import Path
@@ -348,6 +348,31 @@ class MainWindow(QMainWindow):
                     ],
                 ),
                 MenuStructure(
+                    name="&Order Tree",
+                    actions=[
+                        MenuAction(
+                            id="order_tree_by_title",
+                            text="Order Tree by &Title",
+                            handler="order_tree_by_title",
+                        ),
+                        MenuAction(
+                            id="order_tree_by_created_time",
+                            text="Order Tree by &created_time",
+                            handler="order_tree_by_created_time",
+                        ),
+                        MenuAction(
+                            id="order_tree_by_updated_time",
+                            text="Order Tree by &updated_time",
+                            handler="order_tree_by_updated_time",
+                        ),
+                        MenuAction(
+                            id="order_tree_by_order",
+                            text="Order Tree by &order",
+                            handler="order_tree_by_order",
+                        ),
+                    ],
+                ),
+                MenuStructure(
                     name="&Go",
                     actions=[
                         MenuAction(
@@ -481,6 +506,19 @@ class MainWindow(QMainWindow):
                 ),
             ]
         )
+
+    # Order Tree
+    def order_tree_by_created_time(self):
+        self.current_view.tree_widget.set_sort_order("created_time", sort_order=Qt.SortOrder.AscendingOrder)
+
+    def order_tree_by_updated_time(self):
+        self.current_view.tree_widget.set_sort_order("updated_time", sort_order=Qt.SortOrder.AscendingOrder)
+
+    def order_tree_by_title(self):
+        self.current_view.tree_widget.set_sort_order("title", sort_order=Qt.SortOrder.AscendingOrder)
+
+    def order_tree_by_order(self):
+        self.current_view.tree_widget.set_sort_order("order", sort_order=Qt.SortOrder.AscendingOrder)
 
     # Searching
     def get_text(self) -> str | None:
@@ -901,11 +939,13 @@ class MainWindow(QMainWindow):
                     if self._nvim_handler:
                         match self._nvim_handler.connect_editor(
                             view.get_current_content_area().editor
-                            ):
+                        ):
                             case Ok():
                                 pass
                             case Err(error=e):
-                                self.set_status_message(f"Error connecting to neovim: {e}")
+                                self.set_status_message(
+                                    f"Error connecting to neovim: {e}"
+                                )
 
                     if (note_id := view.current_note_id) is not None:
                         view.handle_note_selection_from_id(note_id)
