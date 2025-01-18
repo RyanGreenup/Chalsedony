@@ -502,6 +502,7 @@ class NoteView(QWidget):
                         # Start timer for history tracking
                         self._history_timer.start()
                         content_area.editor.setPlainText(note.body or "")
+                        content_area.preview.content_already_set = False  # This causes a Full Refresh  # TODO candidate to refactor
                         if change_tree:
                             self.tree_widget.set_current_item_by_data(item_data)
                         self.backlinks_list.populate(

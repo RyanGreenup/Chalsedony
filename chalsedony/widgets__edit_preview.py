@@ -283,7 +283,7 @@ class EditPreview(QWidget):
     def refresh_preview(self) -> None:
         """Refresh the preview content"""
         # Reset the HTML base template to ensure the preview is updated
-        self.preview._content_already_set = False
+        self.preview.content_already_set = False
         self.preview.set_html(self.convert_md_to_html())
 
 
@@ -502,7 +502,7 @@ class WebPreview(QWebEngineView):
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         # TODO Refactor this so the WebPreview sets the content on construction
-        self._content_already_set: bool = False  # Has the content been set?
+        self.content_already_set: bool = False  # Has the content been set?
         self._content_div: str = "markdown"
         self.setPage(NoteLinkPage(parent=self, note_model=note_model))
         self.note_model: NoteModel = note_model
@@ -562,20 +562,20 @@ class WebPreview(QWebEngineView):
                 self.page().runJavaScript(update_js)
             else:
                 # If there is no matching div, set from scratch
-                self._content_already_set = False
+                self.content_already_set = False
                 self.set_html(content)
 
         # Run the check and handle result
         self.page().runJavaScript(check_js, resultCallback=handle_result)
-        self._content_already_set = True
+        self.content_already_set = True
 
     def set_html(self, html: str) -> None:
-        if self._content_already_set:
+        if self.content_already_set:
             self.update_content_div(self._content_div, html)
         else:
             content = self.get_html_template(html)
             self.setHtml(content, QUrl("note://"))
-            self._content_already_set = True
+            self.content_already_set = True
 
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
