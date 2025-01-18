@@ -328,7 +328,7 @@ class NoteView(QWidget):
         """Open a note selection palette dialog"""
         all_notes = self.model.get_all_notes()
         palette = NoteSelectionPalette(self, all_notes)
-        palette.note_selected.connect(self._handle_note_selection_from_id)
+        palette.note_selected.connect(self.handle_note_selection_from_id)
         palette.show()
 
     def note_link_palette(self) -> None:
@@ -338,7 +338,7 @@ class NoteView(QWidget):
         palette.insert_note_link.connect(self.insert_note_link)
         palette.show()
 
-    def _handle_note_selection_from_id(self, note_id: str) -> None:
+    def handle_note_selection_from_id(self, note_id: str) -> None:
         """Handle note selection from the palette by ID"""
         note = self.model.find_note_by_id(note_id)
         if note:

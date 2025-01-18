@@ -890,7 +890,7 @@ class MainWindow(QMainWindow):
                                 self.set_status_message(f"Error connecting to neovim: {e}")
 
                     if (note_id := view.current_note_id) is not None:
-                        view._handle_note_selection_from_id(note_id)
+                        view.handle_note_selection_from_id(note_id)
 
                     # Disconnect the old signals just in case
                     self._disconnect_signals()
@@ -902,13 +902,13 @@ class MainWindow(QMainWindow):
         """Connect signals from child widgets"""
         # From Widgets
         if view := self.current_view:
-            view.status_bar_message.connect(self.set_status_message)
-            view.current_note_changed.connect(self._on_note_change)
+            _ = view.status_bar_message.connect(self.set_status_message)
+            _ = view.current_note_changed.connect(self._on_note_change)
 
     def _disconnect_signals(self) -> None:
         if view := self.current_view:
-            view.status_bar_message.disconnect(self.set_status_message)
-            view.current_note_changed.disconnect(self._on_note_change)
+            _ = view.status_bar_message.disconnect(self.set_status_message)
+            _ = view.current_note_changed.disconnect(self._on_note_change)
 
     def _on_note_change(self, note_id: str) -> None:
         """Handle note changes by updating the tab title"""
