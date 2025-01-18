@@ -5,9 +5,12 @@ from .utils__get_first_markdown_heading import get_markdown_heading
 from sqlite3 import Connection
 from pathlib import Path
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, final
+from typing import final
 from .db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
 from datetime import date, timedelta
+
+# TODO consider using pydantic to deal with Any values on Database.
+# pyright: reportAny=false
 
 
 class ResourceType(Enum):
@@ -23,7 +26,6 @@ class ResourceType(Enum):
     PDF = "pdf"  # Specifically for PDF files
     HTML = "html"  # For HTML files
 
-# TODO consider using pydantic to deal with Any values on Database.
 
 @final
 class NoteModel(QObject):
@@ -47,14 +49,14 @@ class NoteModel(QObject):
             return Note(**row_dict)
         return None
 
-    def get_all_notes(self) -> List[NoteSearchResult]:
+    def get_all_notes(self) -> list[NoteSearchResult]:
         """Get all notes from all folders
 
         Returns:
             List of NoteSearchResult containing note IDs and titles
         """
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, title FROM notes ORDER BY updated_time ASC")
+        _ = cursor.execute("SELECT id, title FROM notes ORDER BY updated_time ASC")
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
     def get_note_meta_by_id(self, note_id: str) -> NoteSearchResult | None:
@@ -67,7 +69,7 @@ class NoteModel(QObject):
             NoteSearchResult containing the note's ID and title
         """
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, title FROM notes WHERE id = ?", (note_id,))
+        _ = cursor.execute("SELECT id, title FROM notes WHERE id = ?", (note_id,))
         row = cursor.fetchone()
         if not row:
             return None
@@ -108,7 +110,7 @@ class NoteModel(QObject):
 
     def get_note_tree_structure(
         self, order_by: str = "order"
-    ) -> Dict[str, FolderTreeItem]:
+    ) -> dict[str, FolderTreeItem]:
         """Get the folder/note tree structure from the database
 
         params:
@@ -138,8 +140,9 @@ class NoteModel(QObject):
         }
 
         # Get all folders
-        cursor.execute("SELECT * FROM folders")
-        folders = {}
+        _ = cursor.execute("SELECT * FROM folders")
+        # TODO consider using pydantic
+        folders: dict[str, FolderTreeItem] = {}
         for row in cursor.fetchall():
             # Convert empty string parent_id to None
             parent_id = row["parent_id"]
@@ -157,21 +160,23 @@ class NoteModel(QObject):
             )
 
         # Get all notes and organize them under their folders with multiple ordering criteria
-        cursor.execute(f"""
+        _ = cursor.execute(
+            f"""
             SELECT * FROM notes
             ORDER BY
                 "{order_by}" ASC,
                 title COLLATE NOCASE ASC,
                 updated_time DESC,
                 created_time DESC
-        """)
+        """
+        )
         for note_row in cursor.fetchall():
             folder_id = note_row["parent_id"]
             if folder_id in folders:
                 folders[folder_id].notes.append(Note(**note_row))
 
         # Build hierarchical structure
-        root_folders = {}
+        root_folders: dict[str, FolderTreeItem] = {}
         for folder_id, folder_data in folders.items():
             if folder_data.parent_id is None:
                 # This is a root folder
@@ -183,8 +188,8 @@ class NoteModel(QObject):
 
         # Sort folders and their children by title
         def sort_folders(
-            folder_dict: Dict[str, FolderTreeItem],
-        ) -> Dict[str, FolderTreeItem]:
+            folder_dict: dict[str, FolderTreeItem],
+        ) -> dict[str, FolderTreeItem]:
             """Sort folders by title in case-insensitive alphabetical order
 
             Args:
@@ -214,7 +219,7 @@ class NoteModel(QObject):
         """Refresh the model"""
         self.refreshed.emit()
 
-    def search_notes(self, query: str) -> List[NoteSearchResult]:
+    def search_notes(self, query: str) -> list[NoteSearchResult]:
         """Perform full text search on notes
 
         Args:
@@ -224,7 +229,7 @@ class NoteModel(QObject):
             List of NoteSearchResult containing note IDs and titles
         """
         cursor = self.db_connection.cursor()
-        cursor.execute(
+        _ = cursor.execute(
             """
             SELECT id, title,
                    length(title) - length(replace(lower(title), lower(?), '')) AS relevance
@@ -237,7 +242,7 @@ class NoteModel(QObject):
 
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
-    def get_note_from_search_result(self, result: NoteSearchResult) -> Optional[Note]:
+    def get_note_from_search_result(self, result: NoteSearchResult) -> None | Note:
         """Get full note details from a search result
 
         Args:
@@ -258,15 +263,17 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
 
         # Check if the new ID is already in use
-        cursor.execute("SELECT id FROM notes WHERE id = ?", (new_note_id,))
+        _ = cursor.execute("SELECT id FROM notes WHERE id = ?", (new_note_id,))
         if cursor.fetchone():
             raise ValueError(f"Note ID {new_note_id} is already in use")
 
         # Update the note ID in the notes table
-        cursor.execute("UPDATE notes SET id = ? WHERE id = ?", (new_note_id, note_id))
+        _ = cursor.execute(
+            "UPDATE notes SET id = ? WHERE id = ?", (new_note_id, note_id)
+        )
 
         # Update any note_resources relationships
-        cursor.execute(
+        _ = cursor.execute(
             "UPDATE note_resources SET note_id = ? WHERE note_id = ?",
             (new_note_id, note_id),
         )
@@ -281,7 +288,7 @@ class NoteModel(QObject):
         for link_fn in [joplin_link, wikilink]:
             old_pattern = link_fn(note_id)
             new_pattern = link_fn(new_note_id)
-            cursor.execute(
+            _ = cursor.execute(
                 "UPDATE notes SET body = REPLACE(body, ?, ?)",
                 (old_pattern, new_pattern),
             )
@@ -293,9 +300,9 @@ class NoteModel(QObject):
         self,
         note_id: str,
         *,
-        title: Optional[str] = None,
-        body: Optional[str] = None,
-        parent_id: Optional[str] = None,
+        title: None | str = None,
+        body: None | str = None,
+        parent_id: None | str = None,
     ) -> None:
         """Update specific fields of a note
 
@@ -305,8 +312,8 @@ class NoteModel(QObject):
             body: New body content (optional)
             parent_id: New parent folder ID (optional)
         """
-        updates = []
-        params = []
+        updates: list[str] = []
+        params: list[str] = []
 
         if title is not None:
             updates.append("title = ?")
@@ -331,7 +338,7 @@ class NoteModel(QObject):
         query = f"UPDATE notes SET {', '.join(updates)} WHERE id = ?"
 
         cursor = self.db_connection.cursor()
-        cursor.execute(query, params)
+        _ = cursor.execute(query, params)
         self.db_connection.commit()
 
         # Don't refresh as this could be slow on mere content change that is
@@ -384,7 +391,7 @@ class NoteModel(QObject):
             title = "Untitled"
 
         cursor = self.db_connection.cursor()
-        cursor.execute(
+        _ = cursor.execute(
             """
             INSERT INTO notes (
                 id, title, body, created_time, updated_time,
@@ -421,7 +428,7 @@ class NoteModel(QObject):
             note_id: ID of the note to delete
         """
         cursor = self.db_connection.cursor()
-        cursor.execute("DELETE FROM notes WHERE id = ?", (note_id,))
+        _ = cursor.execute("DELETE FROM notes WHERE id = ?", (note_id,))
         self.db_connection.commit()
         self.refreshed.emit()
 
@@ -429,8 +436,8 @@ class NoteModel(QObject):
         self,
         folder_id: str,
         *,
-        title: Optional[str] = None,
-        parent_id: Optional[str] = None,
+        title: None | str = None,
+        parent_id: None | str = None,
     ) -> None:
         """Update specific fields of a folder
 
@@ -441,8 +448,8 @@ class NoteModel(QObject):
 
             set parent_id as an empty (`""`) string to set the parent to None
         """
-        updates = []
-        params = []
+        updates: list[str] = []
+        params: list[str] = []
 
         if folder_id == parent_id:
             raise ValueError("Cannot set parent folder to itself")
@@ -467,7 +474,7 @@ class NoteModel(QObject):
         query = f"UPDATE folders SET {', '.join(updates)} WHERE id = ?"
 
         cursor = self.db_connection.cursor()
-        cursor.execute(query, params)
+        _ = cursor.execute(query, params)
         self.db_connection.commit()
 
         self.refreshed.emit()
@@ -481,12 +488,12 @@ class NoteModel(QObject):
         Returns:
             List of Folder objects representing the path from root to target folder
         """
-        path: List[Folder] = []
+        path: list[Folder] = []
         current_id: str | None = folder_id
 
         while current_id:
             cursor = self.db_connection.cursor()
-            cursor.execute("SELECT * FROM folders WHERE id = ?", (current_id,))
+            _ = cursor.execute("SELECT * FROM folders WHERE id = ?", (current_id,))
             row = cursor.fetchone()
 
             if not row:
@@ -511,14 +518,14 @@ class NoteModel(QObject):
             The parent folder ID if found, None otherwise
         """
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT parent_id FROM notes WHERE id = ?", (note_id,))
+        _ = cursor.execute("SELECT parent_id FROM notes WHERE id = ?", (note_id,))
         result = cursor.fetchone()
         assert (
             result is not None
         ), "Notes at root level (without parent folder) are not supported"
         return str(result[0])
 
-    def get_notes_by_parent_id(self, parent_id: str) -> List[Note]:
+    def get_notes_by_parent_id(self, parent_id: str) -> list[Note]:
         """Get all notes that belong to a specific folder
 
         Args:
@@ -528,13 +535,13 @@ class NoteModel(QObject):
             List of Note objects belonging to the specified folder
         """
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT * FROM notes WHERE parent_id = ?", (parent_id,))
+        _ = cursor.execute("SELECT * FROM notes WHERE parent_id = ?", (parent_id,))
         return [
             Note(**dict(zip([col[0] for col in cursor.description], row)))
             for row in cursor.fetchall()
         ]
 
-    def delete_notes(self, note_ids: List[str]) -> None:
+    def delete_notes(self, note_ids: list[str]) -> None:
         """Delete multiple notes in a single SQL query
 
         Args:
@@ -548,7 +555,7 @@ class NoteModel(QObject):
         query = f"DELETE FROM notes WHERE id IN ({placeholders})"
 
         cursor = self.db_connection.cursor()
-        cursor.execute(query, note_ids)
+        _ = cursor.execute(query, note_ids)
         self.db_connection.commit()
         self.refreshed.emit()
 
@@ -560,7 +567,7 @@ class NoteModel(QObject):
         """
         # Get all child folders
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id FROM folders WHERE parent_id = ?", (folder_id,))
+        _ = cursor.execute("SELECT id FROM folders WHERE parent_id = ?", (folder_id,))
         child_folders = [row[0] for row in cursor.fetchall()]
 
         # Recursively delete child folders
@@ -568,7 +575,7 @@ class NoteModel(QObject):
             self.delete_folder_recursive(child_id)
 
         # Get all notes in this folder
-        cursor.execute("SELECT id FROM notes WHERE parent_id = ?", (folder_id,))
+        _ = cursor.execute("SELECT id FROM notes WHERE parent_id = ?", (folder_id,))
         note_ids = [row[0] for row in cursor.fetchall()]
 
         # Delete all notes in this folder
@@ -576,12 +583,12 @@ class NoteModel(QObject):
             self.delete_notes(note_ids)
 
         # Finally delete the folder itself
-        cursor.execute("DELETE FROM folders WHERE id = ?", (folder_id,))
+        _ = cursor.execute("DELETE FROM folders WHERE id = ?", (folder_id,))
         self.db_connection.commit()
         self.refreshed.emit()
 
     def copy_folder_recursive(
-        self, folder_id: str, new_parent_id: Optional[str] = None
+        self, folder_id: str, new_parent_id: None | str = None
     ) -> str:
         """Copy a folder and all its contents recursively
 
@@ -594,7 +601,7 @@ class NoteModel(QObject):
         """
         # Get the original folder
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT * FROM folders WHERE id = ?", (folder_id,))
+        _ = cursor.execute("SELECT * FROM folders WHERE id = ?", (folder_id,))
         row = cursor.fetchone()
 
         if not row:
@@ -606,7 +613,7 @@ class NoteModel(QObject):
 
         # Create new folder with same title
         new_folder_id = self.create_id()
-        cursor.execute(
+        _ = cursor.execute(
             """
             INSERT INTO folders (id, title, created_time, updated_time, parent_id)
             VALUES (?, ?, ?, ?, ?)
@@ -616,24 +623,26 @@ class NoteModel(QObject):
                 original_folder["title"] + " (Copy)",
                 int(time.time()),
                 int(time.time()),
-                new_parent_id
-                if new_parent_id is not None
-                else original_folder["parent_id"],
+                (
+                    new_parent_id
+                    if new_parent_id is not None
+                    else original_folder["parent_id"]
+                ),
             ),
         )
 
         # Copy all notes in this folder
         notes = self.get_notes_by_parent_id(folder_id)
         for note in notes:
-            self.create_note(
+            _ = self.create_note(
                 parent_folder_id=new_folder_id, title=note.title, body=note.body
             )
 
         # Copy all child folders recursively
-        cursor.execute("SELECT id FROM folders WHERE parent_id = ?", (folder_id,))
+        _ = cursor.execute("SELECT id FROM folders WHERE parent_id = ?", (folder_id,))
         child_folders = [row[0] for row in cursor.fetchall()]
         for child_id in child_folders:
-            self.copy_folder_recursive(child_id, new_folder_id)
+            _ = self.copy_folder_recursive(child_id, new_folder_id)
 
         self.db_connection.commit()
         self.refreshed.emit()
@@ -678,7 +687,7 @@ class NoteModel(QObject):
 
         cursor = self.db_connection.cursor()
         try:
-            cursor.execute(
+            _ = cursor.execute(
                 """
                 INSERT INTO folders (id, title, created_time, updated_time, parent_id)
                 VALUES (?, ?, ?, ?, ?)
@@ -738,12 +747,12 @@ class NoteModel(QObject):
         # Copy file to assets directory
         asset_path = self.asset_dir / f"{resource_id}.{file_ext}"
         asset_path.parent.mkdir(parents=True, exist_ok=True)
-        asset_path.write_bytes(file_path.read_bytes())
+        _ = asset_path.write_bytes(file_path.read_bytes())
 
         try:
             # Insert resource record
             cursor = self.db_connection.cursor()
-            cursor.execute(
+            _ = cursor.execute(
                 """
                 INSERT INTO resources (
                     id, title, mime, filename, created_time, updated_time,
@@ -768,7 +777,7 @@ class NoteModel(QObject):
                 # Link resource to note
                 # It's not clear what the is_associated field does, so we set it to 0
                 # It is required though [fn_is_associated]
-                cursor.execute(
+                _ = cursor.execute(
                     """
                     INSERT INTO note_resources (note_id, resource_id, is_associated, last_seen_time)
                     VALUES (?, ?, ?, ?)
@@ -792,7 +801,7 @@ class NoteModel(QObject):
             The resource title if found, None otherwise
         """
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT title FROM resources WHERE id = ?", (resource_id,))
+        _ = cursor.execute("SELECT title FROM resources WHERE id = ?", (resource_id,))
         result = cursor.fetchone()
         return result[0] if result else None
 
@@ -826,17 +835,17 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
 
         # Check notes table
-        cursor.execute("SELECT id FROM notes WHERE id = ?", (id,))
+        _ = cursor.execute("SELECT id FROM notes WHERE id = ?", (id,))
         if cursor.fetchone():
             return IdTable.NOTE
 
         # Check folders table
-        cursor.execute("SELECT id FROM folders WHERE id = ?", (id,))
+        _ = cursor.execute("SELECT id FROM folders WHERE id = ?", (id,))
         if cursor.fetchone():
             return IdTable.FOLDER
 
         # Check resources table
-        cursor.execute("SELECT id FROM resources WHERE id = ?", (id,))
+        _ = cursor.execute("SELECT id FROM resources WHERE id = ?", (id,))
         if cursor.fetchone():
             return IdTable.RESOURCE
 
@@ -844,7 +853,7 @@ class NoteModel(QObject):
 
     def get_resource_mime_type(
         self, resource_id: str
-    ) -> Tuple[str | None, ResourceType]:
+    ) -> tuple[str | None, ResourceType]:
         """Get the MIME type and resource type by its ID
 
         Args:
@@ -906,7 +915,7 @@ class NoteModel(QObject):
         target_date = date.today() + timedelta(days=offset)
         title = target_date.strftime("%Y-%m-%d")
         cursor = self.db_connection.cursor()
-        cursor.execute(
+        _ = cursor.execute(
             "SELECT id, title FROM notes WHERE title = ? ORDER BY updated_time DESC LIMIT 1",
             (title,),
         )
@@ -925,7 +934,7 @@ class NoteModel(QObject):
             NoteSearchResult containing the matching note's ID and title, or None if not found
         """
         cursor = self.db_connection.cursor()
-        cursor.execute(
+        _ = cursor.execute(
             "SELECT id, title FROM notes WHERE title = ? ORDER BY updated_time DESC LIMIT 1",
             (title,),
         )
@@ -946,7 +955,7 @@ class NoteModel(QObject):
         """
         return f"[{note.title}](:/{note.id})"
 
-    def get_backlinks(self, note_id: str) -> List[NoteSearchResult]:
+    def get_backlinks(self, note_id: str) -> list[NoteSearchResult]:
         """Get all notes that link to the specified note
 
         Args:
@@ -960,7 +969,7 @@ class NoteModel(QObject):
               for now this simplicity is perferable
         """
         cursor = self.db_connection.cursor()
-        cursor.execute(
+        _ = cursor.execute(
             """
             SELECT id, title
             FROM notes
@@ -970,7 +979,7 @@ class NoteModel(QObject):
         )
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
-    def get_forwardlinks(self, note_id: str) -> List[NoteSearchResult]:
+    def get_forwardlinks(self, note_id: str) -> list[NoteSearchResult]:
         """Get all notes that this note links to
 
         A forward link is represented by text in the body field of the form ":/{id}"
@@ -983,7 +992,7 @@ class NoteModel(QObject):
         """
         # First get the note body
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT body FROM notes WHERE id = ?", (note_id,))
+        _ = cursor.execute("SELECT body FROM notes WHERE id = ?", (note_id,))
         row = cursor.fetchone()
         if not row or not row[0]:
             return []
@@ -1000,7 +1009,7 @@ class NoteModel(QObject):
 
         # Get titles for all valid note IDs found
         placeholders = ",".join("?" * len(linked_ids))
-        cursor.execute(
+        _ = cursor.execute(
             f"SELECT id, title FROM notes WHERE id IN ({placeholders})", linked_ids
         )
 
@@ -1014,7 +1023,7 @@ class NoteModel(QObject):
         """
         # Example: Delete all notes with empty titles
         cursor = self.db_connection.cursor()
-        cursor.execute("UPDATE folders SET parent_id = '' where id == parent_id;")
+        _ = cursor.execute("UPDATE folders SET parent_id = '' where id == parent_id;")
         self.db_connection.commit()
 
 

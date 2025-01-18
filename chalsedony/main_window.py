@@ -96,8 +96,7 @@ class MainWindow(QMainWindow):
 
         # Set initial darkMode property based on current palette
         is_dark = app.palette() == self.palettes["dark"]
-        if not app.setProperty("darkMode", is_dark):
-            print("Failed to set dark mode property", file=sys.stderr)
+        _ = app.setProperty("darkMode", is_dark)
 
         # Setup application font
         self.setup_application_font()
