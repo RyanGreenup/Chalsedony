@@ -92,15 +92,26 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         # Initialize drag and drop handler
         self.drag_drop_handler = DragDropHandler(self)
 
-    def populate_tree(self, tree_data: dict[str, FolderTreeItem] | None = None) -> None:
+        # Default sort settings
+        self._sort_by = "title"
+        self._sort_order = Qt.SortOrder.AscendingOrder
+
+    def populate_tree(
+        self, 
+        tree_data: dict[str, FolderTreeItem] | None = None,
+        sort_by: str = "title",
+        sort_order: Qt.SortOrder = Qt.SortOrder.AscendingOrder
+    ) -> None:
         """
         Populate the tree widget with folders and notes from the model.
 
-        params:
+        Args:
             tree_data: A dictionary containing the tree structure
-                       this is used to populate the tree widget more quickly,
-                       useful if the tree structure is already available
-                       (e.g. from a previous tab)
+                      this is used to populate the tree widget more quickly,
+                      useful if the tree structure is already available
+                      (e.g. from a previous tab)
+            sort_by: Field to sort by - "title", "created_time", "updated_time", or "order"
+            sort_order: Qt.SortOrder.AscendingOrder or Qt.SortOrder.DescendingOrder
         """
         self.clear()
 
@@ -133,12 +144,22 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             folder_item.setIcon(0, folder_icon)
             folder_items[folder_data.folder.id] = folder_item
 
-            # Add child folders first to ensure they appear above notes
-            for child_folder in folder_data.children:
+            # Sort and add child folders
+            sorted_folders = sorted(
+                folder_data.children,
+                key=lambda f: getattr(f.folder, sort_by, f.folder.title),
+                reverse=sort_order == Qt.SortOrder.DescendingOrder
+            )
+            for child_folder in sorted_folders:
                 add_folder_to_tree(folder_item, child_folder)
 
-            # Add notes after folders
-            for note in folder_data.notes:
+            # Sort and add notes
+            sorted_notes = sorted(
+                folder_data.notes,
+                key=lambda n: getattr(n, sort_by, n.title),
+                reverse=sort_order == Qt.SortOrder.DescendingOrder
+            )
+            for note in sorted_notes:
                 note_item = self.create_tree_item(
                     folder_item, note.title, ItemType.NOTE, note.id
                 )
@@ -464,6 +485,20 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
     def show_context_menu(self, position: QPoint) -> None:
         menu = self.build_context_menu_actions(position)
         menu.exec(self.viewport().mapToGlobal(position))
+
+    def set_sort_order(self, sort_by: str, sort_order: Qt.SortOrder) -> None:
+        """Set the sorting order for the tree view
+        
+        Args:
+            sort_by: Field to sort by - "title", "created_time", "updated_time", or "order"
+            sort_order: Qt.SortOrder.AscendingOrder or Qt.SortOrder.DescendingOrder
+        """
+        if sort_by not in ["title", "created_time", "updated_time", "order"]:
+            raise ValueError("Invalid sort_by value")
+            
+        self._sort_by = sort_by
+        self._sort_order = sort_order
+        self.populate_tree(sort_by=sort_by, sort_order=sort_order)
 
     def filter_tree(self, text: str) -> None:
         """Filter the tree view based on search text using n-gram comparison"""
