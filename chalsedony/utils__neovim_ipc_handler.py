@@ -2,6 +2,7 @@ from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import QTextEdit
 from PySide6.QtCore import QCoreApplication, Signal, QTimer, QObject
 import pynvim
+from pynvim.api.nvim import Buffers
 import subprocess
 import os
 import random
@@ -11,12 +12,13 @@ import shutil
 import asyncio
 from pynvim.api import Buffer
 import shiboken6
-from typing import Generic, TypeVar, Union
+from typing import Generic, TypeVar, final, override
 
 T = TypeVar("T")
 E = TypeVar("E", bound=Exception)
 
 
+@final
 class Ok(Generic[T]):
     __match_args__ = ("value",)
 
@@ -33,6 +35,7 @@ class Ok(Generic[T]):
         return False
 
 
+@final
 class Err(Generic[E]):
     __match_args__ = ("error",)
 
@@ -49,7 +52,7 @@ class Err(Generic[E]):
         return True
 
 
-Result = Union[Ok[T], Err[E]]
+Result = Ok[T] | Err[E]
 
 
 class NeovimBufferError(Exception):
@@ -83,6 +86,7 @@ class InvalidEditorWidgetError(EditorError):
         super().__init__(message)
 
 
+@final
 class NeovimHandler(QObject):
     def __init__(self) -> None:
         super().__init__()
@@ -93,11 +97,12 @@ class NeovimHandler(QObject):
         self.is_syncing = False
         self.socket_path = f"/tmp/draftsmith_qt.{random.random()}.sock"
         self.timer = QTimer()
-        self.timer.timeout.connect(self.check_nvim_changes)
+        if not self.timer.timeout.connect(self.check_nvim_changes):
+            raise RuntimeError("Failed to connect timer signal to update Neovim")
         self._editor: QTextEdit | None = None
         self.buffer_named: bool = False
         self.edit_buffer_name: str = "__Chalsedony_Edit"
-        self._temp_dir: TemporaryDirectory | None = None
+        self._temp_dir: TemporaryDirectory[str] | None = None
 
     @property
     def editor(self) -> QTextEdit | None:
@@ -135,16 +140,13 @@ class NeovimHandler(QObject):
         if self.nvim is None:
             return None
 
-        for buffer in self.nvim.buffers:
+        buffers: Buffers = self.nvim.buffers  # pyright: ignore [reportUnknownVariableType,reportUnknownMemberType,reportAttributeAccessIssue]
+        for buffer in buffers:  # pyright: ignore [reportUnknownVariableType]
+            assert isinstance(buffer, Buffer), "Buffer is not a valid buffer object"
+            assert isinstance(buffer.name, str), "Buffer name is not a string"
             if buffer.name.endswith(self.edit_buffer_name):
                 return buffer
         return None
-
-        try:
-            return self.nvim.current.buffer
-        except Exception as e:
-            print(f"Failed to get nvim buffer: {e}")
-            return None
 
     @nvim_buffer.setter
     def nvim_buffer(self, buffer: Buffer | None) -> None:
@@ -165,12 +167,19 @@ class NeovimHandler(QObject):
             self.editor = editor
 
             # Must check that it's a valid widget
-            if (e := self.editor) is not None:
+            if (valid_editor := self.editor) is not None:
                 # First sync the text from the editor to Neovim
                 # Otherwise the buffer won't correspond to the editor
-                self.sync_to_nvim(e)
+                match self.sync_to_nvim(valid_editor):
+                    case Ok():
+                        pass
+                    case Err(error=e):
+                        print(f"Failed to sync to nvim: {e}")
                 # Now connect the signals
-                e.textChanged.connect(self.on_editor_changed)
+                if not valid_editor.textChanged.connect(self.on_editor_changed):
+                    raise RuntimeError(
+                        "Failed to connect editor signal to update Neovim"
+                    )
                 return Ok(None)
             else:
                 return Err(InvalidEditorWidgetError())
@@ -202,14 +211,16 @@ class NeovimHandler(QObject):
         """
         try:
             if editor:
-                editor.textChanged.disconnect(self.on_editor_changed)
+                if not  editor.textChanged.disconnect(self.on_editor_changed):
+                    raise RuntimeError("Failed to disconnect editor signal")
                 return Ok(None)
             else:
                 if (stored_editor := self.editor) is None:
                     return Err(ValueError("No valid editor to disconnect"))
                 else:
                     try:
-                        stored_editor.textChanged.disconnect(self.on_editor_changed)
+                        if not stored_editor.textChanged.disconnect(self.on_editor_changed):
+                            raise RuntimeError("Failed to disconnect editor signal")
                         return Ok(None)
                     except RuntimeError as e:
                         return Err(e)
@@ -221,7 +232,11 @@ class NeovimHandler(QObject):
     def restart_nvim_session(self) -> None:
         """Restart the Neovim session"""
         self.stop_nvim_session()
-        self.start_nvim_session()
+        match self.start_nvim_session():
+            case Ok(message):
+                print(message)
+            case Err(error=e):
+                print(f"Failed to restart Neovim session: {e}")
 
     def start_nvim_session(self) -> Result[str, Exception]:
         """
@@ -242,7 +257,11 @@ class NeovimHandler(QObject):
                         case Ok():
                             # Then set the initial text from the editor
                             if editor := self.editor:
-                                self.sync_to_nvim(editor)
+                                match self.sync_to_nvim(editor):
+                                    case Ok():
+                                        pass
+                                    case Err(error=e):
+                                        print(f"Failed to sync to nvim: {e}")
                         case Err(error=e):
                             print(f"Unable to connect to socket: {e}")
 
@@ -307,7 +326,11 @@ class NeovimHandler(QObject):
         """Handle text changes from the editor"""
         if not self.is_syncing:
             if editor := self.editor:
-                self.sync_to_nvim(editor)
+                match self.sync_to_nvim(editor):
+                    case Ok():
+                        pass
+                    case Err(error=e):
+                        print(f"Failed to sync to nvim: {e}")
 
     def sync_to_nvim(self, editor: QTextEdit) -> Result[None, Exception]:
         """Sync editor content to Neovim
@@ -331,7 +354,7 @@ class NeovimHandler(QObject):
 
     def sync_to_editor(self) -> Result[None, Exception]:
         """Sync Neovim content to the editor"""
-        if self.current.buffer.name != self.edit_buffer_name:
+        if self.current.buffer.name != self.edit_buffer_name:  # pyright: ignore [reportUnknownMemberType, reportAttributeAccessIssue]
             print("Not syncing to editor, wrong buffer")
             return Ok(None)
         if (nvim_buffer := self.nvim_buffer) is None:
@@ -437,7 +460,11 @@ class NeovimHandler(QObject):
             disconnect_editor: If True, disconnect the editor. Normally False to preserve content
         """
         if disconnect_editor:
-            self.disconnect_editor()
+            match self.disconnect_editor():
+                case Ok():
+                    pass
+                case Err(error=e):
+                    print(f"Failed to disconnect editor: {e}")
 
         if self.timer.isActive():
             self.timer.stop()
@@ -452,7 +479,7 @@ class NeovimHandler(QObject):
         if self.nvim_process:
             try:
                 self.nvim_process.terminate()
-                self.nvim_process.wait(timeout=1)
+                _ = self.nvim_process.wait(timeout=1)
             except Exception as e:
                 print(f"Failed to terminate nvim process: {e}")
                 pass
@@ -499,7 +526,11 @@ class NeovimHandler(QObject):
         if autostart:
             print("Starting Neovim session")
             if self.nvim is None or self.nvim_process is None:
-                self.start_nvim_session()
+                match self.start_nvim_session():
+                    case Ok(message):
+                        print(message)
+                    case Err(error=e):
+                        raise e
                 # Wait for all the QTimers to finish
                 QCoreApplication.processEvents()
 
@@ -518,12 +549,15 @@ class NeovimHandler(QObject):
             return Err(error)
 
 
+@final
 class EditorWidget(QTextEdit):
     textUpdated = Signal(str)
 
     def __init__(self, nvim_handler: NeovimHandler | None = None) -> None:
-        self._nvim_handler = nvim_handler or NeovimHandler()
-        self.textChanged.connect(self._on_text_changed)
+        super().__init__()
+        self._nvim_handler: NeovimHandler | None = nvim_handler or NeovimHandler()
+        if not self.textChanged.connect(self._on_text_changed):
+            raise RuntimeError("Failed to connect textChanged signal")
 
     @property
     def nvim_handler(self) -> NeovimHandler:
@@ -554,7 +588,11 @@ class EditorWidget(QTextEdit):
         if self._nvim_handler is None:
             self._nvim_handler = NeovimHandler()
         editor = self.get_current_editor()
-        self._nvim_handler.connect_editor(editor)
+        match self._nvim_handler.connect_editor(editor):
+            case Ok():
+                pass
+            case Err(error=e):
+                print(f"Failed to connect editor to neovim handler: {e}")
 
     def get_current_editor(self) -> QTextEdit:
         return self
@@ -589,6 +627,7 @@ class EditorWidget(QTextEdit):
             case Err() as err:
                 return Err(err.error)
 
+    @override
     def closeEvent(self, event: QCloseEvent) -> None:
         del self.nvim_handler
         super().closeEvent(event)
