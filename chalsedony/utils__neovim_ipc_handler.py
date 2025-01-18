@@ -5,6 +5,8 @@ import pynvim
 import subprocess
 import os
 import random
+import tempfile
+import shutil
 import asyncio
 from pynvim.api import Buffer
 import shiboken6
@@ -273,8 +275,16 @@ class NeovimHandler(QObject):
                     "pynvim object must be instantiated before connecting to socket"
                 )
             nvim.command("e " + self.edit_buffer_name)
-            # Create a temporary directory that is automatically deleted when the script ends AI!
-            nvim.command("cd .")
+            # Create temp dir that will be deleted automatically
+            temp_dir = tempfile.mkdtemp(prefix="draftsmith_")
+            nvim.command(f"cd {temp_dir}")
+            # Cleanup temp dir when nvim exits
+            def cleanup_temp_dir():
+                try:
+                    shutil.rmtree(temp_dir)
+                except Exception as e:
+                    print(f"Error cleaning up temp dir: {e}")
+            self.destroyed.connect(cleanup_temp_dir)
             nvim.command("LspStop")
             nvim.command("set filetype=markdown")
             return Ok(None)
