@@ -6,6 +6,7 @@ import subprocess
 import os
 import random
 import tempfile
+from tempfile import TemporaryDirectory
 import shutil
 import asyncio
 from pynvim.api import Buffer
@@ -96,6 +97,7 @@ class NeovimHandler(QObject):
         self._editor: QTextEdit | None = None
         self.buffer_named: bool = False
         self.edit_buffer_name: str = "__Chalsedony_Edit"
+        self._temp_dir: TemporaryDirectory | None = None
 
     @property
     def editor(self) -> QTextEdit | None:
@@ -133,12 +135,10 @@ class NeovimHandler(QObject):
         if self.nvim is None:
             return None
 
-
         for buffer in self.nvim.buffers:
             if buffer.name.endswith(self.edit_buffer_name):
                 return buffer
         return None
-
 
         try:
             return self.nvim.current.buffer
@@ -261,6 +261,18 @@ class NeovimHandler(QObject):
             disconnect_editor=False
         )  # Explicitly disconnect when stopping session
 
+    @property
+    def temp_dir(self) -> str:
+        self._temp_dir = self._temp_dir or tempfile.TemporaryDirectory()
+        return tempfile.mkdtemp(prefix="draftsmith_")
+
+    def __del__(self):
+        # Cleanup the temporary directory when the instance is deleted
+        if self._temp_dir is not None:
+            print(f"Cleaning up temporary directory at: {self._temp_dir.name}")
+            self._temp_dir.cleanup()  # Manually clean up the directory
+            self._temp_dir = None
+
     def _connect_to_socket(self, socket_path: str) -> Result[None, Exception]:
         """Connect to the Neovim socket
 
@@ -274,17 +286,24 @@ class NeovimHandler(QObject):
                 raise ValueError(
                     "pynvim object must be instantiated before connecting to socket"
                 )
-            nvim.command("e " + self.edit_buffer_name)
+
             # Create temp dir that will be deleted automatically
-            temp_dir = tempfile.mkdtemp(prefix="draftsmith_")
+            temp_dir = self.temp_dir
             nvim.command(f"cd {temp_dir}")
+
+            # Create a new buffer for editing, the nvim_buffer property will only return **this** buffer
+            nvim.command("e " + self.edit_buffer_name)
+
             # Cleanup temp dir when nvim exits
             def cleanup_temp_dir():
                 try:
                     shutil.rmtree(temp_dir)
                 except Exception as e:
                     print(f"Error cleaning up temp dir: {e}")
-            self.destroyed.connect(cleanup_temp_dir)
+
+            if not self.destroyed.connect(cleanup_temp_dir):
+                print("Unable to cleanup temp directory on destruction")
+
             nvim.command("LspStop")
             nvim.command("set filetype=markdown")
             return Ok(None)
@@ -451,6 +470,11 @@ class NeovimHandler(QObject):
 
         # Clean up socket file
         self._remove_socket()
+
+        # Clean up temp directory
+        if self._temp_dir is not None:
+            self._temp_dir.cleanup()
+            self._temp_dir = None
 
     def _remove_socket(self) -> None:
         """Remove the socket file if it exists"""
