@@ -130,54 +130,60 @@ class EditPreview(QWidget):
 
     @property
     def md(self) -> markdown.Markdown:
-        if self._md:
-            return self._md
-        else:
-            extension_configs = {  # pyright: ignore [reportUnknownVariableType]
-                "pymdownx.superfences": {
-                    "custom_fences": [
-                        {
-                            "name": "mermaid",
-                            "class": "mermaid",
-                            "format": pymdownx.superfences.fence_div_format,  # pyright: ignore [reportUnknownMemberType]
-                        }
-                    ]
-                },
-                # "pymdownx.highlight": {
-                #     "auto_title": True,
-                #     "auto_title_map": {"Python Console Session": "Python"},
-                #     "linenums_style": "inline",
-                #     "line_spans": "__codeline",
-                # },
-            }
-            self._md = markdown.Markdown(
-                extensions=[
-                    "fenced_code",
-                    "tables",
-                    "footnotes",
-                    "pymdownx.emoji",
-                    # Allow md in html
-                    # "md_in_html",
-                    "pymdownx.extra",  # Replaces md_in_html?
-                    "pymdownx.blocks.html",
-                    "pymdownx.magiclink",
-                    # "pymdownx.escapeall",  # Breaks math without the arithmatex extension # TODO
-                    "pymdownx.blocks.admonition",
-                    "pymdownx.blocks.details",
-                    "pymdownx.blocks.tab",
-                    "pymdownx.highlight",
-                    "pymdownx.tasklist",
-                    "attr_list",
-                    "pymdownx.superfences",
-                    "pymdownx.blocks.caption",
-                    "pymdownx.progressbar",
-                    CustomWikiLinkExtension(
-                        note_model=self.note_model, base_url="note://"
-                    ),
-                ],
-                extension_configs=extension_configs,  # pyright: ignore [reportUnknownArgumentType] # type: ignore [arg-type]
-            )
-            return self._md
+        # NOTE: Do not store the md object as a class attribute, it should be
+        # used ONCE per rendered documents. Otherwise the extension will keep
+        # a track of the state of the document as it updates. For examples
+        # Each refresh will cause the footnotes to have multiple references
+        # back to the same point, as it's seen the refresh as more content
+        # of the same document.
+        # if self._md:
+        #     return self._md
+        # else:
+        extension_configs = {  # pyright: ignore [reportUnknownVariableType]
+            "pymdownx.superfences": {
+                "custom_fences": [
+                    {
+                        "name": "mermaid",
+                        "class": "mermaid",
+                        "format": pymdownx.superfences.fence_div_format,  # pyright: ignore [reportUnknownMemberType]
+                    }
+                ]
+            },
+            # "pymdownx.highlight": {
+            #     "auto_title": True,
+            #     "auto_title_map": {"Python Console Session": "Python"},
+            #     "linenums_style": "inline",
+            #     "line_spans": "__codeline",
+            # },
+        }
+        self._md = markdown.Markdown(
+            extensions=[
+                "fenced_code",
+                "tables",
+                # "footnotes",
+                "pymdownx.emoji",
+                # Allow md in html
+                # "md_in_html",
+                "pymdownx.extra",  # Replaces md_in_html?
+                "pymdownx.blocks.html",
+                "pymdownx.magiclink",
+                # "pymdownx.escapeall",  # Breaks math without the arithmatex extension # TODO
+                "pymdownx.blocks.admonition",
+                "pymdownx.blocks.details",
+                "pymdownx.blocks.tab",
+                "pymdownx.highlight",
+                "pymdownx.tasklist",
+                "attr_list",
+                "pymdownx.superfences",
+                "pymdownx.blocks.caption",
+                "pymdownx.progressbar",
+                CustomWikiLinkExtension(
+                    note_model=self.note_model, base_url="note://"
+                ),
+            ],
+            extension_configs=extension_configs,  # pyright: ignore [reportUnknownArgumentType] # type: ignore [arg-type]
+        )
+        return self._md
 
     def convert_md_to_html(self, md_text: str | None = None) -> str:
         if not md_text:
@@ -576,6 +582,11 @@ class WebPreview(QWebEngineView):
             content = self.get_html_template(html)
             self.setHtml(content, QUrl("note://"))
             self.content_already_set = True
+        def cb(result: str) -> None:
+            print(result)
+        self.page().toHtml(cb)
+
+
 
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources
