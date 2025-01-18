@@ -36,8 +36,8 @@ def main(
 
     Args:
         dark_mode: Force dark mode on/off. If None, use system preference
-        database: Path to the database file. If None, uses default location
-        assets: Path to the assets folder. If None, uses default location
+        database: Path to the database file. If None, uses default location (Joplin)
+        assets: Path to the assets folder. If None, uses default location (Joplin)
         initial_note: The title of the note to open on startup (First note by update_date)
         focus_journal: Focus todays journal note on startup (default: True)
     """
