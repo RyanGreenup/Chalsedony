@@ -92,6 +92,7 @@ class NeovimHandler(QObject):
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_nvim_changes)
         self._editor: QTextEdit | None = None
+        self.buffer_named: bool = False
 
     @property
     def editor(self) -> QTextEdit | None:
@@ -127,6 +128,22 @@ class NeovimHandler(QObject):
     @property
     def nvim_buffer(self) -> Buffer | None:
         if self.nvim is None:
+            return None
+
+        if not self.buffer_named:
+            self.edit_buffer_name = "Chalsedony Edit"
+            self.nvim.current.buffer.name = self.edit_buffer_name
+            self.buffer_named = True
+
+        # If they're not the same, focus that buffer
+        # This prevents the user from focusing other buffers and crashes
+        # on :Telscope Buffers
+        if not self.nvim.current.buffer.name.endswith(self.edit_buffer_name):
+            # If they're not the same, focus that buffer
+            # This prevents the user from focusing other buffers and crashes
+            # on :Telscope Buffers
+            # self.nvim.command(f"buffer {self.edit_buffer_name}")
+            print("No Update, Wrong Buffer, wanted {self.edit_buffer_name} got {self.nvim.current.buffer.name}")
             return None
 
         try:
@@ -263,6 +280,7 @@ class NeovimHandler(QObject):
                 raise ValueError(
                     "pynvim object must be instantiated before connecting to socket"
                 )
+            nvim.command("cd .")
             nvim.command("LspStop")
             nvim.command("set filetype=markdown")
             return Ok(None)
@@ -281,7 +299,6 @@ class NeovimHandler(QObject):
         Args:
             editor: The text editor widget to sync, or None to use active editor
         """
-        pass
         if self.nvim_buffer:
             try:
                 self.is_syncing = True
@@ -298,6 +315,9 @@ class NeovimHandler(QObject):
 
     def sync_to_editor(self) -> Result[None, Exception]:
         """Sync Neovim content to the editor"""
+        if self.current.buffer.name != self.edit_buffer_name:
+            print("Not syncing to editor, wrong buffer")
+            return Ok(None)
         if (nvim_buffer := self.nvim_buffer) is None:
             return Err(NeovimBufferError("Neovim Buffer is None"))
         if (editor := self.editor) is None:
