@@ -25,6 +25,7 @@ def is_system_dark_mode() -> bool:
 
 @app.command()
 def main(
+    # Fix this error: basedpyright: Function calls and mutable objects not allowed within parameter default value expression [reportCallInDefaultInitializer] AI!
     database: Path = Path(
         os.path.expanduser("~/.config/joplin-desktop/database.sqlite")
     ),
