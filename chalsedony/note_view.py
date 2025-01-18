@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import final
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -34,6 +34,7 @@ from .widgets__search_tab import NoteListWidget, SearchSidebar
 HISTORY_TIME = 1000
 
 
+@final
 class NoteView(QWidget):
     """Main note viewing and editing interface for the application.
 
@@ -71,10 +72,10 @@ class NoteView(QWidget):
         self,
         model: NoteModel,
         parent: QMainWindow,
-        initial_note: Optional[str] = None,
-        focus_journal: Optional[bool] = True,
-        follow_mode: Optional[bool] = True,
-        tree_data: Dict[str, FolderTreeItem] | None = None,
+        initial_note: None | str = None,
+        focus_journal: None | bool = True,
+        follow_mode: None | bool = True,
+        tree_data: dict[str, FolderTreeItem] | None = None,
     ) -> None:
         super().__init__(parent)
         self.model = model
@@ -111,12 +112,12 @@ class NoteView(QWidget):
         self.current_note_changed.emit(note_id)
 
     def _setup_history(self) -> None:
-        self.history: List[TreeItemData] = []
+        self.history: list[TreeItemData] = []
         self.history_position = -1
         self._history_timer = QTimer()
         self._history_timer.setInterval(HISTORY_TIME)  # 5 seconds
         self._history_timer.setSingleShot(True)
-        self._history_timer.timeout.connect(self._add_current_note_to_history)
+        _ = self._history_timer.timeout.connect(self._add_current_note_to_history)
 
     def focus_todays_journal(self) -> None:
         """Focus on today's journal page, or the most recent one within the last 30 days"""
@@ -146,7 +147,7 @@ class NoteView(QWidget):
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
 
-    def _populate_ui(self, tree_data: Dict[str, FolderTreeItem] | None = None) -> None:
+    def _populate_ui(self, tree_data: dict[str, FolderTreeItem] | None = None) -> None:
         self.tree_widget.populate_tree(tree_data)
         self._populate_notes_list()
         self._populate_back_and_forward_links()
@@ -778,7 +779,7 @@ class NoteView(QWidget):
         """Return the current content area"""
         return self.content_area
 
-    def get_all_content_area(self) -> List[EditPreview]:
+    def get_all_content_area(self) -> list[EditPreview]:
         """
         Return a list of all content areas, this will be useful
         if Editor tabs are implemented
