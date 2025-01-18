@@ -266,13 +266,6 @@ class NeovimHandler(QObject):
         self._temp_dir = self._temp_dir or tempfile.TemporaryDirectory()
         return tempfile.mkdtemp(prefix="draftsmith_")
 
-    def __del__(self):
-        # Cleanup the temporary directory when the instance is deleted
-        if self._temp_dir is not None:
-            print(f"Cleaning up temporary directory at: {self._temp_dir.name}")
-            self._temp_dir.cleanup()  # Manually clean up the directory
-            self._temp_dir = None
-
     def _connect_to_socket(self, socket_path: str) -> Result[None, Exception]:
         """Connect to the Neovim socket
 
@@ -471,10 +464,7 @@ class NeovimHandler(QObject):
         # Clean up socket file
         self._remove_socket()
 
-        # Clean up temp directory
-        if self._temp_dir is not None:
-            self._temp_dir.cleanup()
-            self._temp_dir = None
+        # NOTE Don't Clean up temp directory, cache data for nvim crash
 
     def _remove_socket(self) -> None:
         """Remove the socket file if it exists"""
