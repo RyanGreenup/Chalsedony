@@ -62,7 +62,6 @@ class MainWindow(QMainWindow):
     base_font_size: float = 10.0  # Store original size
     current_scale: float = 1.0  # Track current scale factor
     style_changed = Signal(bool)  # Emits True for dark mode, False for light mode
-    refresh = Signal()
     zoom_editor = Signal(float)  # Scale of zoom
 
     def __init__(
@@ -128,14 +127,15 @@ class MainWindow(QMainWindow):
         # Connect tab change signal
         _ = self.tab_widget.currentChanged.connect(self._on_tab_change)
 
-        # Connect signals to the view
-        _ = self.refresh.connect(self.note_model.refresh)
-
         # Set tab widget as central widget
         self.setCentralWidget(self.tab_widget)
 
         # Connect signals
         self._connect_signals()
+
+    def _on_refresh(self) -> None:
+        self.note_model.refresh()
+        self.set_tab_titles()
 
     @property
     def nvim_handler(self) -> NeovimHandler:
@@ -643,11 +643,11 @@ class MainWindow(QMainWindow):
                     try:
                         widget.update()
                     except AttributeError as e:
-                        print(f"Error updating widget: {e}")
+                        print(f"Error updating widget: {e}", file=sys.stderr)
                     except TypeError as e:
-                        print(f"Error updating widget: {e}")
+                        print(f"Error updating widget: {e}", file=sys.stderr)
                     except Exception as e:
-                        print(f"Error updating widget: {e}")
+                        print(f"Error updating widget: {e}", file=sys.stderr)
 
                 # Trigger style refresh
                 # NOTE this could work instead of the loop, probably should be used as well
@@ -717,6 +717,25 @@ class MainWindow(QMainWindow):
         self.tab_widget.setCurrentIndex(tab_index)
         _ = view.status_bar_message.connect(self.set_status_message)
         return view
+
+    @staticmethod
+    def abbreviate_title(title: str) -> str:
+        """Abbreviate a title to fit in a tab"""
+        return title[:20] + "..." if len(title) > 20 else title
+
+    def set_tab_titles(self) -> None:
+        """Set the tab titles based on the current note titles"""
+        for i in range(self.tab_widget.count()):
+            if view := self.tab_widget.widget(i):
+                if isinstance(view, NoteView):
+                    if note_id := view.current_note_id:
+                        if note_meta := self.note_model.get_note_meta_by_id(note_id):
+                            title = self.abbreviate_title(note_meta.title)
+                            self.tab_widget.setTabText(i, title)
+                        else:
+                            self.set_status_message("Note not found")
+                    else:
+                        self.set_status_message("No current note")
 
     def close_tab(self, index: int) -> None:
         """Close a tab at the given index"""
@@ -838,7 +857,7 @@ class MainWindow(QMainWindow):
                     case "about":
                         _ = action.triggered.connect(self.show_about_dialog)
                     case "refresh":
-                        _ = action.triggered.connect(self.refresh.emit)
+                        _ = action.triggered.connect(self._on_refresh)
                     case _:
                         if maybe_handler := getattr(self, action_item.handler, None):
                             if maybe_handler is not None:
@@ -914,11 +933,7 @@ class MainWindow(QMainWindow):
         if view := self.current_view:
             _ = view  # Only need to know that we can get it. -- Avoid odd state
             if note_meta := self.note_model.get_note_meta_by_id(note_id):
-                title = (
-                    note_meta.title[:20] + "..."
-                    if len(note_meta.title) > 20
-                    else note_meta.title
-                )
+                title = self.abbreviate_title(note_meta.title)
                 self.tab_widget.setTabText(self.tab_widget.currentIndex(), title)
             else:
                 self.set_status_message("Note not found")
