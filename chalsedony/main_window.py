@@ -843,10 +843,8 @@ class MainWindow(QMainWindow):
                     case _:
                         if maybe_handler := getattr(self, action_item.handler, None):
                             if maybe_handler is not None:
-                                # Resolve this error:
-                                # basedpyright: Expected type arguments for generic class "Callable" [reportMissingTypeArgument]
-                                # The input type is None and the output type is None AI!
-                                handler: Callable = maybe_handler
+                                # Specify Callable type with no arguments and None return
+                                handler: Callable[[], None] = maybe_handler
                                 _ = action.triggered.connect(handler)
 
                 # Make toggle_follow_mode action checkable
