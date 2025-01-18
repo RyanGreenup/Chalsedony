@@ -272,8 +272,8 @@ class NeovimHandler(QObject):
                 raise ValueError(
                     "pynvim object must be instantiated before connecting to socket"
                 )
-            # TODO make a tempdir that is cleaned up later
             nvim.command("e " + self.edit_buffer_name)
+            # Create a temporary directory that is automatically deleted when the script ends AI!
             nvim.command("cd .")
             nvim.command("LspStop")
             nvim.command("set filetype=markdown")
