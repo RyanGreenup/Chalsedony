@@ -446,7 +446,8 @@ class NoteView(QWidget):
             self.tree_widget.restore_state(tree_state)
 
             # Reapply the tree filter
-            self.tree_widget.filter_tree(self.note_filter.text())
+            if (filter_text := self.note_filter.text()):
+                self.tree_widget.filter_tree(filter_text)
 
             # Use a timer to restore animations after deferred events complete
             QTimer.singleShot(100, lambda: self.tree_widget.setAnimated(is_animated))
