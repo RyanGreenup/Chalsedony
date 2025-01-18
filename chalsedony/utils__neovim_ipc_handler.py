@@ -211,7 +211,7 @@ class NeovimHandler(QObject):
         """
         try:
             if editor:
-                if not  editor.textChanged.disconnect(self.on_editor_changed):
+                if not editor.textChanged.disconnect(self.on_editor_changed):
                     raise RuntimeError("Failed to disconnect editor signal")
                 return Ok(None)
             else:
@@ -219,7 +219,9 @@ class NeovimHandler(QObject):
                     return Err(ValueError("No valid editor to disconnect"))
                 else:
                     try:
-                        if not stored_editor.textChanged.disconnect(self.on_editor_changed):
+                        if not stored_editor.textChanged.disconnect(
+                            self.on_editor_changed
+                        ):
                             raise RuntimeError("Failed to disconnect editor signal")
                         return Ok(None)
                     except RuntimeError as e:

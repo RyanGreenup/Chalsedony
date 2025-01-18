@@ -1,18 +1,19 @@
+from typing import override
+import sys
 from PySide6.QtWidgets import QWidget, QListWidgetItem
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction
-from typing import Dict
 from .db_api import NoteSearchResult
 from .selection_dialog import SelectionDialog
 from .utils__ngram_filter import text_matches_filter
 
 
 class CommandPalette(SelectionDialog):
-    command_selected = Signal(QAction)
+    command_selected: Signal = Signal(QAction)
 
     def __init__(self, parent: QWidget, actions: dict[str, QAction]) -> None:
         super().__init__(parent, "Command Palette")
-        self._actions: Dict[str, QAction] = actions
+        self._actions: dict[str, QAction] = actions
         self.search.setPlaceholderText("Type to search commands...")
         self.populate_commands()
 
@@ -31,22 +32,24 @@ class CommandPalette(SelectionDialog):
         if self.list.count() > 0:
             self.list.setCurrentRow(0)
 
+    @override
     def on_item_selected(self, item: QListWidgetItem) -> None:
         """Handle command selection"""
         text = item.text().split(" (")[0].strip()  # Remove shortcut and whitespace
         for action in self._actions.values():
             if action.text().replace("&", "") == text:
                 self.command_selected.emit(action)
-                self.close()
+                if not self.close():
+                    print("Failed to close command palette", file=sys.stderr)
                 break
 
 
 class NotePalette(SelectionDialog):
-    note_selected = Signal(str)  # Emits note ID when selected
+    note_selected: Signal = Signal(str)  # Emits note ID when selected
 
     def __init__(self, parent: QWidget, notes: list[NoteSearchResult]) -> None:
         super().__init__(parent, "Note Selection")
-        self._notes = notes
+        self._notes: list[NoteSearchResult] = notes
         self.search.setPlaceholderText("Type to search notes...")
         self.populate_notes()
 
@@ -60,6 +63,7 @@ class NotePalette(SelectionDialog):
         if self.list.count() > 0:
             self.list.setCurrentRow(0)
 
+    @override
     def filter_items(self, text: str) -> None:
         """Filter items based on search text"""
         had_visible = False
@@ -74,33 +78,37 @@ class NotePalette(SelectionDialog):
 
 
 class NoteSelectionPalette(NotePalette):
-    note_selected = Signal(str)  # Emits note ID when selected
+    note_selected: Signal = Signal(str)  # Emits note ID when selected
 
     def __init__(self, parent: QWidget, notes: list[NoteSearchResult]) -> None:
         super().__init__(parent=parent, notes=notes)
 
+    @override
     def on_item_selected(self, item: QListWidgetItem) -> None:
         """Handle note selection"""
         selected_title = item.text()
         for note in self._notes:
             if note.title == selected_title:
                 self.note_selected.emit(note.id)
-                self.close()
+                if not self.close():
+                    print("Failed to close note selection palette", file=sys.stderr)
                 break
 
 
 # TODO these should both be ordered by modified time
 class NoteLinkPalette(NotePalette):
-    insert_note_link = Signal(str)  # Emits note ID when selected
+    insert_note_link: Signal = Signal(str)  # Emits note ID when selected
 
     def __init__(self, parent: QWidget, notes: list[NoteSearchResult]) -> None:
         super().__init__(parent=parent, notes=notes)
 
+    @override
     def on_item_selected(self, item: QListWidgetItem) -> None:
         """Handle note selection"""
         selected_title = item.text()
         for note in self._notes:
             if note.title == selected_title:
                 self.insert_note_link.emit(note.id)
-                self.close()
+                if not self.close():
+                    print("Failed to close note link palette", file=sys.stderr)
                 break

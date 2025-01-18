@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from enum import Enum
 from decimal import Decimal
-from typing import List, Optional, NamedTuple
+from typing import NamedTuple
 
 
 class Note(BaseModel):
@@ -9,8 +9,8 @@ class Note(BaseModel):
     parent_id: str = ""
     title: str = ""
     body: str = ""
-    created_time: Optional[int] = None
-    updated_time: Optional[int] = None
+    created_time: int | None = None
+    updated_time: int | None = None
     is_conflict: int = 0
     latitude: Decimal = Decimal(0)
     longitude: Decimal = Decimal(0)
@@ -24,8 +24,8 @@ class Note(BaseModel):
     source_application: str = ""
     application_data: str = ""
     order: Decimal = Decimal(0)
-    user_created_time: Optional[int] = None
-    user_updated_time: Optional[int] = None
+    user_created_time: int | None = None
+    user_updated_time: int | None = None
     encryption_cipher_text: str = ""
     encryption_applied: int = 0
     markup_language: int = 1
@@ -58,9 +58,9 @@ class Folder(BaseModel):
 class FolderTreeItem(BaseModel):
     type: str
     folder: Folder
-    parent_id: Optional[str]
-    notes: List[Note]
-    children: List["FolderTreeItem"] = []
+    parent_id: str | None
+    notes: list[Note]
+    children: list["FolderTreeItem"] = []
 
 
 class NoteSearchResult(NamedTuple):

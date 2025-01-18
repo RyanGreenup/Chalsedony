@@ -6,7 +6,6 @@ from .styles import QSS_STYLE
 from PySide6.QtWidgets import (
     QApplication,
 )
-from typing import Optional
 import typer
 import signal
 from .main_window import MainWindow
@@ -30,9 +29,9 @@ def main(
         os.path.expanduser("~/.config/joplin-desktop/database.sqlite")
     ),
     assets: Path = Path(os.path.expanduser("~/.config/joplin-desktop/resources/")),
-    dark_mode: Optional[bool] = None,
-    initial_note: Optional[str] = None,
-    focus_journal: Optional[bool] = True,
+    dark_mode: bool | None = None,
+    initial_note: str | None = None,
+    focus_journal: bool | None = True,
 ) -> None:
     """
     Start the application
