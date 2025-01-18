@@ -402,7 +402,7 @@ class MainWindow(QMainWindow):
                         MenuAction(
                             id="focus_filter_bar",
                             text="&Filter Bar",
-                            handler="focus_search_bar",
+                            handler="focus_filter_bar",
                             shortcut="Ctrl+/",
                         ),
                         MenuAction(

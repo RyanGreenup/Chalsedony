@@ -444,6 +444,9 @@ class NoteView(QWidget):
             # Restore the fold state
             self.tree_widget.restore_state(tree_state)
 
+            # Reapply the tree filter
+            self.tree_widget.filter_tree(self.note_filter.text())
+
             # Use a timer to restore animations after deferred events complete
             QTimer.singleShot(100, lambda: self.tree_widget.setAnimated(is_animated))
         except Exception as e:

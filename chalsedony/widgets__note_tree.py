@@ -20,58 +20,11 @@ from PySide6.QtWidgets import (
 )
 from .note_model import NoteModel
 from .db_api import FolderTreeItem, ItemType
-from .widgets__stateful_tree import StatefulTree, TreeItemData
+from .widgets__stateful_tree import StatefulTree, TreeItemData, TreeState
 from .utils__ngram_filter import text_matches_filter
 
 
-class TreeWithFilter(QTreeWidget):
-    """Base tree widget class with filtering functionality"""
-
-    def filter_tree(self, text: str) -> None:
-        """Filter the tree view based on search text using n-gram comparison"""
-
-        def show_all_items(item: QTreeWidgetItem) -> None:
-            """Recursively show all items in the tree"""
-            item.setHidden(False)
-            for i in range(item.childCount()):
-                child = item.child(i)
-                show_all_items(child)
-
-        def filter_items(item: QTreeWidgetItem) -> bool:
-            # Get if this item matches using n-gram comparison
-            item_matches = text_matches_filter(text, item.text(0), n=2, match_all=True)
-
-            # Check all children
-            child_matches = False
-            visible_children = 0
-            for i in range(item.childCount()):
-                child = item.child(i)
-                if filter_items(child):
-                    child_matches = True
-                    visible_children += 1
-
-            # For folders (items with children), hide if no visible children and no match
-            if item.childCount() > 0:
-                item.setHidden(not (item_matches or visible_children > 0))
-            else:
-                # For notes (leaf items), hide if no match
-                item.setHidden(not item_matches)
-
-            return item_matches or child_matches
-
-        # If empty show all items recursively
-        if not text:
-            for i in range(self.topLevelItemCount()):
-                item = self.topLevelItem(i)
-                show_all_items(item)
-            return
-
-        # Filter from top level
-        for i in range(self.topLevelItemCount()):
-            filter_items(self.topLevelItem(i))
-
-
-class NoteTree(StatefulTree, TreeWithFilter, TreeWidgetWithCycle):
+class NoteTree(TreeWidgetWithCycle, StatefulTree):
     note_created = Signal(str)  # folder_id
     note_deleted = Signal(str)  # note_id
 
@@ -108,6 +61,7 @@ class NoteTree(StatefulTree, TreeWithFilter, TreeWidgetWithCycle):
         self.addActions(menu.actions())
         # Store the tree_data because it's expensive to compute
         self.tree_data: Dict[str, FolderTreeItem] | None = None
+        self.filtered_state: TreeState | None = None
 
     def move_folder_to_root(self, item_data: TreeItemData | None) -> None:
         item_data = item_data or self.get_current_item_data()
@@ -509,6 +463,63 @@ class NoteTree(StatefulTree, TreeWithFilter, TreeWidgetWithCycle):
     def show_context_menu(self, position: QPoint) -> None:
         menu = self.build_context_menu_actions(position)
         menu.exec(self.viewport().mapToGlobal(position))
+
+    def filter_tree(self, text: str) -> None:
+        """Filter the tree view based on search text using n-gram comparison"""
+
+        def filter_items(item: QTreeWidgetItem) -> bool:
+            # Get if this item matches using n-gram comparison
+            item_matches = text_matches_filter(text, item.text(0), n=2, match_all=True)
+
+            # Check all children
+            child_matches = False
+            visible_children = 0
+            for i in range(item.childCount()):
+                child = item.child(i)
+                if filter_items(child):
+                    child_matches = True
+                    visible_children += 1
+
+            # For folders (items with children)
+            if item.childCount() > 0:
+                # Hide if no visible children and no match
+                item.setHidden(not (item_matches or visible_children > 0))
+                # Expand if this folder or any children match
+                if item_matches or child_matches:
+                    item.setExpanded(True)
+                    # Also expand parent folders up to root
+                    parent = item.parent()
+                    while parent:
+                        parent.setExpanded(True)
+                        parent = parent.parent()
+            else:
+                # For notes (leaf items), hide if no match
+                item.setHidden(not item_matches)
+
+            return item_matches or child_matches
+
+        # Fitering Begins
+        if self.filtered_state is None:
+            self.filtered_state = self.export_state()
+        # Actively Filtering
+        if text:
+            # Filter from top level
+            for i in range(self.topLevelItemCount()):
+                filter_items(self.topLevelItem(i))
+            # Filter was cleared
+        else:
+            QApplication.processEvents()
+            is_animated = self.isAnimated()
+            try:
+                self.setAnimated(False)
+                self.restore_state(self.filtered_state)
+                self.populate_tree()
+                self.filtered_state = None
+            except Exception as e:
+                print(e)
+                self.setAnimated(is_animated)
+            # self.restore_state(self.filtered_state)
+            # self.restore_state(self.filtered_state)
 
 
 class DragDropHandler:
