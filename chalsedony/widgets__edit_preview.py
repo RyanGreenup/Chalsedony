@@ -582,9 +582,11 @@ class WebPreview(QWebEngineView):
             content = self.get_html_template(html)
             self.setHtml(content, QUrl("note://"))
             self.content_already_set = True
-        def cb(result: str) -> None:
-            print(result)
-        self.page().toHtml(cb)
+
+        # DEBUG
+        # def cb(result: str) -> None:
+        #     print(result)
+        # self.page().toHtml(cb)
 
 
 
