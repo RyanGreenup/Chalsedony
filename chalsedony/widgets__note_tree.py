@@ -96,6 +96,9 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         self._sort_by = "title"
         self._sort_order = Qt.SortOrder.AscendingOrder
 
+
+    # The sort order needs to be stored as a class attribute
+    # then methods will change that class attribute
     def populate_tree(
         self,
         tree_data: dict[str, FolderTreeItem] | None = None,
@@ -114,6 +117,8 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             sort_order: Qt.SortOrder.AscendingOrder or Qt.SortOrder.DescendingOrder
         """
         self.clear()
+        sort_by = self.sort_by
+        sort_order = self.sort_order
 
         # Get the tree structure from the model
         tree_data = tree_data or self.note_model.get_note_tree_structure()
