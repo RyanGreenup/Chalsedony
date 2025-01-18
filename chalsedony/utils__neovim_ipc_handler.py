@@ -93,6 +93,7 @@ class NeovimHandler(QObject):
         self.timer.timeout.connect(self.check_nvim_changes)
         self._editor: QTextEdit | None = None
         self.buffer_named: bool = False
+        self.edit_buffer_name: str = "__Chalsedony_Edit"
 
     @property
     def editor(self) -> QTextEdit | None:
@@ -130,21 +131,12 @@ class NeovimHandler(QObject):
         if self.nvim is None:
             return None
 
-        if not self.buffer_named:
-            self.edit_buffer_name = "Chalsedony Edit"
-            self.nvim.current.buffer.name = self.edit_buffer_name
-            self.buffer_named = True
 
-        # If they're not the same, focus that buffer
-        # This prevents the user from focusing other buffers and crashes
-        # on :Telscope Buffers
-        if not self.nvim.current.buffer.name.endswith(self.edit_buffer_name):
-            # If they're not the same, focus that buffer
-            # This prevents the user from focusing other buffers and crashes
-            # on :Telscope Buffers
-            # self.nvim.command(f"buffer {self.edit_buffer_name}")
-            print("No Update, Wrong Buffer, wanted {self.edit_buffer_name} got {self.nvim.current.buffer.name}")
-            return None
+        for buffer in self.nvim.buffers:
+            if buffer.name.endswith(self.edit_buffer_name):
+                return buffer
+        return None
+
 
         try:
             return self.nvim.current.buffer
@@ -280,6 +272,8 @@ class NeovimHandler(QObject):
                 raise ValueError(
                     "pynvim object must be instantiated before connecting to socket"
                 )
+            # TODO make a tempdir that is cleaned up later
+            nvim.command("e " + self.edit_buffer_name)
             nvim.command("cd .")
             nvim.command("LspStop")
             nvim.command("set filetype=markdown")
