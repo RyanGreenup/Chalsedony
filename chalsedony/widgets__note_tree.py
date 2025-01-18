@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional
+from typing import Callable, final
 from pydantic import BaseModel
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QTreeWidget
@@ -24,6 +24,7 @@ from .widgets__stateful_tree import StatefulTree, TreeItemData, TreeState
 from .utils__ngram_filter import text_matches_filter
 
 
+@final
 class NoteTree(TreeWidgetWithCycle, StatefulTree):
     note_created = Signal(str)  # folder_id
     note_deleted = Signal(str)  # note_id
@@ -60,7 +61,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         menu = self.build_context_menu_actions(None)
         self.addActions(menu.actions())
         # Store the tree_data because it's expensive to compute
-        self.tree_data: Dict[str, FolderTreeItem] | None = None
+        self.tree_data: dict[str, FolderTreeItem] | None = None
         self.filtered_state: TreeState | None = None
 
     def move_folder_to_root(self, item_data: TreeItemData | None) -> None:
@@ -91,7 +92,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         # Initialize drag and drop handler
         self.drag_drop_handler = DragDropHandler(self)
 
-    def populate_tree(self, tree_data: Dict[str, FolderTreeItem] | None = None) -> None:
+    def populate_tree(self, tree_data: dict[str, FolderTreeItem] | None = None) -> None:
         """
         Populate the tree widget with folders and notes from the model.
 
@@ -360,10 +361,10 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
 
         label: str
         handler: Callable[[], None]
-        shortcut: Optional[str] = None
-        condition: Optional[Callable[[TreeItemData], bool]] = None
+        shortcut: None | str = None
+        condition: None | Callable[[TreeItemData], bool] = None
 
-    def get_context_menu_actions(self, position: QPoint | None) -> List[MenuAction]:
+    def get_context_menu_actions(self, position: QPoint | None) -> list[MenuAction]:
         """Get list of context menu actions based on item type"""
         # If the user right-clicked on an empty area
         # We can't determine the item type
