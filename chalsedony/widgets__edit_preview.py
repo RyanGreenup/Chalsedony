@@ -1003,7 +1003,8 @@ class NoteLinkPage(QWebEnginePage):
                     case IdTable.RESOURCE:
                         resource_id = id
                         resource_path = self.note_model.get_resource_path(resource_id)
-                        print(f"Resource link clicked! ID: {resource_id}")
+                        # DEBUG
+                        # print(f"Resource link clicked! ID: {resource_id}")
 
                         def try_open(resource_path: Path | None) -> None:
                             if resource_path is not None:
@@ -1031,7 +1032,16 @@ class NoteLinkPage(QWebEnginePage):
                                 try_open(resource_path)
                             case ResourceType.CODE:
                                 try_open(resource_path)
+                            case ResourceType.PDF:
+                                try_open(resource_path)
                             case ResourceType.OTHER:
+                                try_open(resource_path)
+                            case ResourceType.HTML:
+                                try_open(resource_path)
+                            case _:  # pyright: ignore [reportUnnecessaryComparison]
+                                print(
+                                    f"Resource type not recognized: {self.note_model.get_resource_mime_type(resource_id)[1]}"
+                                )
                                 try_open(resource_path)
 
             else:
@@ -1100,9 +1110,13 @@ def open_file(file_path: Path | str) -> None:
     if platform.system() == "Windows":
         os.startfile(file_path)  # type:ignore [attr-defined]
     elif platform.system() == "Darwin":  # macOS
-        subprocess.run(["open", file_path])
+        out = subprocess.run(["open", file_path])
+        if out.returncode != 0:
+            print(f"Error opening file: {out.stderr}")
     else:  # Linux and other Unix systems
-        subprocess.run(["xdg-open", file_path])
+        out = subprocess.run(["xdg-open", file_path])
+        if out.returncode != 0:
+            print(f"Error opening file: {out.stderr}")
 
 
 SVG_VIDEO = """
