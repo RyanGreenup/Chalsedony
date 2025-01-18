@@ -874,9 +874,31 @@ class MainWindow(QMainWindow):
         tool_bar = QToolBar("Main Toolbar", self)
         self.addToolBar(tool_bar)
 
-        exit_action = self.menu_actions.get("exit")
-        if exit_action is not None:
-            tool_bar.addAction(exit_action)
+        # Use existing menu actions for back/forward
+        back_action = self.menu_actions.get("back_history")
+        if back_action is not None:
+            back_action.setIcon(
+                self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowBack)
+            )
+            tool_bar.addAction(back_action)
+
+        forward_action = self.menu_actions.get("forward_history")
+        if forward_action is not None:
+            forward_action.setIcon(
+                self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowForward)
+            )
+            tool_bar.addAction(forward_action)
+
+        # Add separator
+        tool_bar.addSeparator()
+
+        # Add refresh button with icon
+        refresh_action = self.menu_actions.get("refresh")
+        if refresh_action is not None:
+            refresh_action.setIcon(
+                self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload)
+            )
+            tool_bar.addAction(refresh_action)
 
     def create_status_bar(self) -> None:
         status_bar = QStatusBar()
@@ -901,11 +923,13 @@ class MainWindow(QMainWindow):
                     if self._nvim_handler:
                         match self._nvim_handler.connect_editor(
                             view.get_current_content_area().editor
-                            ):
+                        ):
                             case Ok():
                                 pass
                             case Err(error=e):
-                                self.set_status_message(f"Error connecting to neovim: {e}")
+                                self.set_status_message(
+                                    f"Error connecting to neovim: {e}"
+                                )
 
                     if (note_id := view.current_note_id) is not None:
                         view.handle_note_selection_from_id(note_id)
