@@ -5,7 +5,7 @@ from .utils__get_first_markdown_heading import get_markdown_heading
 from sqlite3 import Connection
 from pathlib import Path
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, final
 from .db_api import Note, Folder, FolderTreeItem, NoteSearchResult, IdTable
 from datetime import date, timedelta
 
@@ -23,7 +23,9 @@ class ResourceType(Enum):
     PDF = "pdf"  # Specifically for PDF files
     HTML = "html"  # For HTML files
 
+# TODO consider using pydantic to deal with Any values on Database.
 
+@final
 class NoteModel(QObject):
     refreshed = Signal()  # Notify view to refresh
 
@@ -32,10 +34,10 @@ class NoteModel(QObject):
         self.db_connection = db_connection
         self.asset_dir = assets
 
-    def find_note_by_id(self, note_id: str) -> Optional[Note]:
+    def find_note_by_id(self, note_id: str) -> None | Note:
         """Find a note by its ID in the entire tree"""
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT * FROM notes WHERE id = ?", (note_id,))
+        _ = cursor.execute("SELECT * FROM notes WHERE id = ?", (note_id,))
         row = cursor.fetchone()
 
         if row:
