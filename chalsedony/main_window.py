@@ -1,3 +1,4 @@
+import sys
 from PySide6.QtCore import Signal, QTimer
 from PySide6.QtGui import QAction, QPalette
 import sqlite3
@@ -28,7 +29,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QTabWidget,
 )
-from typing import List, Dict, Optional, TypedDict
+from typing import Callable, TypedDict, final
 from pydantic import BaseModel
 from .palettes import create_dark_palette, create_light_palette
 
@@ -42,11 +43,11 @@ class MenuAction(BaseModel):
 
 class MenuStructure(BaseModel):
     name: str
-    actions: List[MenuAction]
+    actions: list[MenuAction]
 
 
 class MenuConfig(BaseModel):
-    menus: List[MenuStructure]
+    menus: list[MenuStructure]
 
 
 class ApplicationPalettes(TypedDict):
@@ -55,8 +56,9 @@ class ApplicationPalettes(TypedDict):
     light: QPalette
 
 
+@final
 class MainWindow(QMainWindow):
-    menu_actions: Dict[str, QAction]
+    menu_actions: dict[str, QAction]
     base_font_size: float = 10.0  # Store original size
     current_scale: float = 1.0  # Track current scale factor
     style_changed = Signal(bool)  # Emits True for dark mode, False for light mode
@@ -67,8 +69,8 @@ class MainWindow(QMainWindow):
         self,
         database: Path,
         assets: Path,
-        initial_note: Optional[str],
-        focus_journal: Optional[bool],
+        initial_note: None | str,
+        focus_journal: None | bool,
     ) -> None:
         super().__init__()
         app = QApplication.instance()
@@ -94,7 +96,8 @@ class MainWindow(QMainWindow):
 
         # Set initial darkMode property based on current palette
         is_dark = app.palette() == self.palettes["dark"]
-        app.setProperty("darkMode", is_dark)
+        if not app.setProperty("darkMode", is_dark):
+            print("Failed to set dark mode property", file=sys.stderr)
 
         # Setup application font
         self.setup_application_font()
@@ -113,19 +116,21 @@ class MainWindow(QMainWindow):
         # Create tab widget for multiple views
         self.tab_widget = QTabWidget(self)
         self.tab_widget.setTabsClosable(True)
-        self.tab_widget.tabCloseRequested.connect(self.close_tab)
+        _ = self.tab_widget.tabCloseRequested.connect(self.close_tab)
 
         # Create initial view
-        self.add_new_tab(initial_note, focus_journal)
+        # No need to store the view, it will be the current view
+        # and can be accessed via self.current_view property
+        _ = self.add_new_tab(initial_note, focus_journal)
 
         # Connect the neovim handler
         self._nvim_handler: NeovimHandler | None = None
 
         # Connect tab change signal
-        self.tab_widget.currentChanged.connect(self._on_tab_change)
+        _ = self.tab_widget.currentChanged.connect(self._on_tab_change)
 
         # Connect signals to the view
-        self.refresh.connect(self.note_model.refresh)
+        _ = self.refresh.connect(self.note_model.refresh)
 
         # Set tab widget as central widget
         self.setCentralWidget(self.tab_widget)
@@ -176,7 +181,7 @@ class MainWindow(QMainWindow):
                 palette = self.palettes["dark"] if dark_mode else self.palettes["light"]
                 QTimer.singleShot(
                     0,
-                    lambda: (
+                    lambda: (  # pyright: ignore [reportAny]
                         app.setPalette(palette),
                         app.setProperty("darkMode", dark_mode),
                         app.setStyleSheet(QSS_STYLE),  # type: ignore # Reapply stylesheet to trigger update
@@ -674,7 +679,7 @@ class MainWindow(QMainWindow):
             return current_widget  # type: ignore [return-value]
 
     def add_new_tab(
-        self, initial_note: Optional[str] = None, focus_journal: Optional[bool] = None
+        self, initial_note: None | str = None, focus_journal: None | bool = None
     ) -> NoteView:
         """
         Create and add a new NoteView tab
@@ -711,7 +716,7 @@ class MainWindow(QMainWindow):
         view.current_note_id
         tab_index = self.tab_widget.addTab(view, title)
         self.tab_widget.setCurrentIndex(tab_index)
-        view.status_bar_message.connect(self.set_status_message)
+        _ = view.status_bar_message.connect(self.set_status_message)
         return view
 
     def close_tab(self, index: int) -> None:
@@ -781,7 +786,7 @@ class MainWindow(QMainWindow):
     def show_settings(self) -> None:
         """Show the settings dialog"""
         dialog = SettingsDialog(self)
-        dialog.exec()
+        _ = dialog.exec()
 
     # TODO ensure this works when multiple tabs are implemented
     def save_note(self) -> None:
@@ -799,10 +804,10 @@ class MainWindow(QMainWindow):
         from .command_palette import CommandPalette
 
         dialog = CommandPalette(self, self.menu_actions)
-        dialog.command_selected.connect(
-            lambda action: action.trigger()
+        _ = dialog.command_selected.connect(
+            lambda action: action.trigger()  # pyright: ignore [reportUnknownArgumentType,reportUnknownMemberType,reportUnknownLambdaType]
         )  # Connect the signal
-        dialog.exec()
+        _ = dialog.exec()
 
     def setup_application_font(self) -> None:
         """Set up the application font, using Fira Sans if available"""
@@ -830,14 +835,16 @@ class MainWindow(QMainWindow):
 
                 match action_item.handler:
                     case "close":
-                        action.triggered.connect(self.close)
+                        _ = action.triggered.connect(self.close)
                     case "about":
-                        action.triggered.connect(self.show_about_dialog)
+                        _ = action.triggered.connect(self.show_about_dialog)
                     case "refresh":
-                        action.triggered.connect(self.refresh.emit)
+                        _ = action.triggered.connect(self.refresh.emit)
                     case _:
-                        if handler := getattr(self, action_item.handler, None):
-                            action.triggered.connect(handler)
+                        if maybe_handler := getattr(self, action_item.handler, None):
+                            if maybe_handler is not None:
+                                handler: Callable = maybe_handler
+                                _ = action.triggered.connect(handler)
 
                 # Make toggle_follow_mode action checkable
                 if action_item.id == "toggle_follow_mode":
