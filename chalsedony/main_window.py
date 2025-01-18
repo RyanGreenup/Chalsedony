@@ -843,7 +843,6 @@ class MainWindow(QMainWindow):
                     case _:
                         if maybe_handler := getattr(self, action_item.handler, None):
                             if maybe_handler is not None:
-                                # Specify Callable type with no arguments and None return
                                 handler: Callable[[], None] = maybe_handler
                                 _ = action.triggered.connect(handler)
 
@@ -882,9 +881,13 @@ class MainWindow(QMainWindow):
 
                     # Update neovim handler connection
                     if self._nvim_handler:
-                        self._nvim_handler.connect_editor(
+                        match self._nvim_handler.connect_editor(
                             view.get_current_content_area().editor
-                        )
+                            ):
+                            case Ok():
+                                pass
+                            case Err(error=e):
+                                self.set_status_message(f"Error connecting to neovim: {e}")
 
                     if (note_id := view.current_note_id) is not None:
                         view._handle_note_selection_from_id(note_id)
