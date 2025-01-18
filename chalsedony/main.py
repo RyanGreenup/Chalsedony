@@ -25,11 +25,8 @@ def is_system_dark_mode() -> bool:
 
 @app.command()
 def main(
-    # Fix this error: basedpyright: Function calls and mutable objects not allowed within parameter default value expression [reportCallInDefaultInitializer] AI!
-    database: Path = Path(
-        os.path.expanduser("~/.config/joplin-desktop/database.sqlite")
-    ),
-    assets: Path = Path(os.path.expanduser("~/.config/joplin-desktop/resources/")),
+    database: Path | None = None,
+    assets: Path | None = None,
     dark_mode: bool | None = None,
     initial_note: str | None = None,
     focus_journal: bool | None = True,
@@ -39,11 +36,15 @@ def main(
 
     Args:
         dark_mode: Force dark mode on/off. If None, use system preference
-        database: Path to the database file.
-        assets: Path to the assets folder
+        database: Path to the database file. If None, uses default location
+        assets: Path to the assets folder. If None, uses default location
         initial_note: The title of the note to open on startup (First note by update_date)
         focus_journal: Focus todays journal note on startup (default: True)
     """
+    # Set default paths if not provided
+    database = database or Path(os.path.expanduser("~/.config/joplin-desktop/database.sqlite"))
+    assets = assets or Path(os.path.expanduser("~/.config/joplin-desktop/resources/"))
+
     app = QApplication(sys.argv)
 
     if not database.exists():
