@@ -349,15 +349,21 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             self.send_status_message("Can only paste into folders")
             return
 
-        # Move each cut item to the target folder
-        for item_data in self._cut_items:
-            if item_data.type == ItemType.FOLDER:
-                self.folder_moved.emit(item_data.id, target_item_data.id)
-            elif item_data.type == ItemType.NOTE:
-                self.note_moved.emit(item_data.id, target_item_data.id)
-
-        # Clear cut items after paste
-        self.clear_cut_items()
+        # Block refresh signals during batch move
+        _ = self.note_model.blockSignals(True)
+        try:
+            # Move each cut item to the target folder
+            for item_data in self._cut_items:
+                if item_data.type == ItemType.FOLDER:
+                    self.folder_moved.emit(item_data.id, target_item_data.id)
+                elif item_data.type == ItemType.NOTE:
+                    self.note_moved.emit(item_data.id, target_item_data.id)
+        finally:
+            # Always restore signal blocking
+            _ = self.note_model.blockSignals(False)
+            # Clear cut items after paste
+            self.clear_cut_items()
+            self.note_model.refresh()
 
     class MenuAction(BaseModel):
         """Model for context menu actions"""
