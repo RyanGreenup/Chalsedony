@@ -11,6 +11,8 @@ from PySide6.QtWidgets import (
     QLineEdit,
 )
 
+from chalsedony.widgets__order_combo_box import Order, OrderComboBox
+
 from .command_palette import NoteSelectionPalette, NoteLinkPalette
 
 
@@ -25,7 +27,7 @@ from PySide6.QtCore import (
     QPropertyAnimation,
     QEasingCurve,
 )
-from .note_model import NoteModel
+from .note_model import NoteModel, OrderField
 from .widgets__stateful_tree import TreeItemData
 from .widgets__note_tree import NoteTree
 from .widgets__edit_preview import EditPreview
@@ -100,7 +102,6 @@ class NoteView(QWidget):
                     )
                 else:
                     self.send_status_message(f"Note '{initial_note}' not found")
-        self.focus_note_tree()
 
     @property
     def current_note_id(self) -> str | None:
@@ -181,16 +182,24 @@ class NoteView(QWidget):
         left_layout.setContentsMargins(0, 0, 0, 0)
 
         # Add search bar above tabs
+        self.order_combo = OrderComboBox()
+        self.order_combo.order_changed.connect(self.on_order_changed)
         self.note_filter = QLineEdit()
         self.note_filter.setPlaceholderText("Filter Items...")
         left_layout.addWidget(self.note_filter)
+
+        self.tree_and_combo_layout = QVBoxLayout()
+        self.tree_and_combo_layout.addWidget(self.order_combo)
+        self.tree_widget = NoteTree(self.model)
+        self.tree_and_combo_layout.addWidget(self.tree_widget)
+        self.tree_and_combo = QWidget()
+        self.tree_and_combo.setLayout(self.tree_and_combo_layout)
 
         # Create tab widget
         self.left_tabs = QTabWidget()
 
         # First tab - Tree view
-        self.tree_widget = NoteTree(self.model)
-        self.left_tabs.addTab(self.tree_widget, "Folders")
+        self.left_tabs.addTab(self.tree_and_combo, "Folders")
 
         # Second tab - Search and List view
         self.search_tab = SearchSidebar(model=self.model)
@@ -213,6 +222,12 @@ class NoteView(QWidget):
 
         # Set initial sizes (similar proportions to the previous stretch factors)
         self.main_splitter.setSizes([100, 300, 100])
+
+    def on_order_changed(self, order_tuple: Order):
+        self.model.order_by = order_tuple.field
+        self.model.order_type = order_tuple.order_type
+        # Probably populating tree is fine
+        self._refresh()
 
     def setup_ui_right_sidebar(self) -> None:
         self.right_sidebar = QFrame()
@@ -288,6 +303,7 @@ class NoteView(QWidget):
         self.tree_widget.duplicate_note.connect(self.model.duplicate_note)
         self.tree_widget.folder_deleted.connect(self.model.delete_folder_recursive)
         self.tree_widget.folder_create.connect(self._on_create_folder_requested)
+        self.tree_widget.note_swap_order.connect(self._on_note_swapped)
         self.content_area.preview.note_selected.connect(self._handle_note_selection)
 
         # Content Area
@@ -309,6 +325,14 @@ class NoteView(QWidget):
 
         self.backlinks_list.note_selected.connect(self._handle_note_selection)
         self.forwardlinks_list.note_selected.connect(self._handle_note_selection)
+
+    def _on_note_swapped(self, note_id_1: str, note_id_2: str):
+        """Swap the order of two notes"""
+        current_order_method = self.order_combo.current_order()
+        if current_order_method.field != OrderField.USER_ORDER:
+            self.send_status_message("Cannot swap notes if not in user order mode")
+            return
+        self.model.swap_note_order(note_id_1, note_id_2)
 
     def _handle_note_selection_from_list(self, item: QItemSelection | None) -> None:
         """Handle note selection from the list view"""
@@ -446,7 +470,7 @@ class NoteView(QWidget):
             self.tree_widget.restore_state(tree_state)
 
             # Reapply the tree filter
-            if (filter_text := self.note_filter.text()):
+            if filter_text := self.note_filter.text():
                 self.tree_widget.filter_tree(filter_text)
 
             # Use a timer to restore animations after deferred events complete
@@ -752,7 +776,8 @@ class NoteView(QWidget):
     def focus_note_tree(self) -> None:
         """Focus the tree view"""
         QApplication.processEvents()
-        self.left_tabs.setCurrentWidget(self.tree_widget)
+        # Set the correct tab containing the tree widget
+        self.left_tabs.setCurrentWidget(self.tree_and_combo)
         self.tree_widget.setFocus()
         # Ensure the tree's current item is focused
         current_item = self.tree_widget.currentItem()

@@ -177,9 +177,7 @@ class EditPreview(QWidget):
                 "pymdownx.superfences",
                 "pymdownx.blocks.caption",
                 "pymdownx.progressbar",
-                CustomWikiLinkExtension(
-                    note_model=self.note_model, base_url="note://"
-                ),
+                CustomWikiLinkExtension(note_model=self.note_model, base_url="note://"),
             ],
             extension_configs=extension_configs,  # pyright: ignore [reportUnknownArgumentType] # type: ignore [arg-type]
         )
@@ -587,8 +585,6 @@ class WebPreview(QWebEngineView):
         # def cb(result: str) -> None:
         #     print(result)
         # self.page().toHtml(cb)
-
-
 
     def _get_css_resources(self) -> str:
         """Generate CSS link tags for all CSS files in resources

@@ -133,6 +133,9 @@ class MainWindow(QMainWindow):
         # Connect signals
         self._connect_signals()
 
+        # Focus the tree
+        self.focus_note_tree()
+
     def _on_refresh(self) -> None:
         self.note_model.refresh()
         self.set_tab_titles()

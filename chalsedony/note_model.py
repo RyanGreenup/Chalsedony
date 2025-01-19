@@ -27,6 +27,24 @@ class ResourceType(Enum):
     HTML = "html"  # For HTML files
 
 
+class OrderField(Enum):
+    """Enum representing different types of ordering for notes"""
+
+    TITLE = "title"
+    CREATED_TIME = "created_time"
+    UPDATED_TIME = "updated_time"
+    USER_ORDER = "order"
+    USER_CREATED_TIME = "user_created_time"
+    USER_UPDATED_TIME = "user_updated_time"
+
+
+class OrderType(Enum):
+    """Enum representing different types of ordering for notes"""
+
+    ASC = "ASC"
+    DESC = "DESC"
+
+
 @final
 class NoteModel(QObject):
     refreshed = Signal()  # Notify view to refresh
@@ -35,6 +53,8 @@ class NoteModel(QObject):
         super().__init__()
         self.db_connection = db_connection
         self.asset_dir = assets
+        self.order_by = OrderField.USER_ORDER
+        self.order_type = OrderType.ASC
 
     def find_note_by_id(self, note_id: str) -> None | Note:
         """Find a note by its ID in the entire tree"""
@@ -108,9 +128,7 @@ class NoteModel(QObject):
         if refresh:
             self.refreshed.emit()
 
-    def get_note_tree_structure(
-        self, order_by: str = "order"
-    ) -> dict[str, FolderTreeItem]:
+    def get_note_tree_structure(self) -> dict[str, FolderTreeItem]:
         """Get the folder/note tree structure from the database
 
         params:
@@ -160,16 +178,15 @@ class NoteModel(QObject):
             )
 
         # Get all notes and organize them under their folders with multiple ordering criteria
-        _ = cursor.execute(
-            f"""
+        stmt = f"""
             SELECT * FROM notes
             ORDER BY
-                "{order_by}" ASC,
+                "{self.order_by.value}" {self.order_type.value},
                 title COLLATE NOCASE ASC,
                 updated_time DESC,
                 created_time DESC
         """
-        )
+        _ = cursor.execute(stmt)
         for note_row in cursor.fetchall():
             folder_id = note_row["parent_id"]
             if folder_id in folders:
@@ -1025,6 +1042,38 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
         _ = cursor.execute("UPDATE folders SET parent_id = '' where id == parent_id;")
         self.db_connection.commit()
+
+    def swap_note_order(self, note_id1: str, note_id2: str) -> None:
+        """Swap the order field values between two notes
+
+        Args:
+            note_id1: ID of the first note
+            note_id2: ID of the second note
+        """
+        cursor = self.db_connection.cursor()
+
+        # Get current order values
+        _ = cursor.execute(
+            "SELECT id, `order` FROM notes WHERE id IN (?, ?)", (note_id1, note_id2)
+        )
+        rows = cursor.fetchall()
+
+        if len(rows) != 2:
+            raise ValueError("One or both note IDs not found")
+
+        # Create mapping of id to order
+        orders = {row[0]: row[1] for row in rows}
+
+        # Swap the values
+        _ = cursor.execute(
+            "UPDATE notes SET `order` = ? WHERE id = ?", (orders[note_id2], note_id1)
+        )
+        _ = cursor.execute(
+            "UPDATE notes SET `order` = ? WHERE id = ?", (orders[note_id1], note_id2)
+        )
+
+        self.db_connection.commit()
+        self.refreshed.emit()
 
 
 # Footnotes

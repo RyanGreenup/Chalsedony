@@ -48,6 +48,10 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
     folder_deleted = Signal(str)  # folder_id
     note_moved = Signal(str, str)  # (note_id, new_parent_folder_id)
     status_bar_message = Signal(str)  # Signal to send messages to status bar
+    # AI: The signal is defined here
+    note_swap_order = Signal(
+        str, str
+    )  # note_id, note_id, Swap the order of the two notes
     # Create a signal for creating a new note
 
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
@@ -436,6 +440,16 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                 shortcut="`",
                 condition=lambda _: bool(self._cut_items),
             ),
+            self.MenuAction(
+                label="Swap with above",
+                handler=self.swap_note_with_above,
+                shortcut="Alt+Up",
+            ),
+            self.MenuAction(
+                label="Swap with below",
+                handler=self.swap_note_with_below,
+                shortcut="Alt+Down",
+            ),
         ]
 
     def build_context_menu_actions(self, position: QPoint | None) -> QMenu:
@@ -520,6 +534,56 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                 self.setAnimated(is_animated)
             # self.restore_state(self.filtered_state)
             # self.restore_state(self.filtered_state)
+
+    def _get_adjacent_note_data(
+        self, direction: str
+    ) -> tuple[TreeItemData, TreeItemData] | None:
+        """Get the current note and its adjacent note data
+
+        Args:
+            direction: Either 'above' or 'below'
+
+        Returns:
+            Tuple of (current_note_data, adjacent_note_data) or None if invalid
+        """
+        current_item = self.currentItem()
+        if not current_item:
+            self.send_status_message("No note selected")
+            return None
+
+        current_data = current_item.data(0, Qt.ItemDataRole.UserRole)
+        if not current_data or current_data.type != ItemType.NOTE:
+            self.send_status_message("Can only swap order of notes")
+            return None
+
+        adjacent_item = None
+        if direction == "above":
+            adjacent_item = self.itemAbove(current_item)
+        elif direction == "below":
+            adjacent_item = self.itemBelow(current_item)
+
+        if not adjacent_item:
+            self.send_status_message(f"No note {direction} to swap with")
+            return None
+
+        adjacent_data = adjacent_item.data(0, Qt.ItemDataRole.UserRole)
+        if not adjacent_data or adjacent_data.type != ItemType.NOTE:
+            self.send_status_message("Can only swap order with another note")
+            return None
+
+        return (current_data, adjacent_data)
+
+    def swap_note_with_above(self) -> None:
+        """Swap the current note's order with the note above it"""
+        if notes := self._get_adjacent_note_data("above"):
+            current_data, above_data = notes
+            self.note_swap_order.emit(current_data.id, above_data.id)
+
+    def swap_note_with_below(self) -> None:
+        """Swap the current note's order with the note below it"""
+        if notes := self._get_adjacent_note_data("below"):
+            current_data, below_data = notes
+            self.note_swap_order.emit(current_data.id, below_data.id)
 
 
 class DragDropHandler:

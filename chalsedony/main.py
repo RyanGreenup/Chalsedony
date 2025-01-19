@@ -42,7 +42,9 @@ def main(
         focus_journal: Focus todays journal note on startup (default: True)
     """
     # Set default paths if not provided
-    database = database or Path(os.path.expanduser("~/.config/joplin-desktop/database.sqlite"))
+    database = database or Path(
+        os.path.expanduser("~/.config/joplin-desktop/database.sqlite")
+    )
     assets = assets or Path(os.path.expanduser("~/.config/joplin-desktop/resources/"))
 
     app = QApplication(sys.argv)
