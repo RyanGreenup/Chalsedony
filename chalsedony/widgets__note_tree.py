@@ -522,6 +522,8 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                 filter_items(self.topLevelItem(i))
             # Filter was cleared
         else:
+            # Get the current selection, this should be preserved
+            current = self.get_current_item_data()
             QApplication.processEvents()
             is_animated = self.isAnimated()
             try:
@@ -529,6 +531,9 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                 self.restore_state(self.filtered_state)
                 self.populate_tree()
                 self.filtered_state = None
+                # Restore the selection
+                if current:
+                    self.set_current_item_by_data(current)
             except Exception as e:
                 print(e)
                 self.setAnimated(is_animated)
