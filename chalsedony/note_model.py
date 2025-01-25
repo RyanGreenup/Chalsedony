@@ -130,7 +130,7 @@ class NoteModel(QObject):
             self.refreshed.emit()
 
     def get_note_tree_structure(self) -> list[FolderTreeItem]:
-        """Get the folder/note tree structure from the database
+        """Get the folder/note tree structure from the database using a recursive CTE.
 
         Returns:
             A list of root FolderTreeItem objects containing:
@@ -140,27 +140,48 @@ class NoteModel(QObject):
             - notes: list of Note model instances in this folder
             - children: list of child FolderTreeItems
         """
-        now = time.time()
-
         cursor = self.db_connection.cursor()
-        cursor.row_factory = sqlite3.Row
+        cursor.row_factory = sqlite3.Row  # Ensure we get dict-like rows
 
-        # Get all folders ordered by title
-        cursor.execute("SELECT * FROM folders ORDER BY title COLLATE NOCASE ASC")
+        # Build the recursive CTE to get the folder hierarchy
+        cte_query = """
+        WITH RECURSIVE folder_hierarchy(id, title, parent_id, created_time, updated_time, level) AS (
+            SELECT id, title, parent_id, created_time, updated_time, 0 as level
+            FROM folders
+            WHERE parent_id IS NULL OR parent_id = ''
+            UNION ALL
+            SELECT f.id, f.title, f.parent_id, f.created_time, f.updated_time, h.level + 1
+            FROM folders f
+            INNER JOIN folder_hierarchy h ON f.parent_id = h.id
+        )
+        SELECT *
+        FROM folder_hierarchy
+        ORDER BY level ASC, title COLLATE NOCASE ASC
+        """
+
+        cursor.execute(cte_query)
+        folder_rows = cursor.fetchall()
+
+        # Build a mapping of folder IDs to FolderTreeItem instances
         folders = {}
-        for row in cursor.fetchall():
-            folder = Folder(**row)
-            parent_id = row["parent_id"] or None  # Convert empty string to None
+        for row in folder_rows:
+            folder = Folder(
+                id=row["id"],
+                title=row["title"],
+                parent_id=row["parent_id"] or None,
+                created_time=row["created_time"],
+                updated_time=row["updated_time"],
+            )
             folder_item = FolderTreeItem(
                 type="folder",
                 folder=folder,
-                parent_id=parent_id,
+                parent_id=row["parent_id"] or None,
                 notes=[],
                 children=[]
             )
             folders[folder.id] = folder_item
 
-        # Build folder hierarchy
+        # Build the hierarchy using the parent_id relationships
         root_folders = []
         for folder_item in folders.values():
             if folder_item.parent_id is None or folder_item.parent_id not in folders:
@@ -170,25 +191,44 @@ class NoteModel(QObject):
                 parent_folder = folders[folder_item.parent_id]
                 parent_folder.children.append(folder_item)
 
-        # Get all notes with ordering criteria
-        stmt = f"""
-            SELECT * FROM notes
-            ORDER BY
-                "{self.order_by.value}" {self.order_type.value},
-                title COLLATE NOCASE ASC,
-                updated_time DESC,
-                created_time DESC
+        # Fetch notes and assign them to folders
+        notes_query = f"""
+        SELECT *
+        FROM notes
+        ORDER BY
+            parent_id,
+            "{self.order_by.value}" {self.order_type.value},
+            title COLLATE NOCASE ASC,
+            updated_time DESC,
+            created_time DESC
         """
-        cursor.execute(stmt)
-        
+
+        cursor.execute(notes_query)
+        notes_rows = cursor.fetchall()
+
         # Assign notes to their respective folders
-        for row in cursor.fetchall():
-            note = Note(**row)
+        for row in notes_rows:
+            note = Note(
+                id=row["id"],
+                title=row["title"],
+                body=row["body"],
+                parent_id=row["parent_id"],
+                created_time=row["created_time"],
+                updated_time=row["updated_time"],
+                user_created_time=row["user_created_time"],
+                user_updated_time=row["user_updated_time"],
+                is_todo=row["is_todo"],
+                todo_completed=row["todo_completed"],
+                latitude=row["latitude"],
+                longitude=row["longitude"],
+                altitude=row["altitude"],
+                source_url=row["source_url"],
+                todo_due=row["todo_due"],
+            )
             folder_id = note.parent_id
             if folder_id in folders:
                 folders[folder_id].notes.append(note)
 
-        print("Time taken to get note tree structure:", time.time() - now)
         return root_folders
 
     def refresh(self) -> None:
