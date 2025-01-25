@@ -111,6 +111,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         try:
             self.clear()
 
+
             # Get the tree structure from the model
             tree_data = tree_data or self.note_model.get_note_tree_structure()
             self.tree_data = tree_data
@@ -528,7 +529,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             try:
                 self.setAnimated(False)
                 self.restore_state(self.filtered_state)
-                self.populate_tree()
+                self.populate_tree(self.tree_data)
                 self.filtered_state = None
                 # Restore the selection
                 if current:
