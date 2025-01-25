@@ -168,14 +168,14 @@ class NoteModel(QObject):
             folder = Folder(
                 id=row["id"],
                 title=row["title"],
-                parent_id=row["parent_id"] or None,
+                parent_id=row["parent_id"] or "",
                 created_time=row["created_time"],
                 updated_time=row["updated_time"],
             )
             folder_item = FolderTreeItem(
                 type="folder",
                 folder=folder,
-                parent_id=row["parent_id"] or None,
+                parent_id=folder.parent_id,
                 notes=[],
                 children=[]
             )
@@ -184,7 +184,7 @@ class NoteModel(QObject):
         # Build the hierarchy using the parent_id relationships
         root_folders = []
         for folder_item in folders.values():
-            if folder_item.parent_id is None or folder_item.parent_id not in folders:
+            if not folder_item.parent_id or folder_item.parent_id not in folders:
                 # Root folder
                 root_folders.append(folder_item)
             else:
