@@ -1,4 +1,5 @@
 from typing import Callable, Dict, List, Optional
+import time
 from pydantic import BaseModel
 from PySide6.QtCore import Qt, QPoint, Signal
 from PySide6.QtWidgets import QTreeWidgetItem, QStyle, QTreeWidget
@@ -105,58 +106,71 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                        useful if the tree structure is already available
                        (e.g. from a previous tab)
         """
-        self.clear()
+        # Get poxis time
+        self.recursion_counter = 0
+        now = time.time()
+        self.setUpdatesEnabled(False)
+        try:
+            self.clear()
 
-        # Get the tree structure from the model
-        tree_data = tree_data or self.note_model.get_note_tree_structure()
-        self.tree_data = tree_data
+            # Get the tree structure from the model
+            tree_data = tree_data or self.note_model.get_note_tree_structure()
+            self.tree_data = tree_data
 
-        # Create a dict to store folder items for quick lookup
-        folder_items = {}
+            # Create a dict to store folder items for quick lookup
+            folder_items = {}
 
-        def add_folder_to_tree(
-            parent_widget: QTreeWidget | QTreeWidgetItem, folder_data: FolderTreeItem
-        ) -> None:
-            """Recursively add folders and their contents to the tree
+            def add_folder_to_tree(
+                parent_widget: QTreeWidget | QTreeWidgetItem, folder_data: FolderTreeItem
+            ) -> None:
+                """Recursively add folders and their contents to the tree
 
-            Args:
-                parent_widget: The parent widget to add items to (either the main tree or a folder item)
-                folder_data: The folder data structure containing folder info and child items
-            """
-            folder_item = self.create_tree_item(
-                parent_widget,
-                folder_data.folder.title,
-                ItemType.FOLDER,
-                folder_data.folder.id,
-            )
-            # Set folder icon
-            folder_icon = self.style().standardIcon(QStyle.StandardPixmap.SP_DirIcon)
-            # icon_path = ":/icons/folder-svgrepo-com.svg"
-            # folder_icon = QIcon(icon_path)
-            folder_item.setIcon(0, folder_icon)
-            folder_items[folder_data.folder.id] = folder_item
-
-            # Add child folders first to ensure they appear above notes
-            for child_folder in folder_data.children:
-                add_folder_to_tree(folder_item, child_folder)
-
-            # Add notes after folders
-            for note in folder_data.notes:
-                note_item = self.create_tree_item(
-                    folder_item, note.title, ItemType.NOTE, note.id
+                Args:
+                    parent_widget: The parent widget to add items to (either the main tree or a folder item)
+                    folder_data: The folder data structure containing folder info and child items
+                """
+                self.recursion_counter += 1
+                folder_item = self.create_tree_item(
+                    parent_widget,
+                    folder_data.folder.title,
+                    ItemType.FOLDER,
+                    folder_data.folder.id,
                 )
-                # Move note items to the bottom of their parent folder
-                folder_item.removeChild(note_item)
-                folder_item.addChild(note_item)
+                # Set folder icon
+                folder_icon = self.style().standardIcon(QStyle.StandardPixmap.SP_DirIcon)
+                # icon_path = ":/icons/folder-svgrepo-com.svg"
+                # folder_icon = QIcon(icon_path)
+                folder_item.setIcon(0, folder_icon)
+                folder_items[folder_data.folder.id] = folder_item
 
-        # Add all root folders and their children recursively
-        for folder_id, folder_data in tree_data.items():
-            _ = folder_id
-            if folder_data.type == "folder":
-                add_folder_to_tree(self, folder_data)
+                # Add child folders first to ensure they appear above notes
+                for child_folder in folder_data.children:
+                    add_folder_to_tree(folder_item, child_folder)
 
-        # Collapse all folders by default
-        self.collapseAll()
+                # Add notes after folders
+                # note_items = []
+                for note in folder_data.notes:
+                    note_item = self.create_tree_item(
+                        folder_item, note.title, ItemType.NOTE, note.id
+                    )
+                    # Move note items to the bottom of their parent folder
+                    folder_item.removeChild(note_item)
+                    # note_items.append(note_item)
+                    folder_item.addChild(note_item)
+                    folder_item.addChild(note_item)
+                # folder_item.addChildren(note_items)
+
+            # Add all root folders and their children recursively
+            for folder_id, folder_data in tree_data.items():
+                _ = folder_id
+                if folder_data.type == "folder":
+                    add_folder_to_tree(self, folder_data)
+
+            # Collapse all folders by default
+            self.collapseAll()
+        finally:
+            self.setUpdatesEnabled(True)
+        print(f"Populate Tree Time: {time.time() - now}, recursion: {self.recursion_counter}")
 
     def delete_item(self, item_data: TreeItemData | None) -> None:
         """Delete a note or folder from the tree and database
