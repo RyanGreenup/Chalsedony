@@ -164,6 +164,7 @@ class NoteModel(QObject):
         folder_rows = cursor.fetchall()
 
         # Build a mapping of folder IDs to FolderTreeItem instances
+        # Modify this to use dictionary comprehension AI!
         folders = {}
         for row in folder_rows:
             folder = Folder(
