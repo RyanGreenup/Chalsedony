@@ -164,24 +164,22 @@ class NoteModel(QObject):
         folder_rows = cursor.fetchall()
 
         # Build a mapping of folder IDs to FolderTreeItem instances
-        # Modify this to use dictionary comprehension AI!
-        folders = {}
-        for row in folder_rows:
-            folder = Folder(
-                id=row["id"],
-                title=row["title"],
-                parent_id=row["parent_id"] or "",
-                created_time=row["created_time"],
-                updated_time=row["updated_time"],
-            )
-            folder_item = FolderTreeItem(
+        folders = {
+            row["id"]: FolderTreeItem(
                 type="folder",
-                folder=folder,
-                parent_id=folder.parent_id,
+                folder=Folder(
+                    id=row["id"],
+                    title=row["title"],
+                    parent_id=row["parent_id"] or "",
+                    created_time=row["created_time"],
+                    updated_time=row["updated_time"],
+                ),
+                parent_id=row["parent_id"] or "",
                 notes=[],
                 children=[]
             )
-            folders[folder.id] = folder_item
+            for row in folder_rows
+        }
 
         # Build the hierarchy using the parent_id relationships
         root_folders = [
