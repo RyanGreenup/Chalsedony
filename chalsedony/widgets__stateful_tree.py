@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QTreeWidgetItem
 from typing import Dict, List, cast, TypedDict
 from typing import NamedTuple
 
+from .note_model import Note
 
 from PySide6.QtWidgets import (
     QTreeWidget,
@@ -138,6 +139,17 @@ class StatefulTree(QTreeWidget):
         item = TreeWidgetItem(parent, title, item_type, item_id)
         self.tree_items.add_item(item)
         return item
+
+    def create_tree_notes(
+        self,
+        parent: QTreeWidget | QTreeWidgetItem,
+        notes: list[Note],
+    ) -> List[TreeWidgetItem]:
+        """Create and store a tree item"""
+        item_type = ItemType.NOTE
+        items = [TreeWidgetItem(parent, n.title, item_type, n.id) for n in notes]
+        [self.tree_items.add_item(item) for item in items]
+        return items
 
     def highlight_item(self, item_data: TreeItemData) -> None:
         """Highlight an item in the tree using TreeItemData

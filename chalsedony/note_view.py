@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
 )
 
-from chalsedony.widgets__order_combo_box import Order, OrderComboBox
+from .widgets__order_combo_box import Order, OrderComboBox
 
 from .command_palette import NoteSelectionPalette, NoteLinkPalette
 

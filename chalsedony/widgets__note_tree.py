@@ -107,6 +107,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                        (e.g. from a previous tab)
         """
         self.setUpdatesEnabled(False)
+        self.iteration_counter = 0
         try:
             self.clear()
 
@@ -114,15 +115,13 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             tree_data = tree_data or self.note_model.get_note_tree_structure()
             self.tree_data = tree_data
 
-            # Initialize a stack with tuples of (parent_widget, folder_data)
-            stack = []
+            now = time.time()
 
-            # Start with the root folders
-            for folder_data in tree_data.values():
-                if folder_data.type == "folder":
-                    stack.append((self, folder_data))
+            # Initialize a stack with tuples of (parent_widget, folder_data)
+            stack = [(self, folder_data) for folder_data in tree_data.values() if folder_data.type == "folder"]
 
             while stack:
+                self.iteration_counter += 1
                 parent_widget, folder_data = stack.pop()
 
                 # Create folder item
@@ -138,11 +137,9 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                 folder_item.setIcon(0, folder_icon)
 
                 # Add notes to the folder
-                for note in folder_data.notes:
-                    self.create_tree_item(
-                        folder_item, note.title, ItemType.NOTE, note.id
-                    )
+                self.create_tree_notes(folder_item, folder_data.notes)
 
+                # TODO list comprehension would be quicker
                 # Add child folders to the stack
                 for child_folder in reversed(folder_data.children):
                     stack.append((folder_item, child_folder))
@@ -151,6 +148,8 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             self.collapseAll()
         finally:
             self.setUpdatesEnabled(True)
+
+        print(f"Populate Tree Time: {time.time() - now}, iterations: {self.iteration_counter}")
 
     def delete_item(self, item_data: TreeItemData | None) -> None:
         """Delete a note or folder from the tree and database

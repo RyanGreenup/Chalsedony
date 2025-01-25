@@ -152,6 +152,8 @@ class NoteModel(QObject):
             - Toggle ordering between Order field, modified, created, alphabetically
 
         """
+        now = time.time()
+
         cursor = self.db_connection.cursor()
         cursor.row_factory = lambda cursor, row: {
             col[0]: row[idx] for idx, col in enumerate(cursor.description)
@@ -230,6 +232,7 @@ class NoteModel(QObject):
             if folder_data.children:
                 folder_data.children.sort(key=lambda x: x.folder.title.lower())
 
+        print("Time taken to get note tree structure:", time.time() - now)
         return root_folders
 
     def refresh(self) -> None:
