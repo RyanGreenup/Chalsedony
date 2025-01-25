@@ -49,7 +49,6 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
     folder_deleted = Signal(str)  # folder_id
     note_moved = Signal(str, str)  # (note_id, new_parent_folder_id)
     status_bar_message = Signal(str)  # Signal to send messages to status bar
-    # AI: The signal is defined here
     note_swap_order = Signal(
         str, str
     )  # note_id, note_id, Swap the order of the two notes

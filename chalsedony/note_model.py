@@ -183,15 +183,15 @@ class NoteModel(QObject):
             folders[folder.id] = folder_item
 
         # Build the hierarchy using the parent_id relationships
-        # Modify this to use list comprehension AI!
-        root_folders = []
+        root_folders = [
+            folder_item for folder_item in folders.values()
+            if not folder_item.parent_id or folder_item.parent_id not in folders
+        ]
+        
+        # Add child folders to their parents
         for folder_item in folders.values():
-            if not folder_item.parent_id or folder_item.parent_id not in folders:
-                # Root folder
-                root_folders.append(folder_item)
-            else:
-                parent_folder = folders[folder_item.parent_id]
-                parent_folder.children.append(folder_item)
+            if folder_item.parent_id and folder_item.parent_id in folders:
+                folders[folder_item.parent_id].children.append(folder_item)
 
         # Fetch notes and assign them to folders
         notes_query = f"""
