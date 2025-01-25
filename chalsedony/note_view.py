@@ -453,6 +453,7 @@ class NoteView(QWidget):
         # Save current animation state and disable animation
         is_animated = self.tree_widget.isAnimated()
         self.tree_widget.setAnimated(False)
+        self.setUpdatesEnabled(False)
 
         try:
             # Disable animations before any tree operations
@@ -479,6 +480,8 @@ class NoteView(QWidget):
             # Ensure animations are restored even if something fails
             self.tree_widget.setAnimated(is_animated)
             raise e
+        finally:
+            self.setUpdatesEnabled(True)
 
     def _on_editor_text_changed(self) -> None:
         """
