@@ -63,8 +63,6 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         self.setup_ui()
         menu = self.build_context_menu_actions(None)
         self.addActions(menu.actions())
-        # Store the tree_data because it's expensive to compute
-        self.tree_data: list[FolderTreeItem] | None = None
         self.filtered_state: TreeState | None = None
 
     def move_folder_to_root(self, item_data: TreeItemData | None) -> None:
@@ -95,7 +93,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         # Initialize drag and drop handler
         self.drag_drop_handler = DragDropHandler(self)
 
-    def populate_tree(self, tree_data: list[FolderTreeItem] | None = None) -> None:
+    def populate_tree(self) -> None:
         """
         Populate the tree widget with folders and notes from the model.
 
@@ -111,8 +109,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             self.clear()
 
             # Get the tree structure from the model
-            tree_data = tree_data or self.note_model.get_note_tree_structure()
-            self.tree_data = tree_data
+            tree_data = self.note_model.tree_data
 
             now = time.time()
 
@@ -527,7 +524,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             try:
                 self.setAnimated(False)
                 self.restore_state(self.filtered_state)
-                self.populate_tree(self.tree_data)
+                self.populate_tree(self.note_model.tree_data)
                 self.filtered_state = None
                 # Restore the selection
                 if current:

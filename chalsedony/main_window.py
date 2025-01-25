@@ -690,10 +690,7 @@ class MainWindow(QMainWindow):
             initial_note: The note title to open initially (TODO this should probably be ID)
             focus_journal: Whether to focus the journal tree
         """
-        tree_data = None
         if self.current_view:
-            # Get the tree data from the current view
-            tree_data = self.current_view.tree_widget.tree_data
             # If no initial note is provided, use the current note
             if not initial_note:
                 if initial_note_id := self.current_view.current_note_id:
@@ -708,7 +705,6 @@ class MainWindow(QMainWindow):
             # TODO if this is none, it should be the last viewed note
             initial_note=initial_note,
             focus_journal=focus_journal,
-            tree_data=tree_data,
         )
 
         title = "Unknown"

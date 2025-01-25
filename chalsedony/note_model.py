@@ -56,6 +56,20 @@ class NoteModel(QObject):
         self.asset_dir = assets
         self.order_by = OrderField.USER_ORDER
         self.order_type = OrderType.ASC
+        self._tree_data: list[FolderTreeItem] | None = None
+
+    @property
+    def tree_data(self) -> list[FolderTreeItem]:
+        """Get the tree data, refreshing if necessary"""
+        if self._tree_data is None:
+            self._tree_data = self.get_note_tree_structure()
+        return self._tree_data
+
+    def rebuild_tree_data(self) -> None:
+        """Rebuild the tree data from the database"""
+        self._tree_data = None
+        _ = self.tree_data  # Trigger Invalidation
+
 
     def find_note_by_id(self, note_id: str) -> None | Note:
         """Find a note by its ID in the entire tree"""
@@ -127,7 +141,7 @@ class NoteModel(QObject):
 
         self.update_note(note_id, body=content, title=title)
         if refresh:
-            self.refreshed.emit()
+            self.refresh()
 
     def get_note_tree_structure(self) -> list[FolderTreeItem]:
         """Get the folder/note tree structure from the database using a recursive CTE.
@@ -186,7 +200,7 @@ class NoteModel(QObject):
             folder_item for folder_item in folders.values()
             if not folder_item.parent_id or folder_item.parent_id not in folders
         ]
-        
+
         # Add child folders to their parents
         for folder_item in folders.values():
             if folder_item.parent_id and folder_item.parent_id in folders:
@@ -235,6 +249,7 @@ class NoteModel(QObject):
 
     def refresh(self) -> None:
         """Refresh the model"""
+        self.rebuild_tree_data()
         self.refreshed.emit()
 
     def search_notes(self, query: str) -> list[NoteSearchResult]:
@@ -312,7 +327,7 @@ class NoteModel(QObject):
             )
 
         self.db_connection.commit()
-        self.refreshed.emit()
+        self.refresh()
 
     def update_note(
         self,
@@ -369,7 +384,7 @@ class NoteModel(QObject):
         """
         self.update_note(note_id, parent_id=parent_id)
         # Don't refresh as this could be slow
-        self.refreshed.emit()
+        self.refresh()
 
     def set_folder_to_root(self, folder_id: str) -> None:
         """Move a folder to the root of the folder tree
@@ -436,7 +451,7 @@ class NoteModel(QObject):
             ),
         )
         self.db_connection.commit()
-        self.refreshed.emit()
+        self.refresh()
         return note_id
 
     def delete_note(self, note_id: str) -> None:
@@ -448,7 +463,7 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
         _ = cursor.execute("DELETE FROM notes WHERE id = ?", (note_id,))
         self.db_connection.commit()
-        self.refreshed.emit()
+        self.refresh()
 
     def update_folder(
         self,
@@ -495,7 +510,7 @@ class NoteModel(QObject):
         _ = cursor.execute(query, params)
         self.db_connection.commit()
 
-        self.refreshed.emit()
+        self.refresh()
 
     def get_folder_path(self, folder_id: str) -> str:
         """Get the materialized path of a folder from root to the specified folder
@@ -575,7 +590,7 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
         _ = cursor.execute(query, note_ids)
         self.db_connection.commit()
-        self.refreshed.emit()
+        self.refresh()
 
     def delete_folder_recursive(self, folder_id: str) -> None:
         """Delete a folder and all its child folders and notes recursively
@@ -603,7 +618,7 @@ class NoteModel(QObject):
         # Finally delete the folder itself
         _ = cursor.execute("DELETE FROM folders WHERE id = ?", (folder_id,))
         self.db_connection.commit()
-        self.refreshed.emit()
+        self.refresh()
 
     def copy_folder_recursive(
         self, folder_id: str, new_parent_id: None | str = None
@@ -663,7 +678,7 @@ class NoteModel(QObject):
             _ = self.copy_folder_recursive(child_id, new_folder_id)
 
         self.db_connection.commit()
-        self.refreshed.emit()
+        self.refresh()
         return new_folder_id
 
     def duplicate_note(self, note_id: str) -> str:
@@ -687,7 +702,7 @@ class NoteModel(QObject):
             body=original_note.body,
         )
 
-        self.refreshed.emit()
+        self.refresh()
         return new_note_id
 
     def create_folder(self, title: str, parent_id: str | None = "") -> str:
@@ -719,7 +734,7 @@ class NoteModel(QObject):
                 ),
             )
             self.db_connection.commit()
-            self.refreshed.emit()
+            self.refresh()
         except Exception as e:
             print(e)
         return folder_id
@@ -1074,7 +1089,7 @@ class NoteModel(QObject):
         )
 
         self.db_connection.commit()
-        self.refreshed.emit()
+        self.refresh()
 
 
 # Footnotes

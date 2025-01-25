@@ -51,10 +51,6 @@ class NoteView(QWidget):
         initial_note (Optional[str]): Title of note to open initially
         focus_journal (Optional[bool]): Whether to focus today's journal on startup
         follow_mode (Optional[bool]): Whether to follow note selections automatically
-        tree_data: A dictionary containing the tree structure
-                   this is used to populate the tree widget more quickly,
-                   useful if the tree structure is already available
-                   (e.g. from a previous tab)
 
     Signals:
         note_content_changed(int, str): Emitted when note content changes (note_id, content)
@@ -77,7 +73,6 @@ class NoteView(QWidget):
         initial_note: None | str = None,
         focus_journal: None | bool = True,
         follow_mode: None | bool = True,
-        tree_data: dict[str, FolderTreeItem] | None = None,
     ) -> None:
         super().__init__(parent)
         self.model = model
@@ -88,7 +83,7 @@ class NoteView(QWidget):
         self._right_animation: QPropertyAnimation | None = None
         self._sidebar_width = self.DEFAULT_SIDEBAR_WIDTH
         self.setup_ui()
-        self._populate_ui(tree_data)
+        self._populate_ui()
         self._connect_signals()
         self._setup_history()
         if focus_journal:
@@ -148,8 +143,8 @@ class NoteView(QWidget):
         """Send a message to the status bar"""
         self.status_bar_message.emit(message)
 
-    def _populate_ui(self, tree_data: dict[str, FolderTreeItem] | None = None) -> None:
-        self.tree_widget.populate_tree(tree_data)
+    def _populate_ui(self) -> None:
+        self.tree_widget.populate_tree()
         self._populate_notes_list()
         self._populate_back_and_forward_links()
 
@@ -453,6 +448,7 @@ class NoteView(QWidget):
         # Save current animation state and disable animation
         is_animated = self.tree_widget.isAnimated()
         self.tree_widget.setAnimated(False)
+        self.setUpdatesEnabled(False)
 
         try:
             # Disable animations before any tree operations
@@ -479,6 +475,8 @@ class NoteView(QWidget):
             # Ensure animations are restored even if something fails
             self.tree_widget.setAnimated(is_animated)
             raise e
+        finally:
+            self.setUpdatesEnabled(True)
 
     def _on_editor_text_changed(self) -> None:
         """
