@@ -140,6 +140,7 @@ class NoteModel(QObject):
             - notes: list of Note model instances in this folder
             - children: list of child FolderTreeItems
         """
+        now = time.time()
         cursor = self.db_connection.cursor()
         cursor.row_factory = sqlite3.Row  # Ensure we get dict-like rows
 
@@ -182,6 +183,7 @@ class NoteModel(QObject):
             folders[folder.id] = folder_item
 
         # Build the hierarchy using the parent_id relationships
+        # Modify this to use list comprehension AI!
         root_folders = []
         for folder_item in folders.values():
             if not folder_item.parent_id or folder_item.parent_id not in folders:
@@ -229,6 +231,7 @@ class NoteModel(QObject):
             if folder_id in folders:
                 folders[folder_id].notes.append(note)
 
+        print("Time taken to build tree:", time.time() - now)
         return root_folders
 
     def refresh(self) -> None:
