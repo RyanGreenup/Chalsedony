@@ -1,5 +1,6 @@
 import time
 import os
+import sqlite3
 from PySide6.QtCore import QObject, Signal
 from .utils__get_first_markdown_heading import get_markdown_heading
 from sqlite3 import Connection
@@ -128,58 +129,48 @@ class NoteModel(QObject):
         if refresh:
             self.refreshed.emit()
 
-    def get_note_tree_structure(self) -> dict[str, FolderTreeItem]:
+    def get_note_tree_structure(self) -> list[FolderTreeItem]:
         """Get the folder/note tree structure from the database
 
-        params:
-            order_by: The order in which to sort the notes. Default is "order" which
-                      is the user custom order. Other options are "created_time", "updated_time", "title"
-
         Returns:
-            A dictionary where keys are folder IDs and values are FolderTreeItem objects containing:
+            A list of root FolderTreeItem objects containing:
             - type: "folder"
             - folder: Folder model instance
             - parent_id: parent folder ID or None
             - notes: list of Note model instances in this folder
-            - children: list of child FolderTreeItems (added)
-
-        Implementation Notes:
-            - Joplin marks notes as rubbish in a separate table, we don't consider that
-              Either the note is deleted or it's not, so there may be a discrepancy in the number of notes
-              between joplin and this GUI, If you want the notes gone, just empty the rubbish bin.
-
-        Future work
-            - Toggle ordering between Order field, modified, created, alphabetically
-
+            - children: list of child FolderTreeItems
         """
         now = time.time()
 
         cursor = self.db_connection.cursor()
-        cursor.row_factory = lambda cursor, row: {
-            col[0]: row[idx] for idx, col in enumerate(cursor.description)
-        }
+        cursor.row_factory = sqlite3.Row
 
-        # Get all folders
-        _ = cursor.execute("SELECT * FROM folders")
-        # TODO consider using pydantic
-        folders: dict[str, FolderTreeItem] = {}
+        # Get all folders ordered by title
+        cursor.execute("SELECT * FROM folders ORDER BY title COLLATE NOCASE ASC")
+        folders = {}
         for row in cursor.fetchall():
-            # Convert empty string parent_id to None
-            parent_id = row["parent_id"]
-            if parent_id == "":
-                parent_id = None
-            elif parent_id is not None:
-                parent_id = str(parent_id)
-
-            folders[row["id"]] = FolderTreeItem(
+            folder = Folder(**row)
+            parent_id = row["parent_id"] or None  # Convert empty string to None
+            folder_item = FolderTreeItem(
                 type="folder",
-                folder=Folder(**row),
+                folder=folder,
                 parent_id=parent_id,
                 notes=[],
-                children=[],
+                children=[]
             )
+            folders[folder.id] = folder_item
 
-        # Get all notes and organize them under their folders with multiple ordering criteria
+        # Build folder hierarchy
+        root_folders = []
+        for folder_item in folders.values():
+            if folder_item.parent_id is None or folder_item.parent_id not in folders:
+                # Root folder
+                root_folders.append(folder_item)
+            else:
+                parent_folder = folders[folder_item.parent_id]
+                parent_folder.children.append(folder_item)
+
+        # Get all notes with ordering criteria
         stmt = f"""
             SELECT * FROM notes
             ORDER BY
@@ -188,49 +179,14 @@ class NoteModel(QObject):
                 updated_time DESC,
                 created_time DESC
         """
-        _ = cursor.execute(stmt)
-        for note_row in cursor.fetchall():
-            folder_id = note_row["parent_id"]
+        cursor.execute(stmt)
+        
+        # Assign notes to their respective folders
+        for row in cursor.fetchall():
+            note = Note(**row)
+            folder_id = note.parent_id
             if folder_id in folders:
-                folders[folder_id].notes.append(Note(**note_row))
-
-        # Build hierarchical structure
-        root_folders: dict[str, FolderTreeItem] = {}
-        for folder_id, folder_data in folders.items():
-            if folder_data.parent_id is None:
-                # This is a root folder
-                root_folders[folder_id] = folder_data
-            else:
-                # This is a child folder - add it to its parent's children
-                if folder_data.parent_id in folders:
-                    folders[folder_data.parent_id].children.append(folder_data)
-
-        # Sort folders and their children by title
-        def sort_folders(
-            folder_dict: dict[str, FolderTreeItem],
-        ) -> dict[str, FolderTreeItem]:
-            """Sort folders by title in case-insensitive alphabetical order
-
-            Args:
-                folder_dict: Dictionary of folder IDs to FolderTreeItems
-
-            Returns:
-                Dictionary with folders sorted by title
-            """
-            # Convert dict to list of tuples and sort by folder title
-            sorted_folders = sorted(
-                folder_dict.items(), key=lambda x: x[1].folder.title.lower()
-            )
-            # Convert back to dict while maintaining order
-            return dict(sorted_folders)
-
-        # Sort root folders
-        root_folders = sort_folders(root_folders)
-
-        # Sort children of each folder
-        for folder_data in folders.values():
-            if folder_data.children:
-                folder_data.children.sort(key=lambda x: x.folder.title.lower())
+                folders[folder_id].notes.append(note)
 
         print("Time taken to get note tree structure:", time.time() - now)
         return root_folders

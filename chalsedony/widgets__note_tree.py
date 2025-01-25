@@ -65,7 +65,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         menu = self.build_context_menu_actions(None)
         self.addActions(menu.actions())
         # Store the tree_data because it's expensive to compute
-        self.tree_data: Dict[str, FolderTreeItem] | None = None
+        self.tree_data: list[FolderTreeItem] | None = None
         self.filtered_state: TreeState | None = None
 
     def move_folder_to_root(self, item_data: TreeItemData | None) -> None:
@@ -96,12 +96,12 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         # Initialize drag and drop handler
         self.drag_drop_handler = DragDropHandler(self)
 
-    def populate_tree(self, tree_data: Dict[str, FolderTreeItem] | None = None) -> None:
+    def populate_tree(self, tree_data: list[FolderTreeItem] | None = None) -> None:
         """
         Populate the tree widget with folders and notes from the model.
 
         Params:
-            tree_data: A dictionary containing the tree structure
+            tree_data: A list of FolderTreeItem instances representing the tree structure
                        this is used to populate the tree widget more quickly,
                        useful if the tree structure is already available
                        (e.g. from a previous tab)
@@ -111,7 +111,6 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         try:
             self.clear()
 
-
             # Get the tree structure from the model
             tree_data = tree_data or self.note_model.get_note_tree_structure()
             self.tree_data = tree_data
@@ -119,7 +118,8 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             now = time.time()
 
             # Initialize a stack with tuples of (parent_widget, folder_data)
-            stack = [(self, folder_data) for folder_data in tree_data.values() if folder_data.type == "folder"]
+            # Use reversed to maintain correct order when using stack (LIFO)
+            stack = [(self, folder_data) for folder_data in reversed(tree_data)]
 
             while stack:
                 self.iteration_counter += 1
@@ -140,7 +140,6 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                 # Add notes to the folder
                 self.create_tree_notes(folder_item, folder_data.notes)
 
-                # TODO list comprehension would be quicker
                 # Add child folders to the stack
                 for child_folder in reversed(folder_data.children):
                     stack.append((folder_item, child_folder))
