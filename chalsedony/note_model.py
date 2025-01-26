@@ -282,11 +282,11 @@ class NoteModel(QObject):
 
     # AI: Create a method to produce a corresponding table name
     class Stemmer(Enum):
+        """Enum representing FTS5 tokenizer options"""
         PORTER = "porter ascii"
         TRIGRAM = "trigram ascii"
 
-    # Improve this method so it takes a variant of the Stemmer enum and uses it to create the table and set the stemmer AI!
-    def ensure_fts_table(self, table_name: str = "notes_fts5", stemmer: str = "porter") -> None:
+    def ensure_fts_table(self, table_name: str = "notes_fts5", stemmer: Stemmer = Stemmer.PORTER) -> None:
         """Ensure the FTS5 virtual table exists and is populated"""
         cursor = self.db_connection.cursor()
 
@@ -301,7 +301,7 @@ class NoteModel(QObject):
                     body,
                     content='notes',
                     content_rowid='rowid',
-                    tokenize = '{stemmer}'
+                    tokenize = '{stemmer.value}'
                 );
 
                 -- Populate the FTS table with existing data
