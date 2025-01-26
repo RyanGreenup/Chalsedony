@@ -16,7 +16,7 @@ class Order:
 class OrderComboBox(QWidget):
     order_changed = Signal(Order)
 
-    def __init__(self) -> None:
+    def __init__(self, first_item: Order) -> None:
         super().__init__()
 
         # Create layout
@@ -43,6 +43,9 @@ class OrderComboBox(QWidget):
         layout.addWidget(self.field_combo)
         layout.addWidget(self.type_combo)
 
+        # Choose the first item
+        self.choose_item(first_item)
+
         # Connect signals
         self.field_combo.currentTextChanged.connect(self._on_order_changed)
         self.type_combo.currentTextChanged.connect(self._on_order_changed)
@@ -57,3 +60,7 @@ class OrderComboBox(QWidget):
             self.fields[self.field_combo.currentText()],
             self.types[self.type_combo.currentText()],
         )
+
+    def choose_item(self, order: Order) -> None:
+        self.field_combo.setCurrentText(order.field.value.replace("_", " ").capitalize())
+        self.type_combo.setCurrentText(order.order_type.value.capitalize())

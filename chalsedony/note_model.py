@@ -54,9 +54,27 @@ class NoteModel(QObject):
         super().__init__()
         self.db_connection = db_connection
         self.asset_dir = assets
-        self.order_by = OrderField.USER_ORDER
-        self.order_type = OrderType.ASC
+        self._order_by = OrderField.USER_ORDER
+        self._order_type = OrderType.ASC
         self._tree_data: list[FolderTreeItem] | None = None
+
+    @property
+    def order_by(self) -> OrderField:
+        return self._order_by
+
+    @order_by.setter
+    def order_by(self, value: OrderField) -> None:
+        self._order_by = value
+        self.refresh()
+
+    @property
+    def order_type(self) -> OrderType:
+        return self._order_type
+
+    @order_type.setter
+    def order_type(self, value: OrderType) -> None:
+        self._order_type = value
+        self.refresh()
 
     @property
     def tree_data(self) -> list[FolderTreeItem]:
@@ -92,6 +110,20 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
         _ = cursor.execute("SELECT id, title FROM notes ORDER BY updated_time ASC")
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
+
+    def get_note_order_value(self, note_id: str) -> int:
+        """Get the order value for a note
+
+        Args:
+            note_id: ID of the note to look up
+
+        Returns:
+            The order value for the note
+        """
+        cursor = self.db_connection.cursor()
+        _ = cursor.execute("SELECT `order` FROM notes WHERE id = ?", (note_id,))
+        row = cursor.fetchone()
+        return row[0] if row else 0
 
     def get_note_meta_by_id(self, note_id: str) -> NoteSearchResult | None:
         """Get note metadata by ID
@@ -202,6 +234,7 @@ class NoteModel(QObject):
                 folders[folder_item.parent_id].children.append(folder_item)
 
         # Fetch notes and assign them to folders
+        print(self.order_by.value)
         notes_query = f"""
         SELECT *
         FROM notes
@@ -1074,6 +1107,13 @@ class NoteModel(QObject):
         # Create mapping of id to order
         orders = {row[0]: row[1] for row in rows}
 
+        # If they're equal, just set one to the max, this could be improved
+        # But simple is better than complex
+        if orders[note_id1] == orders[note_id2]:
+            orders[note_id2] = self.get_max_order_value(
+                self.get_folder_id_from_note(note_id2)
+            ) + 1
+
         # Swap the values
         _ = cursor.execute(
             "UPDATE notes SET `order` = ? WHERE id = ?", (orders[note_id2], note_id1)
@@ -1084,6 +1124,21 @@ class NoteModel(QObject):
 
         self.db_connection.commit()
         self.refresh()
+
+    def get_max_order_value(self, parent_id: str) -> int:
+        """Get the maximum order value for notes in a folder
+
+        Args:
+            parent_id: ID of the parent folder
+
+        Returns:
+            The maximum order value in the folder
+        """
+        cursor = self.db_connection.cursor()
+        _ = cursor.execute(
+            "SELECT MAX(`order`) FROM notes WHERE parent_id = ?", (parent_id,)
+        )
+        return cursor.fetchone()[0] or 0
 
 
 # Footnotes

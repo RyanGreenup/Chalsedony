@@ -115,7 +115,6 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             # Get the tree structure from the model
             tree_data = self.note_model.tree_data
 
-
             # Initialize a stack with tuples of (parent_widget, folder_data)
             # Use reversed to maintain correct order when using stack (LIFO)
             stack: list[tuple[NoteTree | TreeWidgetItem, FolderTreeItem]]
@@ -149,7 +148,6 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             self.collapseAll()
         finally:
             self.setUpdatesEnabled(True)
-
 
     def delete_item(self, item_data: TreeItemData | None) -> None:
         """Delete a note or folder from the tree and database
@@ -381,11 +379,13 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
 
         item_type: str | None = None
         item_id: str | None = None
+        item_order: int | None = None
         if item_data:
             item_type = item_data.type.name.lower().capitalize()
-            item_id = item_data.id
+            if (item_id := item_data.id) and item_data.type == ItemType.NOTE:
+                item_order = self.note_model.get_note_order_value(item_id)
 
-        return [
+        actions = [
             self.MenuAction(
                 label=f"Copy {item_type} ID: {item_id}",
                 handler=lambda: self.copy_id(item_data),
@@ -450,6 +450,16 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                 shortcut="Alt+Down",
             ),
         ]
+
+        if item_order is not None:
+            actions.append(
+                self.MenuAction(
+                    label=f"Copy {item_type} Order: {item_order}",
+                    handler=lambda: self.copy_id(item_data),
+                    shortcut=None,
+                )
+            )
+        return actions
 
     def build_context_menu_actions(self, position: QPoint | None) -> QMenu:
         """

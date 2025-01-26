@@ -177,7 +177,7 @@ class NoteView(QWidget):
         left_layout.setContentsMargins(0, 0, 0, 0)
 
         # Add search bar above tabs
-        self.order_combo = OrderComboBox()
+        self.order_combo = OrderComboBox(Order(self.model.order_by, self.model.order_type))
         self.order_combo.order_changed.connect(self.on_order_changed)
         self.note_filter = QLineEdit()
         self.note_filter.setPlaceholderText("Filter Items...")
@@ -221,8 +221,7 @@ class NoteView(QWidget):
     def on_order_changed(self, order_tuple: Order):
         self.model.order_by = order_tuple.field
         self.model.order_type = order_tuple.order_type
-        # Probably populating tree is fine
-        self._refresh()
+        # This triggers a full refresh, including the tree
 
     def setup_ui_right_sidebar(self) -> None:
         self.right_sidebar = QFrame()
