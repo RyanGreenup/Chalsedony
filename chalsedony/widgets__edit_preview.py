@@ -1,4 +1,5 @@
 from pathlib import Path
+from time import time
 from typing import Callable, final, override
 import json
 from PySide6.QtWidgets import (
@@ -37,6 +38,7 @@ from PySide6.QtCore import (
     QPoint,
     QObject,
     Signal,
+    QTimer,
 )
 import tempfile
 import os
@@ -84,10 +86,14 @@ class EditPreview(QWidget):
     def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._splitter_animation: QPropertyAnimation | None = None
+        self._debounce_timer = QTimer()
+        self._debounce_timer.setSingleShot(True)
+        self._debounce_timer.timeout.connect(self.update_preview_local)
         self.note_model = note_model
         self.asset_dir = note_model.asset_dir
         self.setup_ui()
         self._md: markdown.Markdown | None = None
+        self.debounce_delay = 300  # Milliseconds between preview updates
 
     def setup_ui(self) -> None:
         # Create main layout
@@ -108,8 +114,8 @@ class EditPreview(QWidget):
         self.preview.setStyleSheet("background: transparent;")
         self.preview.page().setBackgroundColor(Qt.GlobalColor.transparent)
 
-        # Connect the edit widget to update preview and scroll
-        _ = self.editor.textChanged.connect(self.update_preview_local)
+        # Connect the edit widget to update preview and scroll with debounce
+        _ = self.editor.textChanged.connect(self.handle_text_changed)
         _ = self.editor.verticalScrollBar().valueChanged.connect(
             self._sync_preview_scroll
         )
@@ -199,6 +205,10 @@ class EditPreview(QWidget):
         html = html.replace('src=":', 'src="note:/')
         return html
 
+    def handle_text_changed(self) -> None:
+        """Handle text changes with debounce"""
+        self._debounce_timer.start(self.debounce_delay)
+
     def update_preview_local(self) -> None:
         """
         Converts the editor from markdown to HTML and sets the preview HTML content.
@@ -208,7 +218,10 @@ class EditPreview(QWidget):
         scroll_fraction = self.editor.verticalScrollFraction()
 
         # Convert markdown to HTML
+        now = time()
         html = self.convert_md_to_html()
+        # Set a dynamic debounce for large documents
+        self.debounce_delay = max(20, int((time() - now) * 1000) + 20)
 
         # Connect to load finished signal to ensure scroll happens after content loads
         def restore_scroll(success: bool) -> None:
