@@ -490,16 +490,22 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         except Exception as e:
             print(f"Error syncing from temp file: {str(e)}")
 
-    def closeEvent(self, event) -> None:
-        """Cleanup temp file and observer when editor closes"""
+    def cleanup_external_edit_tempfile(self) -> None:
+        """Stop watching and remove the temp file"""
         if self.observer:
             self.observer.stop()
             self.observer.join()
-        if self.temp_file_path and os.path.exists(self.temp_file_path):
+            self.observer = None
+        if self._temp_file_path and os.path.exists(self._temp_file_path):
             try:
-                os.remove(self.temp_file_path)
+                os.remove(self._temp_file_path)
+                self._temp_file_path = None
             except Exception as e:
                 print(f"Error cleaning up temp file: {str(e)}")
+
+    def closeEvent(self, event) -> None:
+        """Handle editor close event"""
+        self.cleanup_external_edit_tempfile()
         super().closeEvent(event)
 
     def _show_context_menu(self, pos: QPoint) -> None:
