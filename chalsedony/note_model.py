@@ -295,7 +295,7 @@ class NoteModel(QObject):
             SELECT id, title
             FROM notes_fts
             WHERE notes_fts MATCH ?
-            ORDER BY bm25(notes_fts) DESC
+            ORDER BY rank DESC
         """,
             (query,),
         )
