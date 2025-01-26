@@ -21,7 +21,12 @@ from PySide6.QtWidgets import (
 )
 from .note_model import NoteModel
 from .db_api import FolderTreeItem, ItemType
-from .widgets__stateful_tree import StatefulTree, TreeItemData, TreeState
+from .widgets__stateful_tree import (
+    StatefulTree,
+    TreeItemData,
+    TreeState,
+    TreeWidgetItem,
+)
 from .utils__ngram_filter import text_matches_filter
 
 
@@ -104,21 +109,19 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                        (e.g. from a previous tab)
         """
         self.setUpdatesEnabled(False)
-        self.iteration_counter = 0
         try:
             self.clear()
 
             # Get the tree structure from the model
             tree_data = self.note_model.tree_data
 
-            now = time.time()
 
             # Initialize a stack with tuples of (parent_widget, folder_data)
             # Use reversed to maintain correct order when using stack (LIFO)
+            stack: list[tuple[NoteTree | TreeWidgetItem, FolderTreeItem]]
             stack = [(self, folder_data) for folder_data in reversed(tree_data)]
 
             while stack:
-                self.iteration_counter += 1
                 parent_widget, folder_data = stack.pop()
 
                 # Create folder item
@@ -130,7 +133,9 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
                 )
 
                 # Set folder icon
-                folder_icon = self.style().standardIcon(QStyle.StandardPixmap.SP_DirIcon)
+                folder_icon = self.style().standardIcon(
+                    QStyle.StandardPixmap.SP_DirIcon
+                )
                 folder_item.setIcon(0, folder_icon)
 
                 # Add notes to the folder
@@ -145,7 +150,6 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
         finally:
             self.setUpdatesEnabled(True)
 
-        print(f"Populate Tree Time: {time.time() - now}, iterations: {self.iteration_counter}")
 
     def delete_item(self, item_data: TreeItemData | None) -> None:
         """Delete a note or folder from the tree and database

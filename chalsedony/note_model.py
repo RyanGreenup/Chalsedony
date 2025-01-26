@@ -154,7 +154,6 @@ class NoteModel(QObject):
             - notes: list of Note model instances in this folder
             - children: list of child FolderTreeItems
         """
-        now = time.time()
         cursor = self.db_connection.cursor()
         cursor.row_factory = sqlite3.Row  # Ensure we get dict-like rows
 
@@ -244,7 +243,6 @@ class NoteModel(QObject):
             if folder_id in folders:
                 folders[folder_id].notes.append(note)
 
-        print("Time taken to build tree:", time.time() - now)
         return root_folders
 
     def refresh(self) -> None:
