@@ -182,13 +182,7 @@ class NoteModel(QObject):
         folders = {
             row["id"]: FolderTreeItem(
                 type="folder",
-                folder=Folder(
-                    id=row["id"],
-                    title=row["title"],
-                    parent_id=row["parent_id"] or "",
-                    created_time=row["created_time"],
-                    updated_time=row["updated_time"],
-                ),
+                folder=Folder(**dict(row)),  # Convert Row to dict for constructor
                 parent_id=row["parent_id"] or "",
                 notes=[],
                 children=[]
