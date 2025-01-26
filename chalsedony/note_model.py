@@ -290,8 +290,9 @@ class NoteModel(QObject):
         """Ensure the FTS5 virtual table exists and is populated"""
         cursor = self.db_connection.cursor()
 
+        table_name = table_name or self.get_fts_table_name(stemmer)
         # Check if table exists
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='notes_fts5'")
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
         if not cursor.fetchone():
             # Create FTS5 virtual table and triggers
             cursor.executescript(f"""
