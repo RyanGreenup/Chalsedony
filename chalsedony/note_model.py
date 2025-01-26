@@ -280,6 +280,12 @@ class NoteModel(QObject):
         self.rebuild_tree_data()
         self.refreshed.emit()
 
+
+    class Stemmer(Enum):
+        """Enum representing FTS5 tokenizer options"""
+        PORTER = "porter ascii"
+        TRIGRAM = "trigram"
+
     @classmethod
     def get_fts_table_name(cls, stemmer: Stemmer) -> str:
         """Get the FTS table name corresponding to the stemmer type"""
@@ -288,16 +294,11 @@ class NoteModel(QObject):
             cls.Stemmer.TRIGRAM: "notes_fts5_trigram"
         }[stemmer]
 
-    class Stemmer(Enum):
-        """Enum representing FTS5 tokenizer options"""
-        PORTER = "porter ascii"
-        TRIGRAM = "trigram ascii"
-
-    def ensure_fts_table(self, table_name: str | None = None, stemmer: Stemmer = Stemmer.PORTER) -> None:
+    def ensure_fts_table(self, stemmer: Stemmer = Stemmer.PORTER) -> None:
         """Ensure the FTS5 virtual table exists and is populated"""
         cursor = self.db_connection.cursor()
 
-        table_name = table_name or self.get_fts_table_name(stemmer)
+        table_name = self.get_fts_table_name(stemmer)
         # Check if table exists
         cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
         if not cursor.fetchone():
@@ -340,7 +341,7 @@ class NoteModel(QObject):
             self.db_connection.commit()
 
 
-    def search_notes(self, query: str) -> list[NoteSearchResult]:
+    def search_notes(self, query: str, stemmer: Stemmer = Stemmer.PORTER) -> list[NoteSearchResult]:
         """Perform full text search on notes
 
         Args:
@@ -349,16 +350,17 @@ class NoteModel(QObject):
         Returns:
             List of NoteSearchResult containing note IDs and titles
         """
+        table_name = self.get_fts_table_name(stemmer)
         # https://sqlite.org/fts5.html#the_bm25_function
         # Joplin is still using fts4, but we want the bm25 so we make another
-        self.ensure_fts_table()
+        self.ensure_fts_table(stemmer)
         cursor = self.db_connection.cursor()
         _ = cursor.execute(
-            """
+            f"""
             SELECT id, title
-            FROM notes_fts5
-            WHERE notes_fts5 MATCH ?
-            ORDER BY bm25(notes_fts5) DESC
+            FROM {table_name}
+            WHERE {table_name} MATCH ?
+            ORDER BY bm25({table_name}) DESC
         """,
             (query,),
         )

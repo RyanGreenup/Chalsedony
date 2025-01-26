@@ -70,6 +70,14 @@ I also recommend `WAL` mode so you can have multiple instances open:
 sqlite3 ~/.config/joplin-desktop/database.sqlite < "PRAGMA journal_mode = 'WAL'"
 ```
 
+## Compatability
+
+This is mostly compatible with Joplin, but there are some differences:
+
+- Introduces two new tables `notes_fts5_porter` and `notes_fts5_trigram` for full-text search
+    - My Joplin Schema was still using fts4, so I added these tables for full-text search
+        - I'm not sure if Joplin has updated to fts5 yet, but I wanted the flexibility for both stemmers for code blocks and $\LaTeX$.
+
 ## TODO Documentation
 
 There are some additional features like datatables
