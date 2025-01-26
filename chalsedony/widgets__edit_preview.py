@@ -784,20 +784,39 @@ class WebPreview(QWebEngineView):
                         const filename = codeBlock.closest('.highlight').querySelector('.filename')?.textContent;
                         const codeContent = codeBlock.textContent;
 
-                        // Copy to clipboard
-                        navigator.clipboard.writeText(codeContent).then(() => {{
+                        // Copy to clipboard with fallback
+                        const copyText = () => {{
+                            try {{
+                                if (navigator.clipboard) {{
+                                    return navigator.clipboard.writeText(codeContent);
+                                }}
+                                // Fallback for browsers without clipboard API
+                                const textarea = document.createElement('textarea');
+                                textarea.value = codeContent;
+                                document.body.appendChild(textarea);
+                                textarea.select();
+                                const result = document.execCommand('copy');
+                                document.body.removeChild(textarea);
+                                return result ? Promise.resolve() : Promise.reject('Copy failed');
+                            }} catch (err) {{
+                                return Promise.reject(err);
+                            }}
+                        }};
+
+                        copyText().then(() => {{
                             // Visual feedback
                             const originalBg = codeBlock.style.backgroundColor;
                             codeBlock.style.backgroundColor = '#00ff0033';
                             setTimeout(() => {{
                                 codeBlock.style.backgroundColor = originalBg;
                             }}, 200);
-
+                            
                             if (filename) {{
                                 console.log(`Copied ${{filename}} content to clipboard`);
                             }}
                         }}).catch(err => {{
                             console.error('Failed to copy code:', err);
+                            alert('Copy failed - please use Ctrl+C instead');
                         }});
                     }}
                 }}
