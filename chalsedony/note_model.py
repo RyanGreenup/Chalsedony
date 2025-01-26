@@ -326,13 +326,13 @@ class NoteModel(QObject):
 
                 CREATE TRIGGER notes_ad AFTER DELETE ON notes
                 BEGIN
-                    INSERT INTO {table_name}(notes_fts5, rowid, title, body)
+                    INSERT INTO {table_name}({table_name}, rowid, title, body)
                     VALUES ('delete', old.rowid, old.title, old.body);
                 END;
 
                 CREATE TRIGGER notes_au AFTER UPDATE ON notes
                 BEGIN
-                    INSERT INTO {table_name}(notes_fts5, rowid, title, body)
+                    INSERT INTO {table_name}({table_name}, rowid, title, body)
                     VALUES ('delete', old.rowid, old.title, old.body);
                     INSERT INTO {table_name}(rowid, title, body)
                     VALUES (new.rowid, new.title, new.body);
