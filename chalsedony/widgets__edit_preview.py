@@ -347,6 +347,7 @@ class TempFileEventHandler(FileSystemEventHandler, QObject):
         if not event.is_directory:
             self.file_modified.emit(event.src_path)
 
+
 class MDTextEdit(MyTextEdit, VimTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested: Signal = Signal(str)  # Filepath
@@ -436,18 +437,17 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
             return 0
         return scrollbar.value() / scrollbar.maximum()
 
+    # External Editor Syncing Below ...........................................
     @property
     def temp_file_path(self) -> str:
         if not self._temp_file_path:
             self._temp_file_path = tempfile.mkstemp(suffix=".md", text=True)[1]
         return self._temp_file_path
 
-    # External Editor Syncing Below ...........................................
     def sync_to_external_editor(self) -> None:
         """Sync the editor content to an external editor"""
         with open(self.temp_file_path, "w", encoding="utf-8") as f:
             f.write(self.toPlainText())
-
 
     def create_external_edit_tempfile(self) -> None:
         """Create a temporary file with current content and start watching it"""
@@ -458,15 +458,21 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         self.file_event_handler.file_modified.connect(self.on_tempfile_modified)
 
         self.observer = Observer()
-        self.observer.schedule(self.file_event_handler,
-                             path=os.path.dirname(self.temp_file_path),
-                             recursive=False)
+        if self.observer is None:
+            os.remove(self.temp_file_path)
+            raise Exception("Failed to create file observer")
+        self.observer.schedule(
+            self.file_event_handler,
+            path=os.path.dirname(self.temp_file_path),
+            recursive=False,
+        )
 
         # Start observer in a separate thread
-        observer_thread = threading.Thread(target=self.observer.start)
+        if (observer_thread := threading.Thread(target=self.observer.start)) is None:
+            os.remove(self.temp_file_path)
+            raise Exception("Failed to start file observer")
         observer_thread.daemon = True
         observer_thread.start()
-
 
     def on_tempfile_modified(self, path: str) -> None:
         """Handle external file changes while avoiding sync loops"""
@@ -502,9 +508,7 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
 
         # Add "Open in External Editor" action
         ext_edit_action = menu.addAction("Open in External Editor")
-        ext_edit_action.triggered.connect(
-            lambda: self.open_tempfile_in_editor()
-        )
+        ext_edit_action.triggered.connect(lambda: self.open_tempfile_in_editor())
 
         # Add "Copy as HTML" action if there's a selection
         if self.textCursor().hasSelection():
