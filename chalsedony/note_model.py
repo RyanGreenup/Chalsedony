@@ -70,7 +70,6 @@ class NoteModel(QObject):
         self._tree_data = None
         _ = self.tree_data  # Trigger Invalidation
 
-
     def find_note_by_id(self, note_id: str) -> None | Note:
         """Find a note by its ID in the entire tree"""
         cursor = self.db_connection.cursor()
@@ -157,7 +156,7 @@ class NoteModel(QObject):
         cursor = self.db_connection.cursor()
         # Use lambda to create type-safe row factory
         # Ensure that we get dict-like rows
-        cursor.row_factory = lambda cursor, row: sqlite3.Row(cursor, row)
+        cursor.row_factory = lambda cursor, row: sqlite3.Row(cursor, row)  # pyright: ignore [reportArgumentType]
 
         # Build the recursive CTE to get the folder hierarchy
         cte_query = """
@@ -185,14 +184,15 @@ class NoteModel(QObject):
                 folder=Folder(**dict(row)),  # Convert Row to dict for constructor
                 parent_id=row["parent_id"] or "",
                 notes=[],
-                children=[]
+                children=[],
             )
             for row in folder_rows
         }
 
         # Build the hierarchy using the parent_id relationships
         root_folders = [
-            folder_item for folder_item in folders.values()
+            folder_item
+            for folder_item in folders.values()
             if not folder_item.parent_id or folder_item.parent_id not in folders
         ]
 
