@@ -71,12 +71,37 @@ sqlite3 ~/.config/joplin-desktop/database.sqlite < "PRAGMA journal_mode = 'WAL'"
 ```
 
 ## Compatability
+### Search
+#### FTS 5
 
 This is mostly compatible with Joplin, but there are some differences:
 
-- Introduces two new tables `notes_fts5_porter` and `notes_fts5_trigram` for full-text search
+- Introduces two new tables `notes_fts5_porter` and `notes_fts5_trigram` for full-text search (I haven't implemented the combo box yet, `#TODO`)
     - My Joplin Schema was still using fts4, so I added these tables for full-text search
         - I'm not sure if Joplin has updated to fts5 yet, but I wanted the flexibility for both stemmers for code blocks and $\LaTeX$.
+
+The search exposes the SQL functionality, so if the search term has special characters, wrap them in quotes, e.g.:
+
+For example this search for a Rust type must be qutoed:
+
+```sql
+"<'_, PyModule>"
+```
+
+To filter for all notes that have `lua` anywhere in the title (`lua*` signifies it doesn't need to be separated by a space/underscore) and `func` in the body, and `nvim_` in the body:
+
+```sql
+title:lua* AND body:func* buf* "nvim_"
+```
+
+#### Filtering by notebooks is Not Yet Implemented
+
+This is a bit more complicated, so it's not implemented yet, I had considered adding the folder name to the fts table so a search could be done like this:
+
+- `body:<search term> OR title:<search term> AND folder:<folder name>`
+
+However, if the folder is renamed, I would need a trigger to update the virtual table and I feel like this will be error prone. I also wanted to be able to mark folders in the tree and permit searching underneath those folders, so I'll likely need to implement this through Python rather than SQL.
+
 
 ## TODO Documentation
 
