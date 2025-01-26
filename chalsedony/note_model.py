@@ -280,7 +280,7 @@ class NoteModel(QObject):
         self.rebuild_tree_data()
         self.refreshed.emit()
 
-    # AI: Create a method to produce a corresponding table name
+    #  Create a method to produce a corresponding table name AI!
     class Stemmer(Enum):
         """Enum representing FTS5 tokenizer options"""
         PORTER = "porter ascii"
@@ -332,7 +332,6 @@ class NoteModel(QObject):
             self.db_connection.commit()
 
 
-    # Improve this method to take a variant of the Stemmer enum AI!
     def search_notes(self, query: str) -> list[NoteSearchResult]:
         """Perform full text search on notes
 
