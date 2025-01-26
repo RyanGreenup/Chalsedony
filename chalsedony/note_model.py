@@ -288,16 +288,16 @@ class NoteModel(QObject):
         Returns:
             List of NoteSearchResult containing note IDs and titles
         """
+        # https://sqlite.org/fts5.html#the_bm25_function
         cursor = self.db_connection.cursor()
         _ = cursor.execute(
             """
-            SELECT id, title,
-                   length(title) - length(replace(lower(title), lower(?), '')) AS relevance
+            SELECT id, title
             FROM notes_fts
             WHERE notes_fts MATCH ?
-            ORDER BY relevance DESC
+            ORDER BY bm25(notes_fts) DESC
         """,
-            (query, query),
+            query,
         )
 
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
