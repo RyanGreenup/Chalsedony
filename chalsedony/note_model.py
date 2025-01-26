@@ -332,6 +332,7 @@ class NoteModel(QObject):
             self.db_connection.commit()
 
 
+    # Improve this method to take a variant of the Stemmer enum AI!
     def search_notes(self, query: str) -> list[NoteSearchResult]:
         """Perform full text search on notes
 
