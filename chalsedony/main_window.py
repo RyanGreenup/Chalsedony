@@ -406,20 +406,20 @@ class MainWindow(QMainWindow):
                     name="&Edit",
                     actions=[
                         MenuAction(
-                            id="start_nvim_session",
-                            text="Start Neovim Session",
+                            id="stop_watching_external_editor",
+                            text="Stop Watching External File",
                             shortcut="Ctrl+Alt+U",
-                            handler="start_nvim_session",
+                            handler="stop_watching_external_editor",
                         ),
                         MenuAction(
                             id="sync_to_external_editor",
-                            text="stop Neovim Session",
+                            text="Sync to External Editor",
                             shortcut="Ctrl+Alt+Shift+E",
                             handler="sync_to_external_editor",
                         ),
                         MenuAction(
                             id="open_external_editor",
-                            text="Open Neovim GUI (Automatically Starts Session)",
+                            text="Open External Editor",
                             shortcut="Ctrl+Alt+E",
                             handler="open_external_editor",
                         ),
@@ -483,6 +483,10 @@ class MainWindow(QMainWindow):
         file_path = self.current_view.get_current_content_area().editor.temp_file_path
         self.set_status_message(f"Synced to {file_path}")
 
+    def stop_watching_external_editor(self) -> None:
+        file_path = self.current_view.get_current_content_area().editor.temp_file_path
+        self.current_view.get_current_content_area().editor.cleanup_external_edit_tempfile()
+        self.set_status_message(f"Removed {file_path} and stopped watching")
 
 
 

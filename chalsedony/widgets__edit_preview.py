@@ -513,6 +513,10 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
         menu = self.createStandardContextMenu()
 
         # Add "Open in External Editor" action
+        ext_edit_stop_action = menu.addAction("Stop Watching External Editor")
+        ext_edit_stop_action.triggered.connect(lambda: self.cleanup_external_edit_tempfile())
+
+        # Add "Open in External Editor" action
         ext_edit_action = menu.addAction("Open in External Editor")
         ext_edit_action.triggered.connect(lambda: self.open_tempfile_in_editor())
 
