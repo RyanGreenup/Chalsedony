@@ -352,7 +352,7 @@ class NoteModel(QObject):
         """
         table_name = self.get_fts_table_name(stemmer)
         # https://sqlite.org/fts5.html#the_bm25_function
-        # Joplin is still using fts4, but we want the bm25 so we make another
+        # Joplin is still using fts4, but we want the bm25 so we make another table
         self.ensure_fts_table(stemmer)
         cursor = self.db_connection.cursor()
         _ = cursor.execute(
