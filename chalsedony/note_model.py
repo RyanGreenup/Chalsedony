@@ -280,6 +280,12 @@ class NoteModel(QObject):
         self.rebuild_tree_data()
         self.refreshed.emit()
 
+    # AI: Create a method to produce a corresponding table name
+    class Stemmer(Enum):
+        PORTER = "porter ascii"
+        TRIGRAM = "trigram ascii"
+
+    # Improve this method so it takes a variant of the Stemmer enum and uses it to create the table and set the stemmer AI!
     def ensure_fts_table(self, table_name: str = "notes_fts5", stemmer: str = "porter") -> None:
         """Ensure the FTS5 virtual table exists and is populated"""
         cursor = self.db_connection.cursor()
@@ -324,6 +330,7 @@ class NoteModel(QObject):
                 END;
             """)
             self.db_connection.commit()
+
 
     def search_notes(self, query: str) -> list[NoteSearchResult]:
         """Perform full text search on notes
