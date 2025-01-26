@@ -94,7 +94,8 @@ class MainWindow(QMainWindow):
 
         self.menu_actions = {}
         self.create_menu_bar()
-        self.create_tool_bar()
+        # This is just wasted space, so It's not included
+        # self.create_tool_bar()
         self.create_status_bar()
 
         self.setWindowTitle("Chalsedony")
