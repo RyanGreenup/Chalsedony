@@ -11,10 +11,10 @@ dependencies = [
     "pydantic>=2.10.5",
     "pygments>=2.19.1",
     "pymdown-extensions>=10.14",
-    "pynvim>=0.5.2",
     "pyside6>=6.8.1.1",
     "pyyaml>=6.0.2",
     "typer>=0.15.1",
+    "watchdog>=6.0.0",
 ]
 
 [tool.ruff]
