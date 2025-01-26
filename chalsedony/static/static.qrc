@@ -21,6 +21,7 @@
         <file>js/mermaid.min.js</file>
         <file>js/set_div_content.js</file>
         <file>js/arithmatex_auto-render.js</file>
+        <file>js/copy_code_block.js</file>
     </qresource>
     <qresource prefix="/">
         <file>css/fonts.css</file>
