@@ -343,9 +343,9 @@ class NoteModel(QObject):
             SELECT id, title
             FROM notes_fts5
             WHERE notes_fts5 MATCH ?
-            ORDER BY bm25(notes_fts) DESC
+            ORDER BY bm25(notes_fts5) DESC
         """,
-            query,
+            (query,),
         )
 
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
