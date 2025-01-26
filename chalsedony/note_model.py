@@ -280,13 +280,20 @@ class NoteModel(QObject):
         self.rebuild_tree_data()
         self.refreshed.emit()
 
-    #  Create a method to produce a corresponding table name AI!
+    @classmethod
+    def get_fts_table_name(cls, stemmer: Stemmer) -> str:
+        """Get the FTS table name corresponding to the stemmer type"""
+        return {
+            cls.Stemmer.PORTER: "notes_fts5_porter",
+            cls.Stemmer.TRIGRAM: "notes_fts5_trigram"
+        }[stemmer]
+
     class Stemmer(Enum):
         """Enum representing FTS5 tokenizer options"""
         PORTER = "porter ascii"
         TRIGRAM = "trigram ascii"
 
-    def ensure_fts_table(self, table_name: str = "notes_fts5", stemmer: Stemmer = Stemmer.PORTER) -> None:
+    def ensure_fts_table(self, table_name: str | None = None, stemmer: Stemmer = Stemmer.PORTER) -> None:
         """Ensure the FTS5 virtual table exists and is populated"""
         cursor = self.db_connection.cursor()
 
