@@ -35,7 +35,14 @@ from PySide6.QtCore import (
     QUrl,
     QMimeData,
     QPoint,
+    QObject,
+    Signal,
 )
+import tempfile
+import os
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+import threading
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from bs4 import BeautifulSoup, Tag
 import markdown
@@ -329,11 +336,29 @@ class MyTextEdit(QTextEdit):
         self.setFont(font)
 
 
+class TempFileEventHandler(FileSystemEventHandler, QObject):
+    file_modified = Signal(str)
+    
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
+        FileSystemEventHandler.__init__(self)
+        
+    def on_modified(self, event):
+        if not event.is_directory:
+            self.file_modified.emit(event.src_path)
+
 class MDTextEdit(MyTextEdit, VimTextEdit):
     # Signal emitted when an image is pasted: (filepath, title)
     imageUploadRequested: Signal = Signal(str)  # Filepath
     # Signal emitted with HTML content when copied
     request_copy_md_as_html: Signal = Signal(str)
+    _syncing_to_editor = False
+    
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.temp_file_path: str = ""
+        self.file_event_handler: TempFileEventHandler | None = None
+        self.observer: Observer | None = None
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -412,9 +437,67 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
             return 0
         return scrollbar.value() / scrollbar.maximum()
 
+    def create_external_edit_tempfile(self) -> str:
+        """Create a temporary file with current content and start watching it"""
+        if not self.temp_file_path:
+            self.temp_file_path = tempfile.mkstemp(suffix=".md", text=True)[1]
+            
+        with open(self.temp_file_path, "w", encoding="utf-8") as f:
+            f.write(self.toPlainText())
+            
+        # Set up file watcher
+        self.file_event_handler = TempFileEventHandler()
+        self.file_event_handler.file_modified.connect(self.on_tempfile_modified)
+        
+        self.observer = Observer()
+        self.observer.schedule(self.file_event_handler, 
+                             path=os.path.dirname(self.temp_file_path),
+                             recursive=False)
+        
+        # Start observer in a separate thread
+        observer_thread = threading.Thread(target=self.observer.start)
+        observer_thread.daemon = True
+        observer_thread.start()
+        
+        return self.temp_file_path
+
+    def on_tempfile_modified(self, path: str) -> None:
+        """Handle external file changes while avoiding sync loops"""
+        if path != self.temp_file_path or self._syncing_to_editor:
+            return
+            
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                new_content = f.read()
+                
+            if new_content != self.toPlainText():
+                self._syncing_to_editor = True
+                self.setPlainText(new_content)
+                self._syncing_to_editor = False
+        except Exception as e:
+            print(f"Error syncing from temp file: {str(e)}")
+
+    def closeEvent(self, event) -> None:
+        """Cleanup temp file and observer when editor closes"""
+        if self.observer:
+            self.observer.stop()
+            self.observer.join()
+        if self.temp_file_path and os.path.exists(self.temp_file_path):
+            try:
+                os.remove(self.temp_file_path)
+            except Exception as e:
+                print(f"Error cleaning up temp file: {str(e)}")
+        super().closeEvent(event)
+
     def _show_context_menu(self, pos: QPoint) -> None:
         """Show custom context menu with HTML copy option"""
         menu = self.createStandardContextMenu()
+        
+        # Add "Open in External Editor" action
+        ext_edit_action = menu.addAction("Open in External Editor")
+        ext_edit_action.triggered.connect(
+            lambda: self.open_tempfile_in_editor()
+        )
 
         # Add "Copy as HTML" action if there's a selection
         if self.textCursor().hasSelection():
@@ -422,6 +505,11 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
             copy_html_action.triggered.connect(self._copy_selection_as_html)
 
         menu.exec(self.mapToGlobal(pos))
+
+    def open_tempfile_in_editor(self) -> None:
+        """Open the temp file in the system's default editor"""
+        temp_path = self.create_external_edit_tempfile()
+        open_file(temp_path)
 
     def _copy_selection_as_html(self) -> None:
         """Copy selected text as HTML to clipboard while preserving formatting"""
