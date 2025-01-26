@@ -772,34 +772,36 @@ class WebPreview(QWebEngineView):
             <script src="qrc:/js/jquery.min.js"></script>
             <script src="qrc:/js/dataTables.js"></script>
             <script src="qrc:/js/datatables_init.js"></script>
-            
+
             <script>
+            console.log("Init")
             // Handle middle-click to copy code blocks
-            document.addEventListener('mousedown', (event) => {
-                if (event.button === 1) { // Middle mouse button
+            document.addEventListener('mousedown', (event) => {{
+                console.log("Mouse")
+                if (event.button === 1) {{ // Middle mouse button
                     const codeBlock = event.target.closest('.highlight code');
-                    if (codeBlock) {
+                    if (codeBlock) {{
                         const filename = codeBlock.closest('.highlight').querySelector('.filename')?.textContent;
                         const codeContent = codeBlock.textContent;
-                        
+
                         // Copy to clipboard
-                        navigator.clipboard.writeText(codeContent).then(() => {
+                        navigator.clipboard.writeText(codeContent).then(() => {{
                             // Visual feedback
                             const originalBg = codeBlock.style.backgroundColor;
                             codeBlock.style.backgroundColor = '#00ff0033';
-                            setTimeout(() => {
+                            setTimeout(() => {{
                                 codeBlock.style.backgroundColor = originalBg;
-                            }, 200);
-                            
-                            if (filename) {
-                                console.log(`Copied ${filename} content to clipboard`);
-                            }
-                        }).catch(err => {
+                            }}, 200);
+
+                            if (filename) {{
+                                console.log(`Copied ${{filename}} content to clipboard`);
+                            }}
+                        }}).catch(err => {{
                             console.error('Failed to copy code:', err);
-                        });
-                    }
-                }
-            });
+                        }});
+                    }}
+                }}
+            }});
             </script>
 
             {css_includes}
