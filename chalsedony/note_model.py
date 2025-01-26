@@ -55,6 +55,7 @@ class NoteModel(QObject):
         self.db_connection = db_connection
         self.asset_dir = assets
         self._order_by = OrderField.USER_ORDER
+        self.ensure_fts_table()
         self._order_type = OrderType.ASC
         self._tree_data: list[FolderTreeItem] | None = None
 
@@ -278,6 +279,49 @@ class NoteModel(QObject):
         """Refresh the model"""
         self.rebuild_tree_data()
         self.refreshed.emit()
+
+    def ensure_fts_table(self) -> None:
+        """Ensure the FTS5 virtual table exists and is populated"""
+        cursor = self.db_connection.cursor()
+        
+        # Check if table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='notes_fts5'")
+        if not cursor.fetchone():
+            # Create FTS5 virtual table and triggers
+            cursor.executescript("""
+                CREATE VIRTUAL TABLE notes_fts5 USING fts5(
+                    title,
+                    body,
+                    content='notes',
+                    content_rowid='rowid'
+                );
+
+                -- Populate the FTS table with existing data
+                INSERT INTO notes_fts5(rowid, title, body)
+                SELECT rowid, title, body FROM notes;
+
+                -- Triggers to keep FTS updated
+                CREATE TRIGGER notes_ai AFTER INSERT ON notes
+                BEGIN
+                    INSERT INTO notes_fts5(rowid, title, body) 
+                    VALUES (new.rowid, new.title, new.body);
+                END;
+
+                CREATE TRIGGER notes_ad AFTER DELETE ON notes
+                BEGIN
+                    INSERT INTO notes_fts5(notes_fts5, rowid, title, body) 
+                    VALUES ('delete', old.rowid, old.title, old.body);
+                END;
+
+                CREATE TRIGGER notes_au AFTER UPDATE ON notes
+                BEGIN
+                    INSERT INTO notes_fts5(notes_fts5, rowid, title, body) 
+                    VALUES ('delete', old.rowid, old.title, old.body);
+                    INSERT INTO notes_fts5(rowid, title, body) 
+                    VALUES (new.rowid, new.title, new.body);
+                END;
+            """)
+            self.db_connection.commit()
 
     def search_notes(self, query: str) -> list[NoteSearchResult]:
         """Perform full text search on notes
