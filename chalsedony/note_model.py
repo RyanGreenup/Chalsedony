@@ -156,6 +156,7 @@ class NoteModel(QObject):
         """
         cursor = self.db_connection.cursor()
         # Use lambda to create type-safe row factory
+        # Ensure that we get dict-like rows
         cursor.row_factory = lambda cursor, row: sqlite3.Row(cursor, row)
 
         # Build the recursive CTE to get the folder hierarchy
