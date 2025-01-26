@@ -155,7 +155,8 @@ class NoteModel(QObject):
             - children: list of child FolderTreeItems
         """
         cursor = self.db_connection.cursor()
-        cursor.row_factory = sqlite3.Row  # Ensure we get dict-like rows
+        # Use lambda to create type-safe row factory
+        cursor.row_factory = lambda cursor, row: sqlite3.Row(cursor, row)
 
         # Build the recursive CTE to get the folder hierarchy
         cte_query = """
