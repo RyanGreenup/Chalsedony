@@ -810,7 +810,7 @@ class WebPreview(QWebEngineView):
                             setTimeout(() => {{
                                 codeBlock.style.backgroundColor = originalBg;
                             }}, 200);
-                            
+
                             if (filename) {{
                                 console.log(`Copied ${{filename}} content to clipboard`);
                             }}
@@ -846,7 +846,6 @@ class WebPreview(QWebEngineView):
             {html}
             </div>
             <script src="qrc:/katex/katex.min.js"></script>
-            <script src="qrc:/katex/config.js"></script>
             <script src="qrc:/js/pdfjs.js"></script>
             <script src="qrc:/js/my_pdfjs_init.js"></script>
             <script src="qrc:/js/asciinema-player.min.js"></script>
@@ -857,7 +856,9 @@ class WebPreview(QWebEngineView):
         </html>
         """
 
+        # These are not required when using arithmatex_auto-render.js
         # <script src="qrc:/katex/contrib/auto-render.min.js"></script>
+        # <script src="qrc:/katex/config.js"></script>
         # self.setHtml(html, QUrl("note://"))
         return html
 
