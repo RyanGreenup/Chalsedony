@@ -280,44 +280,46 @@ class NoteModel(QObject):
         self.rebuild_tree_data()
         self.refreshed.emit()
 
-    def ensure_fts_table(self) -> None:
+    def ensure_fts_table(self, table_name: str = "notes_fts5", stemmer: str = "porter") -> None:
         """Ensure the FTS5 virtual table exists and is populated"""
         cursor = self.db_connection.cursor()
-        
+
         # Check if table exists
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='notes_fts5'")
         if not cursor.fetchone():
             # Create FTS5 virtual table and triggers
-            cursor.executescript("""
-                CREATE VIRTUAL TABLE notes_fts5 USING fts5(
+            cursor.executescript(f"""
+                CREATE VIRTUAL TABLE {table_name} USING fts5(
+                    id,
                     title,
                     body,
                     content='notes',
-                    content_rowid='rowid'
+                    content_rowid='rowid',
+                    tokenize = '{stemmer}'
                 );
 
                 -- Populate the FTS table with existing data
-                INSERT INTO notes_fts5(rowid, title, body)
+                INSERT INTO {table_name}(rowid, title, body)
                 SELECT rowid, title, body FROM notes;
 
                 -- Triggers to keep FTS updated
                 CREATE TRIGGER notes_ai AFTER INSERT ON notes
                 BEGIN
-                    INSERT INTO notes_fts5(rowid, title, body) 
+                    INSERT INTO {table_name}(rowid, title, body)
                     VALUES (new.rowid, new.title, new.body);
                 END;
 
                 CREATE TRIGGER notes_ad AFTER DELETE ON notes
                 BEGIN
-                    INSERT INTO notes_fts5(notes_fts5, rowid, title, body) 
+                    INSERT INTO {table_name}(notes_fts5, rowid, title, body)
                     VALUES ('delete', old.rowid, old.title, old.body);
                 END;
 
                 CREATE TRIGGER notes_au AFTER UPDATE ON notes
                 BEGIN
-                    INSERT INTO notes_fts5(notes_fts5, rowid, title, body) 
+                    INSERT INTO {table_name}(notes_fts5, rowid, title, body)
                     VALUES ('delete', old.rowid, old.title, old.body);
-                    INSERT INTO notes_fts5(rowid, title, body) 
+                    INSERT INTO {table_name}(rowid, title, body)
                     VALUES (new.rowid, new.title, new.body);
                 END;
             """)
@@ -333,12 +335,14 @@ class NoteModel(QObject):
             List of NoteSearchResult containing note IDs and titles
         """
         # https://sqlite.org/fts5.html#the_bm25_function
+        # Joplin is still using fts4, but we want the bm25 so we make another
+        self.ensure_fts_table()
         cursor = self.db_connection.cursor()
         _ = cursor.execute(
             """
             SELECT id, title
-            FROM notes_fts
-            WHERE notes_fts MATCH ?
+            FROM notes_fts5
+            WHERE notes_fts5 MATCH ?
             ORDER BY bm25(notes_fts) DESC
         """,
             query,
