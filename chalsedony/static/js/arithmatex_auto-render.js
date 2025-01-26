@@ -1,7 +1,7 @@
 (function () {
-'use strict';
+  'use strict';
 
-var katexMath = (function () {
+  var katexMath = function() {
     var maths = document.querySelectorAll('.arithmatex'),
         tex;
 
@@ -13,10 +13,24 @@ var katexMath = (function () {
         katex.render(tex.slice(2, -2), maths[i], {'displayMode': true});
       }
     }
-});
+  };
 
-(function () {
-  var onReady = function onReady(fn) {
+  var observeDOMChanges = function(callback) {
+    const targetNode = document.body;
+    const config = { childList: true, subtree: true, characterData: true };
+
+    const observer = new MutationObserver(function(mutationsList) {
+      mutationsList.forEach(function(mutation) {
+        if (mutation.type === 'childList' || mutation.type === 'characterData') {
+          callback();
+        }
+      });
+    });
+
+    observer.observe(targetNode, config);
+  };
+
+  var onReady = function(fn) {
     if (document.addEventListener) {
       document.addEventListener("DOMContentLoaded", fn);
     } else {
@@ -30,9 +44,12 @@ var katexMath = (function () {
 
   onReady(function () {
     if (typeof katex !== "undefined") {
+      // Run the initial katex math rendering
       katexMath();
+
+      // Set up the observer to watch for changes and re-render katex math
+      observeDOMChanges(katexMath);
     }
   });
-})();
-
 }());
+
