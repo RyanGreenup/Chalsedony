@@ -236,28 +236,44 @@ class NoteModel(QObject):
         """Refresh the model"""
         self.refreshed.emit()
 
-    def search_notes(self, query: str) -> list[NoteSearchResult]:
+    def search_notes(self, query: str, stemmer: Stemmer = Stemmer.PORTER, full_path: bool = False) -> list[NoteSearchResult]:
         """Perform full text search on notes
 
         Args:
             query: The search query string
+            stemmer: Which FTS5 stemmer to use (default: PORTER)
+            full_path: Whether to include the full folder path in the title (default: False)
 
         Returns:
             List of NoteSearchResult containing note IDs and titles
         """
+        table_name = self.get_fts_table_name(stemmer)
         cursor = self.db_connection.cursor()
         _ = cursor.execute(
-            """
-            SELECT id, title,
+            f"""
+            SELECT id, title, parent_id,
                    length(title) - length(replace(lower(title), lower(?), '')) AS relevance
-            FROM notes_fts
-            WHERE notes_fts MATCH ?
+            FROM {table_name}
+            WHERE {table_name} MATCH ?
             ORDER BY relevance DESC
         """,
             (query, query),
         )
 
-        return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
+        results = []
+        for row in cursor.fetchall():
+            note_id = row[0]
+            title = row[1]
+            parent_id = row[2]
+            
+            if full_path:
+                folder_path = self.get_folder_path(parent_id)
+                if folder_path:
+                    title = f"{folder_path}/{title}"
+            
+            results.append(NoteSearchResult(id=note_id, title=title))
+        
+        return results
 
     def get_note_from_search_result(self, result: NoteSearchResult) -> None | Note:
         """Get full note details from a search result
