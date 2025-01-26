@@ -50,6 +50,7 @@ from bs4 import BeautifulSoup, Tag
 import markdown
 from .utils__markdown_extensions import CustomWikiLinkExtension
 import pymdownx.superfences
+from pymdownx import arithmatex
 
 from .db_api import IdTable, ItemType
 from .note_model import ResourceType
@@ -159,9 +160,24 @@ class EditPreview(QWidget):
                         "name": "mermaid",
                         "class": "mermaid",
                         "format": pymdownx.superfences.fence_div_format,  # pyright: ignore [reportUnknownMemberType]
+                    },
+                    {
+                        "name": "math",
+                        "class": "arithmatex",
+                        "format": arithmatex.arithmatex_fenced_format(which="generic"),
+                    },
+                ]
+            },
+            "pymdownx.inlinehilite": {
+                "custom_inline": [
+                    {
+                        "name": "math",
+                        "class": "arithmatex",
+                        "format": arithmatex.arithmatex_inline_format(which="generic"),
                     }
                 ]
             },
+            "pymdownx.arithmatex": {"generic": True},
             # "pymdownx.highlight": {
             #     "auto_title": True,
             #     "auto_title_map": {"Python Console Session": "Python"},
@@ -178,6 +194,7 @@ class EditPreview(QWidget):
                 # Allow md in html
                 # "md_in_html",
                 "pymdownx.extra",  # Replaces md_in_html?
+                "pymdownx.arithmatex",
                 "pymdownx.blocks.html",
                 "pymdownx.magiclink",
                 # "pymdownx.escapeall",  # Breaks math without the arithmatex extension # TODO
@@ -188,6 +205,7 @@ class EditPreview(QWidget):
                 "pymdownx.tasklist",
                 "attr_list",
                 "pymdownx.superfences",
+                "pymdownx.inlinehilite",
                 "pymdownx.blocks.caption",
                 "pymdownx.progressbar",
                 CustomWikiLinkExtension(note_model=self.note_model, base_url="note://"),
@@ -527,7 +545,9 @@ class MDTextEdit(MyTextEdit, VimTextEdit):
 
         # Add "Open in External Editor" action
         ext_edit_stop_action = menu.addAction("Stop Watching External Editor")
-        ext_edit_stop_action.triggered.connect(lambda: self.cleanup_external_edit_tempfile())
+        ext_edit_stop_action.triggered.connect(
+            lambda: self.cleanup_external_edit_tempfile()
+        )
 
         # Add "Open in External Editor" action
         ext_edit_action = menu.addAction("Open in External Editor")
@@ -777,16 +797,18 @@ class WebPreview(QWebEngineView):
             {html}
             </div>
             <script src="qrc:/katex/katex.min.js"></script>
-            <script src="qrc:/katex/contrib/auto-render.min.js"></script>
             <script src="qrc:/katex/config.js"></script>
             <script src="qrc:/js/pdfjs.js"></script>
             <script src="qrc:/js/my_pdfjs_init.js"></script>
             <script src="qrc:/js/asciinema-player.min.js"></script>
             <script src="qrc:/js/mermaid.min.js"></script>
             <script src="qrc:/js/set_div_content.js"></script>
+            <script src="qrc:/js/arithmatex_auto-render.js"></script>
         </body>
         </html>
         """
+
+        # <script src="qrc:/katex/contrib/auto-render.min.js"></script>
         # self.setHtml(html, QUrl("note://"))
         return html
 

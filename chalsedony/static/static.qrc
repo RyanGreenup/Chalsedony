@@ -20,6 +20,7 @@
         <file>js/datatables_init.js</file>
         <file>js/mermaid.min.js</file>
         <file>js/set_div_content.js</file>
+        <file>js/arithmatex_auto-render.js</file>
     </qresource>
     <qresource prefix="/">
         <file>css/fonts.css</file>
