@@ -102,6 +102,9 @@ This is a bit more complicated, so it's not implemented yet, I had considered ad
 
 However, if the folder is renamed, I would need a trigger to update the virtual table and I feel like this will be error prone. I also wanted to be able to mark folders in the tree and permit searching underneath those folders, so I'll likely need to implement this through Python rather than SQL.
 
+## Integrations
+
+If you're a Neovim / Emacs user you might like the [Egui Link selector](https://github.com/RyanGreenup/egui_joplin_fzf) which creates a popup for inserting links.
 
 ## TODO Documentation
 
