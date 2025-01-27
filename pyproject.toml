@@ -35,7 +35,7 @@ exclude = [
 
 
 [project.scripts]
-cy = "chalsedony.main:main"
+cy = "chalsedony.main:app"
 
 [build-system]
 requires = ["hatchling"]
