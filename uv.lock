@@ -37,6 +37,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
+    { name = "markdown-gfm-admonition" },
     { name = "markdownify" },
     { name = "mimetype" },
     { name = "pydantic" },
@@ -51,6 +52,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12.3" },
+    { name = "markdown-gfm-admonition", specifier = ">=0.1.1" },
     { name = "markdownify", specifier = ">=0.14.1" },
     { name = "mimetype", specifier = ">=0.1.5" },
     { name = "pydantic", specifier = ">=2.10.5" },
@@ -112,6 +114,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/54/28/3af612670f82f4c056911fbbbb42760255801b3068c48de792d354ff4472/markdown-3.7.tar.gz", hash = "sha256:2ae2471477cfd02dbbf038d5d9bc226d40def84b4fe2986e49b59b6b472bbed2", size = 357086 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3f/08/83871f3c50fc983b88547c196d11cf8c3340e37c32d2e9d6152abe2c61f7/Markdown-3.7-py3-none-any.whl", hash = "sha256:7eb6df5690b81a1d7942992c97fad2938e956e79df20cbc6186e9c3a77b1c803", size = 106349 },
+]
+
+[[package]]
+name = "markdown-gfm-admonition"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "markdown" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/63/80/05c5b58356c85c336e88eaaae49bd058917531504914dd1c95b5a52a851b/markdown_gfm_admonition-0.1.1.tar.gz", hash = "sha256:a0cb00d183b2be4a4bfc355a74500ddb9818c7ce8d9ac99a63ba7f689866c13d", size = 6384 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/62/fe/e7ccdd9e542afebf61e95f0a0ce0557c494e798d8ca39903a7f9bd83bdca/markdown_gfm_admonition-0.1.1-py3-none-any.whl", hash = "sha256:f6626287a34adf0cdc44f953086fcb9aaaf0cb698f01f3a36b46758c30f7d701", size = 8740 },
 ]
 
 [[package]]

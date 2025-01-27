@@ -49,6 +49,7 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 from bs4 import BeautifulSoup, Tag
 import markdown
 from markdown.extensions.toc import TocExtension
+from markdown_gfm_admonition import GfmAdmonitionExtension
 from .utils__markdown_extensions import CustomWikiLinkExtension
 import pymdownx.superfences
 from pymdownx import arithmatex
@@ -189,6 +190,7 @@ class EditPreview(QWidget):
         self._md = markdown.Markdown(
             extensions=[
                 TocExtension(anchorlink=False,toc_depth="2-5"),
+                GfmAdmonitionExtension(),
                 "fenced_code",
                 "tables",
                 # "footnotes",
