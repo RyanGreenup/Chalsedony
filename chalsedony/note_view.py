@@ -509,9 +509,10 @@ class NoteView(QWidget):
         content_area = self.get_current_content_area()
         try:
             content_area.editor.textChanged.disconnect(self._on_editor_text_changed)
-        except TypeError:
+        except RuntimeError:
             # Signal was not connected
             pass
+
         except Exception as e:
             print(f"Error disconnecting signal: {e}")
 

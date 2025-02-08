@@ -538,7 +538,7 @@ class NoteTree(TreeWidgetWithCycle, StatefulTree):
             try:
                 self.setAnimated(False)
                 self.restore_state(self.filtered_state)
-                self.populate_tree(self.note_model.tree_data)
+                self.populate_tree()
                 self.filtered_state = None
                 # Restore the selection
                 if current:
