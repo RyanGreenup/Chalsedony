@@ -66,7 +66,6 @@ class NotePalette(SelectionDialog):
     @override
     def filter_items(self, text: str) -> None:
         """Filter and sort items based on fuzzy text matching"""
-        print(text)
         if not text:
             # Show all items when no search text
             for i in range(self.list.count()):
@@ -77,7 +76,7 @@ class NotePalette(SelectionDialog):
 
         # Get all visible items and their scores
         items = []
-        for count, i in enumerate(range(self.list.count())):
+        for i in range(self.list.count()):
             item = self.list.item(i)
             if item:
                 # Use token_set_ratio for best partial matching
@@ -87,14 +86,15 @@ class NotePalette(SelectionDialog):
         # Sort by score descending
         items.sort(key=lambda x: x[1], reverse=True)
 
-
-
-        # Show items with good matches, hide others
+        # Remove and re-add items in sorted order
+        for item, _ in items:
+            self.list.takeItem(self.list.row(item))
+        
         had_visible = False
         for item, score in items:
             is_visible = score > 50  # Show items with >50% match
             item.setHidden(not is_visible)
-            # When the text has a space it seems like the results aren't ordered by the score and the selection jumps to the middle of the palette, explain why this occurs rather than the best match simply being at the top AI?
+            self.list.addItem(item)  # Add back in sorted order
             if is_visible and not had_visible:
                 self.list.setCurrentItem(item)
                 had_visible = True
