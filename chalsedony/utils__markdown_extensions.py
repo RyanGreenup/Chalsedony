@@ -6,6 +6,7 @@ from re import Match
 from .db_api import IdTable
 from .note_model import NoteModel
 from typing import Callable
+import sys
 
 from . import static_resources_rc  # pyright: ignore # noqa
 from . import katex_resources_rc  # pyright: ignore   # noqa
@@ -14,7 +15,10 @@ from . import katex_fonts_rc  # pyright: ignore # noqa
 
 class CustomWikiLinkExtension(WikiLinkExtension):
     def __init__(
-        self, note_model: NoteModel, current_note_id: Callable[[], str | None], **kwargs: Any
+        self,
+        note_model: NoteModel,
+        current_note_id: Callable[[], str | None],
+        **kwargs: Any,
     ) -> None:
         self.note_model = note_model
         self.current_note_id = current_note_id
@@ -49,34 +53,39 @@ class CustomWikiLinksInlineProcessor(WikiLinksInlineProcessor):
         _ = data
         if m.group(1).strip():
             target_note_id = m.group(1).strip()
-            if self.note_model.what_is_this(target_note_id) == IdTable.NOTE:
-                if note_meta := self.note_model.get_note_meta_by_id(target_note_id):
-                    label = note_meta.title
-                    target_folder_id = self.note_model.get_folder_id_from_note(
-                        target_note_id
-                    )
-                    path = self.note_model.get_folder_path(target_folder_id)
-                    if current_note_id := self.maybe_current_note_id():
-                        path_components = self.note_model.get_relative_path(
-                            self.note_model.get_folder_id_from_note(current_note_id),
-                            target_folder_id,
-                        )
-
-                        path = "/".join(path_components)
-                    else:
-                        print(
-                            "No current Note but asked to render wikilink, investigate this, likely a bug"
-                        )
-                    if path:
-                        label = f"{path}/{label}"
-                else:
-                    label = target_note_id
-            else:
-                label = target_note_id
             url = self.config["base_url"] + target_note_id
             a = Element("a")
-            a.text = label
+            a.text = self.get_label(target_note_id)
             a.set("href", url)
             return a, m.start(0), m.end(0)
         else:
             return "", m.start(0), m.end(0)
+
+    def get_label(self, target_note_id: str) -> str:
+        if self.note_model.what_is_this(target_note_id) == IdTable.NOTE:
+            if note_meta := self.note_model.get_note_meta_by_id(target_note_id):
+                label = note_meta.title
+                target_folder_id = self.note_model.get_folder_id_from_note(
+                    target_note_id
+                )
+                path = self.note_model.get_folder_path(target_folder_id)
+                if current_note_id := self.maybe_current_note_id():
+                    path_components = self.note_model.get_relative_path(
+                        self.note_model.get_folder_id_from_note(current_note_id),
+                        target_folder_id,
+                    )
+
+                    path = "/".join(path_components)
+                else:
+                    print(
+                        "No current Note but asked to render wikilink, investigate this, likely a bug",
+                        file=sys.stderr,
+                    )
+                if path:
+                    label = f"{path}/{label}"
+            else:
+                label = target_note_id
+        else:
+            label = target_note_id
+
+        return label
