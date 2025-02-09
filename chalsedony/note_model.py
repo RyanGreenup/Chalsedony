@@ -607,15 +607,36 @@ class NoteModel(QObject):
 
         self.refresh()
 
-    # Finish this method AI!
     def get_relative_path(self, start_folder_id: str, target_folder_id: str) -> list[str]:
         """
         Get the Relative path of a folder from root to the specified folder.
 
         This only looks down so the returned results will not have, e.g. "../"
+
+        Args:
+            start_folder_id: ID of the starting folder
+            target_folder_id: ID of the target folder
+
+        Returns:
+            List of folder titles representing the path from start to target,
+            or empty list if target is not a descendant of start
         """
         start_path = self.get_folder_path_components(start_folder_id)
         target_path = self.get_folder_path_components(target_folder_id)
+
+        # Find the first divergent folder
+        common_prefix_len = 0
+        for s, t in zip(start_path, target_path):
+            if s.id != t.id:
+                break
+            common_prefix_len += 1
+
+        # If target is not a descendant of start, return empty list
+        if common_prefix_len < len(start_path):
+            return []
+
+        # Return the remaining path components after the common prefix
+        return [f.title for f in target_path[common_prefix_len:]]
 
     def get_folder_path_components(self, folder_id: str) -> list[Folder]:
         """Get the materialized path of a folder from root to the specified folder
