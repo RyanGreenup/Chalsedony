@@ -73,42 +73,27 @@ class NotePalette(SelectionDialog):
             self.list.setCurrentRow(0)
 
 
-    # Clear the list and only populate it with the relevant items AI!
     @override
     def filter_items(self, text: str) -> None:
         """Filter and sort items based on fuzzy text matching"""
         if not text:
             # Show all items when no search text
-            for i in range(self.list.count()):
-                self.list.item(i).setHidden(False)
-            if self.list.count() > 0:
-                self.list.setCurrentRow(0)
+            self.populate_notes()
             return
 
-        # Get all visible items and their scores
-        items = []
-        for i in range(self.list.count()):
-            item = self.list.item(i)
-            if item:
-                # Use token_set_ratio for best partial matching
-                score = fuzz.token_set_ratio(text.lower(), item.text().lower())
-                items.append((item, score))
+        # Get all items and their scores
+        scored_items = []
+        for note in self._notes:
+            score = fuzz.token_set_ratio(text.lower(), note.title.lower())
+            if score > 50:  # Only include items with >50% match
+                scored_items.append((note, score))
 
-        # Sort by score descending
-        items.sort(key=lambda x: x[1], reverse=True)
+        # Sort by score descending and limit to 200 items
+        scored_items.sort(key=lambda x: x[1], reverse=True)
+        relevant_items = [item[0] for item in scored_items[:200]]
 
-
-        had_visible = False
-        visible_count = 0
-        for item, score in items:
-            is_visible = score > 50 and visible_count < 200  # Show items with >50% match, limit to 200
-            if is_visible:
-                visible_count += 1
-            item.setHidden(not is_visible)
-            self.list.addItem(item)  # Add back in sorted order
-            if is_visible and not had_visible:
-                self.list.setCurrentItem(item)
-                had_visible = True
+        # Repopulate list with only the relevant items
+        self.populate_given_notes(relevant_items)
 
 
 class NoteSelectionPalette(NotePalette):
