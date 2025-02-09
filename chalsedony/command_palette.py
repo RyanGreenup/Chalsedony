@@ -91,9 +91,11 @@ class NotePalette(SelectionDialog):
             self.list.takeItem(self.list.row(item))
 
         had_visible = False
+        visible_count = 0
         for item, score in items:
-            # This limits the palette to relevant items, set a hard limit of 200 items AI!
-            is_visible = score > 50  # Show items with >50% match
+            is_visible = score > 50 and visible_count < 200  # Show items with >50% match, limit to 200
+            if is_visible:
+                visible_count += 1
             item.setHidden(not is_visible)
             self.list.addItem(item)  # Add back in sorted order
             if is_visible and not had_visible:
