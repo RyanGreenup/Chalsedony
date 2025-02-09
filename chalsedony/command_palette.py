@@ -3,9 +3,9 @@ import sys
 from PySide6.QtWidgets import QWidget, QListWidgetItem
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction
+from thefuzz import fuzz, process
 from .db_api import NoteSearchResult
 from .selection_dialog import SelectionDialog
-from .utils__ngram_filter import text_matches_filter
 
 
 class CommandPalette(SelectionDialog):
@@ -63,18 +63,37 @@ class NotePalette(SelectionDialog):
         if self.list.count() > 0:
             self.list.setCurrentRow(0)
 
-    @override
+    @override 
     def filter_items(self, text: str) -> None:
-        """Filter items based on search text"""
-        had_visible = False
+        """Filter and sort items based on fuzzy text matching"""
+        if not text:
+            # Show all items when no search text
+            for i in range(self.list.count()):
+                self.list.item(i).setHidden(False)
+            if self.list.count() > 0:
+                self.list.setCurrentRow(0)
+            return
+
+        # Get all visible items and their scores
+        items = []
         for i in range(self.list.count()):
             item = self.list.item(i)
             if item:
-                is_visible = text_matches_filter(text, item.text(), match_all=True)
-                item.setHidden(not is_visible)
-                if is_visible and not had_visible:
-                    self.list.setCurrentItem(item)
-                    had_visible = True
+                # Use token_set_ratio for best partial matching
+                score = fuzz.token_set_ratio(text.lower(), item.text().lower())
+                items.append((item, score))
+
+        # Sort by score descending
+        items.sort(key=lambda x: x[1], reverse=True)
+        
+        # Show items with good matches, hide others
+        had_visible = False
+        for item, score in items:
+            is_visible = score > 50  # Show items with >50% match
+            item.setHidden(not is_visible)
+            if is_visible and not had_visible:
+                self.list.setCurrentItem(item)
+                had_visible = True
 
 
 class NoteSelectionPalette(NotePalette):
