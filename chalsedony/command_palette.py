@@ -63,6 +63,17 @@ class NotePalette(SelectionDialog):
         if self.list.count() > 0:
             self.list.setCurrentRow(0)
 
+    def populate_given_notes(self, items: list[NoteSearchResult]) -> None:
+        self.list.clear()
+        for note in items:
+            self.list.addItem(note.title)
+
+        # Select first item
+        if self.list.count() > 0:
+            self.list.setCurrentRow(0)
+
+
+    # Clear the list and only populate it with the relevant items AI!
     @override
     def filter_items(self, text: str) -> None:
         """Filter and sort items based on fuzzy text matching"""
@@ -86,9 +97,6 @@ class NotePalette(SelectionDialog):
         # Sort by score descending
         items.sort(key=lambda x: x[1], reverse=True)
 
-        # Remove and re-add items in sorted order
-        for item, _ in items:
-            self.list.takeItem(self.list.row(item))
 
         had_visible = False
         visible_count = 0
