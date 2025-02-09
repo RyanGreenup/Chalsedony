@@ -280,9 +280,9 @@ class NoteModel(QObject):
         self.rebuild_tree_data()
         self.refreshed.emit()
 
-
     class Stemmer(Enum):
         """Enum representing FTS5 tokenizer options"""
+
         PORTER = "porter ascii"
         TRIGRAM = "trigram"
 
@@ -291,7 +291,7 @@ class NoteModel(QObject):
         """Get the FTS table name corresponding to the stemmer type"""
         return {
             cls.Stemmer.PORTER: "notes_fts5_porter",
-            cls.Stemmer.TRIGRAM: "notes_fts5_trigram"
+            cls.Stemmer.TRIGRAM: "notes_fts5_trigram",
         }[stemmer]
 
     def ensure_fts_table(self, stemmer: Stemmer = Stemmer.PORTER) -> None:
@@ -300,7 +300,9 @@ class NoteModel(QObject):
 
         table_name = self.get_fts_table_name(stemmer)
         # Check if table exists
-        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+        cursor.execute(
+            f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'"
+        )
         if not cursor.fetchone():
             # Create FTS5 virtual table and triggers
             cursor.executescript(f"""
@@ -340,8 +342,9 @@ class NoteModel(QObject):
             """)
             self.db_connection.commit()
 
-
-    def search_notes(self, query: str, stemmer: Stemmer = Stemmer.PORTER) -> list[NoteSearchResult]:
+    def search_notes(
+        self, query: str, stemmer: Stemmer = Stemmer.PORTER
+    ) -> list[NoteSearchResult]:
         """Perform full text search on notes
 
         Args:
@@ -604,7 +607,17 @@ class NoteModel(QObject):
 
         self.refresh()
 
-    def get_folder_path(self, folder_id: str) -> str:
+    # Finish this method AI!
+    def get_relative_path(self, start_folder_id: str, target_folder_id: str) -> list[str]:
+        """
+        Get the Relative path of a folder from root to the specified folder.
+
+        This only looks down so the returned results will not have, e.g. "../"
+        """
+        start_path = self.get_folder_path_components(start_folder_id)
+        target_path = self.get_folder_path_components(target_folder_id)
+
+    def get_folder_path_components(self, folder_id: str) -> list[Folder]:
         """Get the materialized path of a folder from root to the specified folder
 
         Args:
@@ -612,6 +625,9 @@ class NoteModel(QObject):
 
         Returns:
             List of Folder objects representing the path from root to target folder
+
+        Example Output:
+            [Journals, January]
         """
         path: list[Folder] = []
         current_id: str | None = folder_id
@@ -631,7 +647,22 @@ class NoteModel(QObject):
 
             current_id = folder.parent_id if folder.parent_id else None
 
-        return "/".join([f.title for f in path])
+        return path
+
+    def get_folder_path(self, folder_id: str) -> str:
+        """Get the materialized path of a folder from root to the specified folder
+
+        Args:
+            folder_id: ID of the target folder
+
+        Returns:
+            List of Folder objects representing the path from root to target folder
+
+        Example Output:
+            "Journals/January/"
+        """
+        folders = self.get_folder_path_components(folder_id)
+        return "/".join([f.title for f in folders])
 
     def get_folder_id_from_note(self, note_id: str) -> str:
         """Get the parent folder ID for a given note ID
@@ -1175,9 +1206,9 @@ class NoteModel(QObject):
         # If they're equal, just set one to the max, this could be improved
         # But simple is better than complex
         if orders[note_id1] == orders[note_id2]:
-            orders[note_id2] = self.get_max_order_value(
-                self.get_folder_id_from_note(note_id2)
-            ) + 1
+            orders[note_id2] = (
+                self.get_max_order_value(self.get_folder_id_from_note(note_id2)) + 1
+            )
 
         # Swap the values
         _ = cursor.execute(
