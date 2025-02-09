@@ -607,7 +607,9 @@ class NoteModel(QObject):
 
         self.refresh()
 
-    def get_relative_path(self, start_folder_id: str, target_folder_id: str) -> list[str]:
+    def get_relative_path_components(
+        self, start_folder_id: str, target_folder_id: str
+    ) -> list[str]:
         """
         Get the Relative path of a folder from root to the specified folder.
 
@@ -637,6 +639,16 @@ class NoteModel(QObject):
 
         # Return the remaining path components after the common prefix
         return [f.title for f in target_path[common_prefix_len:]]
+
+    def get_relative_path(self, start_id: str, target_id) -> str:
+        """
+        Returns the materialized path as a relative path
+        """
+        start_folder_id = self.get_folder_id_from_note(start_id)
+        target_folder_id = self.get_folder_id_from_note(target_id)
+
+        relative_components = self.get_relative_path_components(start_folder_id, target_folder_id)
+        return "/".join(relative_components)
 
     def get_folder_path_components(self, folder_id: str) -> list[Folder]:
         """Get the materialized path of a folder from root to the specified folder

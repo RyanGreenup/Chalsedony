@@ -45,7 +45,7 @@ class CustomWikiLinksInlineProcessor(WikiLinksInlineProcessor):
     ) -> None:
         super().__init__(pattern, config)
         self.note_model = note_model
-        self.maybe_current_note_id = current_note_id
+        self.get_maybe_current_note_id = current_note_id
 
     def handleMatch(  # type: ignore  # The typing here is a bit strange
         self, m: Match[str], data: str
@@ -62,20 +62,20 @@ class CustomWikiLinksInlineProcessor(WikiLinksInlineProcessor):
             return "", m.start(0), m.end(0)
 
     def get_label(self, target_note_id: str) -> str:
+        # Check if the link is a note
         if self.note_model.what_is_this(target_note_id) == IdTable.NOTE:
+            # Check if the note has a valid title
             if note_meta := self.note_model.get_note_meta_by_id(target_note_id):
                 label = note_meta.title
-                target_folder_id = self.note_model.get_folder_id_from_note(
-                    target_note_id
+                # Get the absolute path
+                path = self.note_model.get_folder_path(
+                    self.note_model.get_folder_id_from_note(target_note_id)
                 )
-                path = self.note_model.get_folder_path(target_folder_id)
-                if current_note_id := self.maybe_current_note_id():
-                    path_components = self.note_model.get_relative_path(
-                        self.note_model.get_folder_id_from_note(current_note_id),
-                        target_folder_id,
+                # If we have a current note, get the relative path
+                if current_note_id := self.get_maybe_current_note_id():
+                    path = self.note_model.get_relative_path(
+                        current_note_id, target_note_id
                     )
-
-                    path = "/".join(path_components)
                 else:
                     print(
                         "No current Note but asked to render wikilink, investigate this, likely a bug",
