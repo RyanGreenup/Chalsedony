@@ -89,9 +89,10 @@ class NotePalette(SelectionDialog):
         # Remove and re-add items in sorted order
         for item, _ in items:
             self.list.takeItem(self.list.row(item))
-        
+
         had_visible = False
         for item, score in items:
+            # This limits the palette to relevant items, set a hard limit of 200 items AI!
             is_visible = score > 50  # Show items with >50% match
             item.setHidden(not is_visible)
             self.list.addItem(item)  # Add back in sorted order
