@@ -102,6 +102,76 @@ class NoteModel(QObject):
             return Note(**row_dict)
         return None
 
+    # Improve this function to take an optional note_id and return the absolute path relative
+    # to that id. If the listed note is a sibling or child don't show
+    def get_all_notes_absolute_path(
+        self, relative_to: str | None = None, drop_non_relative: bool = False
+    ) -> list[NoteSearchResult]:
+        """Get all notes from all folders and display the title with
+        absolute paths from the root
+        """
+        sql_statement = """
+        WITH RECURSIVE folder_paths AS (
+          -- Base case: root folders
+          SELECT
+            id,
+            title,
+            parent_id,
+            title as path,
+            1 as level
+          FROM folders
+          WHERE parent_id = ''
+
+          UNION ALL
+
+          -- Recursive case: child folders
+          SELECT
+            f.id,
+            f.title,
+            f.parent_id,
+            CAST(fp.path AS TEXT) || ' / ' || CAST(f.title AS TEXT) as path,
+            fp.level + 1 as level
+          FROM folders f
+          JOIN folder_paths fp ON f.parent_id = fp.id
+        ),
+        note_paths AS (
+          SELECT
+            n.id,
+            n.title as note_title,
+            n.body,
+            CASE
+              WHEN n.parent_id = '' THEN CAST(n.title AS TEXT)
+              ELSE CAST(fp.path AS TEXT) || ' / ' || CAST(n.title AS TEXT)
+            END as full_path
+          FROM notes n
+          LEFT JOIN folder_paths fp ON n.parent_id = fp.id
+        )
+        SELECT
+          id,
+          note_title,
+          full_path
+        FROM note_paths
+        ORDER BY full_path;
+        """
+        cursor = self.db_connection.cursor()
+        cursor.execute(sql_statement)
+        if relative_to:
+            components = self.get_folder_path_components(relative_to)
+            start_path = " / ".join([f.title for f in components])
+            if drop_non_relative:
+                return [
+                    NoteSearchResult(id=row[0], title=row[2].replace(start_path, ""))
+                    for row in cursor.fetchall()
+                    if start_path in row[2]
+                ]
+            else:
+                return [
+                    NoteSearchResult(id=row[0], title=row[2].replace(start_path, ""))
+                    for row in cursor.fetchall()
+                ]
+
+        return [NoteSearchResult(id=row[0], title=row[2]) for row in cursor.fetchall()]
+
     def get_all_notes(self) -> list[NoteSearchResult]:
         """Get all notes from all folders
 
@@ -647,7 +717,9 @@ class NoteModel(QObject):
         start_folder_id = self.get_folder_id_from_note(start_id)
         target_folder_id = self.get_folder_id_from_note(target_id)
 
-        relative_components = self.get_relative_path_components(start_folder_id, target_folder_id)
+        relative_components = self.get_relative_path_components(
+            start_folder_id, target_folder_id
+        )
         return "/".join(relative_components)
 
     def get_folder_path_components(self, folder_id: str) -> list[Folder]:

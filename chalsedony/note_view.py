@@ -346,6 +346,8 @@ class NoteView(QWidget):
     def note_selection_palette(self) -> None:
         """Open a note selection palette dialog"""
         all_notes = self.model.get_all_notes()
+        # TODO the user needs to be able to toggle all aspects of this
+        all_notes = self.model.get_all_notes_absolute_path(relative_to=self.current_note_id)
         palette = NoteSelectionPalette(self, all_notes)
         palette.note_selected.connect(self.handle_note_selection_from_id)
         palette.show()
