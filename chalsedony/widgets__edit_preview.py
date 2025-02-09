@@ -86,7 +86,7 @@ class EditPreview(QWidget):
     ANIMATION_DURATION = 300  # Animation duration in milliseconds
     status_bar_message = Signal(str)  # Signal to send messages to status bar
 
-    def __init__(self, note_model: NoteModel, parent: QWidget | None = None) -> None:
+    def __init__(self, note_model: NoteModel, current_note_id: Callable[[], str | None], parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._splitter_animation: QPropertyAnimation | None = None
         self._debounce_timer = QTimer()
@@ -97,6 +97,7 @@ class EditPreview(QWidget):
         self.setup_ui()
         self._md: markdown.Markdown | None = None
         self.debounce_delay = 300  # Milliseconds between preview updates
+        self.current_note_id = current_note_id
 
     def setup_ui(self) -> None:
         # Create main layout
@@ -212,7 +213,7 @@ class EditPreview(QWidget):
                 "pymdownx.inlinehilite",
                 "pymdownx.blocks.caption",
                 "pymdownx.progressbar",
-                CustomWikiLinkExtension(note_model=self.note_model, base_url="note://"),
+                CustomWikiLinkExtension(note_model=self.note_model, current_note_id=self.current_note_id, base_url="note://"),
             ],
             extension_configs=extension_configs,  # pyright: ignore [reportUnknownArgumentType] # type: ignore [arg-type]
         )

@@ -631,9 +631,9 @@ class NoteModel(QObject):
                 break
             common_prefix_len += 1
 
-        # If target is not a descendant of start, return empty list
+        # If target is not a descendant of start, return absolute path
         if common_prefix_len < len(start_path):
-            return []
+            return [f.title for f in target_path]
 
         # Return the remaining path components after the common prefix
         return [f.title for f in target_path[common_prefix_len:]]

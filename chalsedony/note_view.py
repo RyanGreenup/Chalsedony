@@ -204,7 +204,7 @@ class NoteView(QWidget):
         self.left_sidebar.setLayout(left_layout)
 
         # Main content area
-        self.content_area = EditPreview(self.model)
+        self.content_area = EditPreview(self.model, lambda: self.current_note_id)
         self.content_area.setObjectName("contentArea")
 
         # Right sidebar with three vertical note lists
