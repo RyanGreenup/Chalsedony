@@ -345,8 +345,10 @@ class NoteView(QWidget):
 
     def note_selection_palette(self) -> None:
         """Open a note selection palette dialog"""
-        all_notes = self.model.get_all_notes()
-        # TODO the user needs to be able to toggle all aspects of this
+        # all_notes = self.model.get_all_notes()
+        # TODO [2025-02-09 20:33] the user needs to be able to toggle all aspects of this
+        # consider passing as closure that the user can modify with a keybinding
+        # to change whether the paths are relative
         all_notes = self.model.get_all_notes_absolute_path(relative_to=self.current_note_id)
         palette = NoteSelectionPalette(self, all_notes)
         palette.note_selected.connect(self.handle_note_selection_from_id)
@@ -354,7 +356,9 @@ class NoteView(QWidget):
 
     def note_link_palette(self) -> None:
         """Open a note selection palette dialog"""
-        all_notes = self.model.get_all_notes()
+        # TODO [2025-02-09 20:33]
+        # all_notes = self.model.get_all_notes()
+        all_notes = self.model.get_all_notes_absolute_path(relative_to=self.current_note_id)
         palette = NoteLinkPalette(self, all_notes)
         palette.insert_note_link.connect(self.insert_note_link)
         palette.show()
