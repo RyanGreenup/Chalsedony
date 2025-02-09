@@ -440,6 +440,70 @@ class NoteModel(QObject):
 
         return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
 
+    def search_notes_full_path(
+        self, query: str, stemmer: Stemmer = Stemmer.PORTER
+    ) -> list[NoteSearchResult]:
+        """Perform full text search on notes and return results with full paths
+
+        Args:
+            query: The search query string
+
+        Returns:
+            List of NoteSearchResult containing note IDs and full path titles
+        """
+        table_name = self.get_fts_table_name(stemmer)
+        # https://sqlite.org/fts5.html#the_bm25_function
+        # Joplin is still using fts4, but we want the bm25 so we make another table
+        self.ensure_fts_table(stemmer)
+        cursor = self.db_connection.cursor()
+        _ = cursor.execute(
+            f"""
+            WITH RECURSIVE folder_paths AS (
+              -- Base case: root folders
+              SELECT
+                id,
+                title,
+                parent_id,
+                title as path,
+                1 as level
+              FROM folders
+              WHERE parent_id = ''
+
+              UNION ALL
+
+              -- Recursive case: child folders
+              SELECT
+                f.id,
+                f.title,
+                f.parent_id,
+                CAST(fp.path AS TEXT) || ' / ' || CAST(f.title AS TEXT) as path,
+                fp.level + 1 as level
+              FROM folders f
+              JOIN folder_paths fp ON f.parent_id = fp.id
+            ),
+            note_paths AS (
+              SELECT
+                n.id,
+                n.title as note_title,
+                CASE
+                  WHEN n.parent_id = '' THEN CAST(n.title AS TEXT)
+                  ELSE CAST(fp.path AS TEXT) || ' / ' || CAST(n.title AS TEXT)
+                END as full_path
+              FROM notes n
+              LEFT JOIN folder_paths fp ON n.parent_id = fp.id
+            )
+            SELECT n.id, np.full_path
+            FROM {table_name} n
+            JOIN note_paths np ON n.id = np.id
+            WHERE {table_name} MATCH ?
+            ORDER BY bm25({table_name}) DESC
+        """,
+            (query,),
+        )
+
+        return [NoteSearchResult(id=row[0], title=row[1]) for row in cursor.fetchall()]
+
+
     def get_note_from_search_result(self, result: NoteSearchResult) -> None | Note:
         """Get full note details from a search result
 

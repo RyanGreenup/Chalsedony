@@ -53,11 +53,13 @@ class SearchSidebar(QWidget):
         """Populate the all notes list view with optional search filtering"""
         if search_query:
             # Use full text search
-            results = self.model.search_notes(search_query)
+            results = self.model.search_notes_full_path(search_query)
             self.search_sidebar_list.populate(results)
         else:
             # Show all notes
-            notes = self.model.get_all_notes()
+            # TODO [2025-02-09 20:33]
+            # notes = self.model.get_all_notes()
+            notes = self.model.get_all_notes_absolute_path()
             self.search_sidebar_list.populate(notes)
 
 
