@@ -51,12 +51,13 @@ class NotePalette(SelectionDialog):
         super().__init__(parent, "Note Selection")
         self._notes: list[NoteSearchResult] = notes
         self.search.setPlaceholderText("Type to search notes...")
+        self.LIMIT=200
         self.populate_notes()
 
     def populate_notes(self) -> None:
         """Populate the list with all notes"""
         self.list.clear()
-        for note in self._notes:
+        for note in self._notes[:self.LIMIT]:
             self.list.addItem(note.title)
 
         # Select first item
@@ -90,7 +91,7 @@ class NotePalette(SelectionDialog):
 
         # Sort by score descending and limit to 200 items
         scored_items.sort(key=lambda x: x[1], reverse=True)
-        relevant_items = [item[0] for item in scored_items[:200]]
+        relevant_items = [item[0] for item in scored_items[:self.LIMIT]]
 
         # Repopulate list with only the relevant items
         self.populate_given_notes(relevant_items)
