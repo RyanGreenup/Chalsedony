@@ -302,6 +302,10 @@ class NoteView(QWidget):
 
         # Content Area
         self.content_area.status_bar_message.connect(self.send_status_message)
+        _ = self.content_area.editor.imageUploadRequested.connect(
+                lambda file_path: self.upload_resource(file_path=file_path)
+
+                )
 
         # Connect search tab signals
         self.search_tab.search_text_changed.connect(self._on_search_text_changed)
@@ -668,7 +672,7 @@ class NoteView(QWidget):
         """Return the ID of the currently selected note"""
         return self.current_note_id
 
-    def upload_resource(self) -> None:
+    def upload_resource(self, file_path: str | None = None, title: str | None = None) -> None:
         """Handle resource file upload with optional title"""
         from PySide6.QtWidgets import QFileDialog, QInputDialog
 
@@ -679,28 +683,30 @@ class NoteView(QWidget):
         note_id = self.get_current_note_id()
 
         # Open file dialog
-        file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Select File to Upload",
-            "",  # Start in current directory
-            "All Files (*);;Images (*.png *.jpg *.jpeg *.gif);;Documents (*.pdf *.doc *.docx *.txt)",
-        )
+        if file_path is None:
+            file_path, _ = QFileDialog.getOpenFileName(
+                self,
+                "Select File to Upload",
+                "",  # Start in current directory
+                "All Files (*);;Images (*.png *.jpg *.jpeg *.gif);;Documents (*.pdf *.doc *.docx *.txt)",
+            )
 
         if not file_path:  # User canceled
             return
 
         # Get resource title from user
-        title, ok = QInputDialog.getText(
-            self,
-            "Resource Title",
-            "Enter a title for the resource:",
-            text=Path(file_path).stem,  # Default to filename without extension
-        )
+        if title is None:
+            title, ok = QInputDialog.getText(
+                self,
+                "Resource Title",
+                "Enter a title for the resource:",
+                text=Path(file_path).stem,  # Default to filename without extension
+            )
 
-        if not ok:  # User canceled
-            return
+            if not ok:  # User canceled
+                return
 
-        print(f"Uploading file: {file_path} with title: {title}")
+            print(f"Uploading file: {file_path} with title: {title}")
         try:
             resource_id = self.model.upload_resource(
                 Path(file_path), note_id, title=title if title else None
@@ -714,12 +720,11 @@ class NoteView(QWidget):
             self.send_status_message(f"Error uploading file: {str(e)}")
             return
 
-        if note_id and resource_id is not None:
+        if note_id is not None and resource_id:
             # Create markdown link
             resource_name = self.model.get_resource_title(resource_id)
             text = f"![{resource_name}](:/{resource_id})"
             self.insert_text_at_cursor(text, copy=True)
-
     def insert_text_at_cursor(self, text: str, copy: bool = False) -> None:
         """Insert text at the current cursor position in the editor"""
         self.content_area.editor.insert_text_at_cursor(text, copy=copy)
