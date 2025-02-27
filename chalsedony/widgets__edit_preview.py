@@ -639,7 +639,8 @@ class NoteUrlRequestInterceptor(QWebEngineUrlRequestInterceptor):
                         )
                         folder_id = resource_id
                         _ = folder_id
-                    case IdTable.RESOURCE:
+                    # Assume a resource, because the file may exist on disk but not be in database due to a sync issue
+                    case _:
                         if filepath := self.note_model.get_resource_path(resource_id):
                             # Allow direct access to resource files
                             url = QUrl.fromLocalFile(str(filepath))
@@ -903,226 +904,231 @@ class WebPreview(QWebEngineView):
             href = link["href"]
             if href.startswith(":/"):
                 resource_id = href[2:]  # Remove the :/ prefix
-                if (id_type := self.note_model.what_is_this(resource_id)) is not None:
-                    match id_type:
-                        case IdTable.NOTE:
-                            link["href"] = f"note://{resource_id}"
-                        case IdTable.FOLDER:
-                            link["href"] = f"note://{resource_id}"
-                        case IdTable.RESOURCE:
-                            if filepath := self.note_model.get_resource_path(
+
+                # Fall back to resource, folders and notes are undefined without a db
+                # entry. However an asset may be on disk without a db entry due to
+                # a sync error, so this deals with that
+                id_type = self.note_model.what_is_this(resource_id) or IdTable.RESOURCE
+
+                match id_type:
+                    case IdTable.NOTE:
+                        link["href"] = f"note://{resource_id}"
+                    case IdTable.FOLDER:
+                        link["href"] = f"note://{resource_id}"
+                    case IdTable.RESOURCE:
+                        if filepath := self.note_model.get_resource_path(
+                            resource_id
+                        ):
+                            # Filepath isn't used, but it may be useful in the future
+                            _ = filepath
+                            # Handle different resource types appropriately
+                            mime_type = self.note_model.get_resource_mime_type(
                                 resource_id
-                            ):
-                                # Filepath isn't used, but it may be useful in the future
-                                _ = filepath
-                                # Handle different resource types appropriately
-                                mime_type = self.note_model.get_resource_mime_type(
-                                    resource_id
-                                )[1]
-                                match mime_type:
-                                    case ResourceType.IMAGE:
-                                        link["href"] = f"note://{resource_id}"
-                                    case ResourceType.VIDEO:
-                                        # Get the link text and title
-                                        link_text = link.string or "Video"
-                                        title = link.get("title", "")
-                                        mime_type_string = (
-                                            self.note_model.get_resource_mime_type(
-                                                resource_id
-                                            )[0]
-                                        )
-
-                                        # Create the link for the summary
-                                        summary_link = soup.new_tag("a")
-                                        summary_link.string = link_text
-                                        summary_link["href"] = f"note://{resource_id}"
-                                        summary_link["title"] = title
-                                        summary_link["data-from-md"] = ""
-                                        summary_link["data-resource-id"] = resource_id
-                                        summary_link["type"] = (
-                                            f"video/{mime_type_string}"
-                                        )
-
-                                        # Create video element
-                                        video_tag = soup.new_tag(
-                                            "video",
-                                            **{
-                                                "class": "media-player media-video",
-                                                "controls": "",
-                                            },
-                                        )
-                                        source_tag = soup.new_tag(
-                                            "source",
-                                            src=f":/{resource_id}",
-                                            type=f"{mime_type_string}",
-                                        )
-                                        video_tag.append(source_tag)
-
-                                        # Replace the original link with the new structure
-                                        link.replace_with(
-                                            wrap_in_details(
-                                                soup, summary_link, video_tag
-                                            )
-                                        )
-                                    case ResourceType.PDF:
-                                        # Get the link text and title
-                                        link_text = link.string or "PDF Document"
-                                        title = link.get("title", "")
-                                        mime_type_string = (
-                                            self.note_model.get_resource_mime_type(
-                                                resource_id
-                                            )[0]
-                                        )
-
-                                        # Create the link for the summary
-                                        summary_link = soup.new_tag("a")
-                                        summary_link.string = link_text
-                                        summary_link["href"] = f"note://{resource_id}"
-                                        summary_link["title"] = title
-                                        summary_link["data-from-md"] = ""
-                                        summary_link["data-resource-id"] = resource_id
-                                        if mime_type_string:
-                                            summary_link["type"] = mime_type_string
-
-                                        # Create PDF preview container
-                                        pdf_container = soup.new_tag(
-                                            "div",
-                                            **{
-                                                "class": "pdfjs_preview",
-                                                "data-src": f":/{resource_id}",
-                                            },
-                                        )
-                                        placeholder = soup.new_tag(
-                                            "div", **{"class": "placeholder"}
-                                        )
-                                        placeholder.string = "Loading PDF preview..."
-                                        pdf_container.append(placeholder)
-
-                                        # Replace the original link with the new structure
-                                        link.replace_with(
-                                            wrap_in_details(
-                                                soup, summary_link, pdf_container
-                                            )
-                                        )
-                                    case ResourceType.AUDIO:
-                                        # Get the link text and title
-                                        link_text = link.string or "Audio"
-                                        title = link.get("title", "")
-                                        mime_type_string = (
-                                            self.note_model.get_resource_mime_type(
-                                                resource_id
-                                            )[0]
-                                        )
-
-                                        # Create the link for the summary
-                                        summary_link = soup.new_tag("a")
-                                        summary_link.string = link_text
-                                        summary_link["href"] = f"note://{resource_id}"
-                                        summary_link["title"] = title
-                                        summary_link["data-from-md"] = ""
-                                        summary_link["data-resource-id"] = resource_id
-                                        if mime_type_string:
-                                            summary_link["type"] = mime_type_string
-
-                                        # Create audio element
-                                        audio_tag = soup.new_tag(
-                                            "audio",
-                                            **{
-                                                "class": "media-player media-audio",
-                                                "controls": "",
-                                            },
-                                        )
-                                        source_tag = soup.new_tag(
-                                            "source",
-                                            src=f":/{resource_id}",
-                                            type=f"{mime_type_string}",
-                                        )
-                                        audio_tag.append(source_tag)
-
-                                        # Replace the original link with the new structure
-                                        link.replace_with(
-                                            wrap_in_details(
-                                                soup, summary_link, audio_tag
-                                            )
-                                        )
-                                    case ResourceType.CODE:
-                                        # Get the link text and title
-                                        link_text = link.string or "Code File"
-                                        title = link.get("title", "")
-                                        mime_type_string = (
-                                            self.note_model.get_resource_mime_type(
-                                                resource_id
-                                            )[0]
-                                        )
-
-                                        # Create the link for the summary
-                                        summary_link = soup.new_tag("a")
-                                        summary_link.string = link_text
-                                        summary_link["href"] = f"note://{resource_id}"
-                                        summary_link["title"] = title
-                                        summary_link["data-from-md"] = ""
-                                        summary_link["data-resource-id"] = resource_id
-                                        if mime_type_string:
-                                            summary_link["type"] = mime_type_string
-
-                                        # Create code block container
-                                        code_container = soup.new_tag(
-                                            "pre",
-                                            **{
-                                                "class": "code-block",
-                                                "data-src": f":/{resource_id}",
-                                            },
-                                        )
-                                        # TODO syntax highlighting isn't working, fix this
-                                        # Get file extension for syntax highlighting
-                                        filepath = self.note_model.get_resource_path(
+                            )[1]
+                            match mime_type:
+                                case ResourceType.IMAGE:
+                                    link["href"] = f"note://{resource_id}"
+                                case ResourceType.VIDEO:
+                                    # Get the link text and title
+                                    link_text = link.string or "Video"
+                                    title = link.get("title", "")
+                                    mime_type_string = (
+                                        self.note_model.get_resource_mime_type(
                                             resource_id
-                                        )
-                                        ext = filepath.suffix[1:] if filepath else None
-                                        lang_class = (
-                                            get_language_class(ext) if ext else None
-                                        )
+                                        )[0]
+                                    )
 
-                                        code_tag = soup.new_tag("code")
-                                        if lang_class:
-                                            code_tag["class"] = lang_class
+                                    # Create the link for the summary
+                                    summary_link = soup.new_tag("a")
+                                    summary_link.string = link_text
+                                    summary_link["href"] = f"note://{resource_id}"
+                                    summary_link["title"] = title
+                                    summary_link["data-from-md"] = ""
+                                    summary_link["data-resource-id"] = resource_id
+                                    summary_link["type"] = (
+                                        f"video/{mime_type_string}"
+                                    )
 
-                                        if filepath:
-                                            try:
-                                                with open(
-                                                    filepath, "r", encoding="utf-8"
-                                                ) as f:
-                                                    code_content = f.read()
-                                                code_tag.string = code_content
-                                            except Exception as e:
-                                                error_div = soup.new_tag(
-                                                    "div", **{"class": "error"}
-                                                )
-                                                error_div.string = (
-                                                    f"Error loading code: {str(e)}"
-                                                )
-                                                code_tag.append(error_div)
-                                        else:
+                                    # Create video element
+                                    video_tag = soup.new_tag(
+                                        "video",
+                                        **{
+                                            "class": "media-player media-video",
+                                            "controls": "",
+                                        },
+                                    )
+                                    source_tag = soup.new_tag(
+                                        "source",
+                                        src=f":/{resource_id}",
+                                        type=f"{mime_type_string}",
+                                    )
+                                    video_tag.append(source_tag)
+
+                                    # Replace the original link with the new structure
+                                    link.replace_with(
+                                        wrap_in_details(
+                                            soup, summary_link, video_tag
+                                        )
+                                    )
+                                case ResourceType.PDF:
+                                    # Get the link text and title
+                                    link_text = link.string or "PDF Document"
+                                    title = link.get("title", "")
+                                    mime_type_string = (
+                                        self.note_model.get_resource_mime_type(
+                                            resource_id
+                                        )[0]
+                                    )
+
+                                    # Create the link for the summary
+                                    summary_link = soup.new_tag("a")
+                                    summary_link.string = link_text
+                                    summary_link["href"] = f"note://{resource_id}"
+                                    summary_link["title"] = title
+                                    summary_link["data-from-md"] = ""
+                                    summary_link["data-resource-id"] = resource_id
+                                    if mime_type_string:
+                                        summary_link["type"] = mime_type_string
+
+                                    # Create PDF preview container
+                                    pdf_container = soup.new_tag(
+                                        "div",
+                                        **{
+                                            "class": "pdfjs_preview",
+                                            "data-src": f":/{resource_id}",
+                                        },
+                                    )
+                                    placeholder = soup.new_tag(
+                                        "div", **{"class": "placeholder"}
+                                    )
+                                    placeholder.string = "Loading PDF preview..."
+                                    pdf_container.append(placeholder)
+
+                                    # Replace the original link with the new structure
+                                    link.replace_with(
+                                        wrap_in_details(
+                                            soup, summary_link, pdf_container
+                                        )
+                                    )
+                                case ResourceType.AUDIO:
+                                    # Get the link text and title
+                                    link_text = link.string or "Audio"
+                                    title = link.get("title", "")
+                                    mime_type_string = (
+                                        self.note_model.get_resource_mime_type(
+                                            resource_id
+                                        )[0]
+                                    )
+
+                                    # Create the link for the summary
+                                    summary_link = soup.new_tag("a")
+                                    summary_link.string = link_text
+                                    summary_link["href"] = f"note://{resource_id}"
+                                    summary_link["title"] = title
+                                    summary_link["data-from-md"] = ""
+                                    summary_link["data-resource-id"] = resource_id
+                                    if mime_type_string:
+                                        summary_link["type"] = mime_type_string
+
+                                    # Create audio element
+                                    audio_tag = soup.new_tag(
+                                        "audio",
+                                        **{
+                                            "class": "media-player media-audio",
+                                            "controls": "",
+                                        },
+                                    )
+                                    source_tag = soup.new_tag(
+                                        "source",
+                                        src=f":/{resource_id}",
+                                        type=f"{mime_type_string}",
+                                    )
+                                    audio_tag.append(source_tag)
+
+                                    # Replace the original link with the new structure
+                                    link.replace_with(
+                                        wrap_in_details(
+                                            soup, summary_link, audio_tag
+                                        )
+                                    )
+                                case ResourceType.CODE:
+                                    # Get the link text and title
+                                    link_text = link.string or "Code File"
+                                    title = link.get("title", "")
+                                    mime_type_string = (
+                                        self.note_model.get_resource_mime_type(
+                                            resource_id
+                                        )[0]
+                                    )
+
+                                    # Create the link for the summary
+                                    summary_link = soup.new_tag("a")
+                                    summary_link.string = link_text
+                                    summary_link["href"] = f"note://{resource_id}"
+                                    summary_link["title"] = title
+                                    summary_link["data-from-md"] = ""
+                                    summary_link["data-resource-id"] = resource_id
+                                    if mime_type_string:
+                                        summary_link["type"] = mime_type_string
+
+                                    # Create code block container
+                                    code_container = soup.new_tag(
+                                        "pre",
+                                        **{
+                                            "class": "code-block",
+                                            "data-src": f":/{resource_id}",
+                                        },
+                                    )
+                                    # TODO syntax highlighting isn't working, fix this
+                                    # Get file extension for syntax highlighting
+                                    filepath = self.note_model.get_resource_path(
+                                        resource_id
+                                    )
+                                    ext = filepath.suffix[1:] if filepath else None
+                                    lang_class = (
+                                        get_language_class(ext) if ext else None
+                                    )
+
+                                    code_tag = soup.new_tag("code")
+                                    if lang_class:
+                                        code_tag["class"] = lang_class
+
+                                    if filepath:
+                                        try:
+                                            with open(
+                                                filepath, "r", encoding="utf-8"
+                                            ) as f:
+                                                code_content = f.read()
+                                            code_tag.string = code_content
+                                        except Exception as e:
                                             error_div = soup.new_tag(
                                                 "div", **{"class": "error"}
                                             )
-                                            error_div.string = "Code file not found"
-                                            code_tag.append(error_div)
-
-                                        code_container.append(code_tag)
-
-                                        # Replace the original link with the new structure
-                                        link.replace_with(
-                                            wrap_in_details(
-                                                soup, summary_link, code_container
+                                            error_div.string = (
+                                                f"Error loading code: {str(e)}"
                                             )
+                                            code_tag.append(error_div)
+                                    else:
+                                        error_div = soup.new_tag(
+                                            "div", **{"class": "error"}
                                         )
-                                    case ResourceType.DOCUMENT:
-                                        link["href"] = f"note://{resource_id}"
-                                    case ResourceType.ARCHIVE:
-                                        link["href"] = f"note://{resource_id}"
-                                    case ResourceType.OTHER:
-                                        link["href"] = f"note://{resource_id}"
+                                        error_div.string = "Code file not found"
+                                        code_tag.append(error_div)
+
+                                    code_container.append(code_tag)
+
+                                    # Replace the original link with the new structure
+                                    link.replace_with(
+                                        wrap_in_details(
+                                            soup, summary_link, code_container
+                                        )
+                                    )
+                                case ResourceType.DOCUMENT:
+                                    link["href"] = f"note://{resource_id}"
+                                case ResourceType.ARCHIVE:
+                                    link["href"] = f"note://{resource_id}"
+                                case ResourceType.OTHER:
+                                    link["href"] = f"note://{resource_id}"
 
         return str(soup)
 

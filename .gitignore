@@ -6,3 +6,5 @@ src
 typings
 target
 chalsedony/chalsedony.cpython-312-x86_64-linux-gnu.so
+chalsedony/build
+chalsedony/dist/main
