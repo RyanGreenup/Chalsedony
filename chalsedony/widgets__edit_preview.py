@@ -15,6 +15,7 @@ import tempfile
 import os
 from .syntax_highlighter import MarkdownHighlighter
 from .note_model import NoteModel
+import subprocess as sp
 
 from typing import cast
 from .widgets__textedit__vim_bindings import VimTextEdit
@@ -222,6 +223,15 @@ class EditPreview(QWidget):
     def convert_md_to_html(self, md_text: str | None = None) -> str:
         if not md_text:
             md_text = self.editor.toPlainText()
+        if md_text[:8] == "#+TITLE:":
+            sp.run
+            result = subprocess.run(
+                "org2html",
+                input=md_text,  # Convert input text to bytes
+                capture_output=True,               # Capture stdout and stderr
+                text=True                          # Return output as string
+            )
+            return result.stdout
         html = self.md.convert(md_text)
         # Replace image URLs to use note: scheme
         html = self.preview.rewrite_html_links(html)
